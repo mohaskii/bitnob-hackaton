@@ -1,0 +1,46 @@
+{
+  "tasks": {
+    "dev": "deno run -A app/build-config.ts"
+  },
+
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 80,
+    "indentWidth": 2,
+    "semiColons": false,
+    "singleQuote": true,
+    "exclude": ["metafile.json"]
+  },
+  "lock": false,
+  "nodeModulesDir": "auto",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
+    "exactOptionalPropertyTypes": false,
+    "lib": [
+      "deno.window",
+      "deno.ns",
+      "ESNext",
+      "DOM",
+      "DOM.Iterable",
+      "DOM.AsyncIterable",
+      "webworker"
+    ]
+  },
+  "imports": {
+    "@capacitor/app": "npm:@capacitor/app@^8.1.0",
+    "@capacitor/camera": "npm:@capacitor/camera@^8.2.0",
+    "@capacitor/core": "npm:@capacitor/core@^8.3.4",
+    "@preact/preset-vite": "npm:@preact/preset-vite@^2.10.5",
+    "@preact/signals": "npm:@preact/signals@^2.9.0",
+    "@std/assert": "jsr:@std/assert@^1.0.19",
+    "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.3.0",
+    "capacitor": "npm:capacitor@^0.5.6",
+    "daisyui": "npm:daisyui@^5.5.20",
+    "gsap": "npm:gsap@^3.15.0",
+    "lucide-preact": "npm:lucide-preact@^1.16.0",
+    "preact": "npm:preact@^10.29.2",
+    "tailwindcss": "npm:tailwindcss@^4.3.0",
+    "vite": "npm:vite@^8.0.14"
+  }
+}

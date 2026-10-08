@@ -1,0 +1,38 @@
+# Deno
+.deno/
+deno.lock
+
+# Dependencies
+node_modules/
+vendor/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage
+coverage/
+*.lcov
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Cache
+.deno_cache/
+.cache/
+*.vite

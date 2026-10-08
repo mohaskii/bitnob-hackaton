@@ -1,0 +1,101 @@
+import { Home, Wallet, ChartBar, User } from 'lucide-preact'
+import { navigate, url } from '../router.tsx'
+
+export interface NavTabItem {
+  id: string
+  label: string
+  path: string
+  icon: typeof Home
+}
+
+export const DEFAULT_TABS: NavTabItem[] = [
+  { id: 'home', label: 'Home', path: '/', icon: Home },
+  { id: 'wallet', label: 'Wallet', path: '/wallet', icon: Wallet },
+  { id: 'analytics', label: 'Analytics', path: '/analytics', icon: ChartBar },
+  { id: 'profile', label: 'Profile', path: '/profile', icon: User },
+]
+
+interface BottomNavProps {
+  activeTab?: string
+  tabs?: NavTabItem[]
+  onTabChange?: (tab: NavTabItem) => void
+}
+
+/**
+ * BottomNav Component:
+ * - Floating pill navigation inspired by the reference design.
+ * - Smart fixed-width geometry: The global component width is locked (constant 300px)
+ *   and each active tab expands into a standardized fixed slot (70px label).
+ *   This prevents any jitter, jumping, or resizing of the global bar regardless of label length.
+ * - Subtle, high-framerate transitions powered by cubic-bezier easing.
+ * - Uses DaisyUI / style.css theme tokens (primary, primary-content, base-100, base-300).
+ */
+export const BottomNav = ({
+  activeTab,
+  tabs = DEFAULT_TABS,
+  onTabChange,
+}: BottomNavProps) => {
+  const currentPath = activeTab ?? (url.path || '/')
+
+  const handleTabClick = (tab: NavTabItem) => {
+    if (onTabChange) {
+      onTabChange(tab)
+    }
+    navigate({ href: tab.path })
+  }
+
+  return (
+    <div
+      class="fixed bottom-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)+0.75rem))] left-1/2 -translate-x-1/2 z-50 pointer-events-none select-none"
+    >
+      <nav
+        aria-label="Bottom Navigation"
+        class="pointer-events-auto w-[304px] bg-base-100/90 backdrop-blur-xl border border-base-300/80 rounded-full p-1.5 flex items-center justify-between gap-1.5 shadow-2xl shadow-black/40 ring-1 ring-white/5"
+      >
+        {tabs.map((tab) => {
+          const Icon = tab.icon
+          const isActive = tab.path === '/'
+            ? currentPath === '/' || currentPath === ''
+            : currentPath === tab.path || currentPath.startsWith(tab.path + '/')
+
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => handleTabClick(tab)}
+              class={`relative h-11 rounded-full flex items-center justify-center cursor-pointer transition-[width,background-color,color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.97] focus:outline-none overflow-hidden ${
+                isActive
+                  ? 'w-[124px] bg-primary text-primary-content shadow-md shadow-primary/25'
+                  : 'w-11 bg-transparent text-base-content/50 hover:text-base-content/85 hover:bg-base-200/40'
+              }`}
+            >
+              {/* Icon Container with subtle micro-scale feedback */}
+              <div
+                class={`w-5 h-5 flex items-center justify-center flex-shrink-0 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                  isActive ? 'scale-105' : 'scale-100'
+                }`}
+              >
+                <Icon
+                  size={20}
+                  strokeWidth={isActive ? 2.4 : 1.9}
+                />
+              </div>
+
+              {/* Fixed-width text slot: Always expands to 68px when active, collapses to 0 when inactive.
+                  This guarantees the total active item width is identical across all tabs */}
+              <span
+                class={`text-[13px] font-semibold tracking-tight whitespace-nowrap overflow-hidden transition-[max-width,opacity,margin-left] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                  isActive
+                    ? 'max-w-[70px] opacity-100 ml-2'
+                    : 'max-w-0 opacity-0 ml-0'
+                }`}
+              >
+                {tab.label}
+              </span>
+            </button>
+          )
+        })}
+      </nav>
+    </div>
+  )
+}
