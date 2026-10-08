@@ -31,11 +31,16 @@ The screen renders the full-width dark card at $Y = 0$, followed immediately by 
   />
 
   {/* Overlapping Mini Feed Sheet */}
-  <section class="relative -mt-6 z-10 w-full bg-base-100 rounded-t-[var(--radius-box,2rem)] px-4 pt-4 pb-6 flex flex-col gap-4">
-    {/* Sheet grabber, Search bar, Top Trader card, and BRVM Watchlist */}
+  <section class="relative -mt-6 z-10 w-full bg-base-200 rounded-t-[var(--radius-box,2rem)] px-4 pt-4 pb-6 flex flex-col gap-4">
+    {/* Sheet grabber, Market Direction/Momentum (2 cards), Recent Market News, and Community Activity */}
   </section>
 </div>
 ```
+
+### Feed Sections:
+1. **Market Direction & Market Momentum**: 2 side-by-side `bg-base-100 rounded-2xl` tiles displaying current market sentiment (Bearish/Bullish) and 7-day performance.
+2. **Recent Market News**: Highlighted news card (`bg-base-100 rounded-2xl`) featuring BRVM ticker info, headline, timestamp, and source.
+3. **Activité de la Communauté (Social Trades)**: Real-time community stream in spacious `bg-base-100 rounded-2xl p-4` cards with `w-11 h-11` avatars, readable `text-sm` typography, and comfortable `h-8.5 px-4` 1-tap "Copier" buttons.
 
 ---
 

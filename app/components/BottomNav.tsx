@@ -48,7 +48,7 @@ export const BottomNav = ({
     <div class='fixed bottom-[max(1rem,calc(env(safe-area-inset-bottom,0px)+0.5rem))] inset-x-0 flex justify-center z-50 pointer-events-none select-none px-4'>
       <nav
         aria-label='Bottom Navigation'
-        class='pointer-events-auto w-full max-w-[360px] bg-base-100/90 backdrop-blur-xl rounded-full p-2 flex items-center justify-between gap-1.5'
+        class='pointer-events-auto w-full max-w-[360px] bg-secondary/10 backdrop-blur rounded-full p-2 flex items-center justify-between gap-1.5'
       >
         {tabs.map((tab) => {
           const Icon = tab.icon

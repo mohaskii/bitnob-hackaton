@@ -3,6 +3,7 @@ import { SystemBars, SystemBarsStyle } from '@capacitor/core'
 import { url } from './router.tsx'
 import { BottomNav } from './components/BottomNav.tsx'
 import { HomeScreen } from './screens/HomeScreen.tsx'
+import { MarketScreen } from './screens/MarketScreen.tsx'
 
 export const App = () => {
   const [currentPath, setCurrentPath] = useState(url.path || '/')
@@ -34,6 +35,8 @@ export const App = () => {
       <main class="flex-1 min-h-0 relative overflow-y-auto overflow-x-hidden flex flex-col pb-28">
         {currentPath === '/' || currentPath === '/home' ? (
           <HomeScreen />
+        ) : currentPath === '/market' ? (
+          <MarketScreen />
         ) : (
           /* Placeholder Container for other tabs (Market, Social, Portfolio) */
           <div class="flex-1 flex flex-col items-center justify-center p-4 pt-[calc(env(safe-area-inset-top,0px)+1.5rem)] text-center select-none">
