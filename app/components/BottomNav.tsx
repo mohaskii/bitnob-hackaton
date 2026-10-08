@@ -61,10 +61,10 @@ export const BottomNav = ({
               key={tab.id}
               type='button'
               onClick={() => handleTabClick(tab)}
-              class={`relative h-12 rounded-full flex items-center justify-center cursor-pointer transition-[width,background-color,color,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.97] focus:outline-none overflow-hidden ${
+              class={`relative h-15 rounded-full flex items-center justify-center cursor-pointer transition-[width,background-color,color,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.97] focus:outline-none overflow-hidden ${
                 isActive
-                  ? 'w-[138px] bg-primary text-primary-content'
-                  : 'w-12 text-base-content/50 rounded-full bg-base-200'
+                  ? 'w-[110px] bg-primary text-primary-content'
+                  : 'w-15 text-base-content/50 rounded-full bg-base-200'
               }`}
             >
               {/* Icon Container with subtle micro-scale feedback */}
@@ -84,7 +84,7 @@ export const BottomNav = ({
               <span
                 class={`text-[13.5px] font-semibold tracking-tight whitespace-nowrap overflow-hidden transition-[max-width,opacity,margin-left] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                   isActive
-                    ? 'max-w-[78px] opacity-100 ml-2'
+                    ? 'max-w-[70px] opacity-100 ml-2'
                     : 'max-w-0 opacity-0 ml-0'
                 }`}
               >

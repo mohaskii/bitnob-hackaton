@@ -39,7 +39,7 @@ export const BalanceCard = ({
   }).format(amountUsdt)
 
   return (
-    <div class="w-full bg-neutral text-neutral-content rounded-b-[var(--radius-box,2rem)] pt-[calc(env(safe-area-inset-top,0px)+1.25rem)] px-5 pb-7 sm:px-6 sm:pb-8 select-none relative overflow-hidden">
+    <div class="w-full bg-neutral text-neutral-content rounded-none pt-[calc(env(safe-area-inset-top,0px)+1.25rem)] px-5 pb-11 sm:px-6 sm:pb-12 select-none relative overflow-hidden">
       {/* Subtle concentric rings watermark starting at safe-area on the left */}
       <svg
         class="absolute top-[env(safe-area-inset-top,0px)] -left-6 w-52 h-52 pointer-events-none opacity-10 text-neutral-content"
