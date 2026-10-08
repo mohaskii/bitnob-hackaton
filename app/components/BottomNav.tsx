@@ -1,4 +1,4 @@
-import { Home, Wallet, ChartBar, User } from 'lucide-preact'
+import { ChartBar, Home, User, Wallet } from 'lucide-preact'
 import { navigate, url } from '../router.tsx'
 
 export interface NavTabItem {
@@ -45,12 +45,10 @@ export const BottomNav = ({
   }
 
   return (
-    <div
-      class="fixed bottom-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)+0.75rem))] left-1/2 -translate-x-1/2 z-50 pointer-events-none select-none"
-    >
+    <div class='fixed bottom-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)+0.75rem))] left-1/2 -translate-x-1/2 z-50 pointer-events-none select-none'>
       <nav
-        aria-label="Bottom Navigation"
-        class="pointer-events-auto w-[304px] bg-base-100/90 backdrop-blur-xl border border-base-300/80 rounded-full p-1.5 flex items-center justify-between gap-1.5 shadow-2xl shadow-black/40 ring-1 ring-white/5"
+        aria-label='Bottom Navigation'
+        class='pointer-events-auto w-[304px] bg-base-100/90 backdrop-blur-xl rounded-full p-1.5 flex items-center justify-between gap-1.5  '
       >
         {tabs.map((tab) => {
           const Icon = tab.icon
@@ -61,12 +59,12 @@ export const BottomNav = ({
           return (
             <button
               key={tab.id}
-              type="button"
+              type='button'
               onClick={() => handleTabClick(tab)}
-              class={`relative h-11 rounded-full flex items-center justify-center cursor-pointer transition-[width,background-color,color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.97] focus:outline-none overflow-hidden ${
+              class={`relative h-11 rounded-full flex items-center justify-center cursor-pointer transition-[width,background-color,color,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.97] focus:outline-none overflow-hidden ${
                 isActive
-                  ? 'w-[124px] bg-primary text-primary-content shadow-md shadow-primary/25'
-                  : 'w-11 bg-transparent text-base-content/50 hover:text-base-content/85 hover:bg-base-200/40'
+                  ? 'w-[124px] bg-primary text-primary-content '
+                  : 'w-11  text-base-content/50  rounded-full bg-base-200'
               }`}
             >
               {/* Icon Container with subtle micro-scale feedback */}
@@ -81,8 +79,10 @@ export const BottomNav = ({
                 />
               </div>
 
-              {/* Fixed-width text slot: Always expands to 68px when active, collapses to 0 when inactive.
-                  This guarantees the total active item width is identical across all tabs */}
+              {
+                /* Fixed-width text slot: Always expands to 68px when active, collapses to 0 when inactive.
+                  This guarantees the total active item width is identical across all tabs */
+              }
               <span
                 class={`text-[13px] font-semibold tracking-tight whitespace-nowrap overflow-hidden transition-[max-width,opacity,margin-left] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                   isActive

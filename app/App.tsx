@@ -33,7 +33,7 @@ export const App = () => {
       <main class="flex-1 min-h-0 relative overflow-y-auto overflow-x-hidden flex flex-col pb-24">
         {/* Route Container Placeholder (uses DaisyUI theme classes & primary accents) */}
         <div class="flex-1 flex flex-col items-center justify-center p-6 text-center select-none">
-          <div class="w-14 h-14 rounded-2xl bg-base-100 border border-primary/30 flex items-center justify-center mb-3 text-primary shadow-sm shadow-primary/10">
+          <div class="w-14 h-14 rounded-2xl bg-base-100  flex items-center justify-center mb-3 text-primary shadow-sm shadow-primary/10">
             <span class="text-xs font-mono font-bold text-primary">
               {currentPath === '/' ? '/' : currentPath.slice(1)}
             </span>
