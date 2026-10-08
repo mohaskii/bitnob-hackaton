@@ -1,4 +1,4 @@
-import { ChartBar, Home, User, Wallet } from 'lucide-preact'
+import { Home, PieChart, TrendingUp, Users } from 'lucide-preact'
 import { navigate, url } from '../router.tsx'
 
 export interface NavTabItem {
@@ -10,9 +10,9 @@ export interface NavTabItem {
 
 export const DEFAULT_TABS: NavTabItem[] = [
   { id: 'home', label: 'Home', path: '/', icon: Home },
-  { id: 'wallet', label: 'Wallet', path: '/wallet', icon: Wallet },
-  { id: 'analytics', label: 'Analytics', path: '/analytics', icon: ChartBar },
-  { id: 'profile', label: 'Profile', path: '/profile', icon: User },
+  { id: 'market', label: 'Market', path: '/market', icon: TrendingUp },
+  { id: 'social', label: 'Social', path: '/social', icon: Users },
+  { id: 'portfolio', label: 'Portfolio', path: '/portfolio', icon: PieChart },
 ]
 
 interface BottomNavProps {
@@ -45,10 +45,10 @@ export const BottomNav = ({
   }
 
   return (
-    <div class='fixed bottom-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)+0.75rem))] left-1/2 -translate-x-1/2 z-50 pointer-events-none select-none'>
+    <div class='fixed bottom-[max(1rem,calc(env(safe-area-inset-bottom,0px)+0.5rem))] inset-x-0 flex justify-center z-50 pointer-events-none select-none px-4'>
       <nav
         aria-label='Bottom Navigation'
-        class='pointer-events-auto w-[304px] bg-base-100/90 backdrop-blur-xl rounded-full p-1.5 flex items-center justify-between gap-1.5  '
+        class='pointer-events-auto w-full max-w-[360px] bg-base-100/90 backdrop-blur-xl rounded-full p-2 flex items-center justify-between gap-1.5'
       >
         {tabs.map((tab) => {
           const Icon = tab.icon
@@ -61,32 +61,30 @@ export const BottomNav = ({
               key={tab.id}
               type='button'
               onClick={() => handleTabClick(tab)}
-              class={`relative h-11 rounded-full flex items-center justify-center cursor-pointer transition-[width,background-color,color,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.97] focus:outline-none overflow-hidden ${
+              class={`relative h-12 rounded-full flex items-center justify-center cursor-pointer transition-[width,background-color,color,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.97] focus:outline-none overflow-hidden ${
                 isActive
-                  ? 'w-[124px] bg-primary text-primary-content '
-                  : 'w-11  text-base-content/50  rounded-full bg-base-200'
+                  ? 'w-[138px] bg-primary text-primary-content'
+                  : 'w-12 text-base-content/50 rounded-full bg-base-200'
               }`}
             >
               {/* Icon Container with subtle micro-scale feedback */}
               <div
-                class={`w-5 h-5 flex items-center justify-center flex-shrink-0 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                class={`w-6 h-6 flex items-center justify-center flex-shrink-0 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                   isActive ? 'scale-105' : 'scale-100'
                 }`}
               >
                 <Icon
-                  size={20}
+                  size={21}
                   strokeWidth={isActive ? 2.4 : 1.9}
                 />
               </div>
 
-              {
-                /* Fixed-width text slot: Always expands to 68px when active, collapses to 0 when inactive.
-                  This guarantees the total active item width is identical across all tabs */
-              }
+              {/* Fixed-width text slot: Always expands to 78px when active, collapses to 0 when inactive.
+                  This guarantees the total active item width is identical across all tabs */}
               <span
-                class={`text-[13px] font-semibold tracking-tight whitespace-nowrap overflow-hidden transition-[max-width,opacity,margin-left] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                class={`text-[13.5px] font-semibold tracking-tight whitespace-nowrap overflow-hidden transition-[max-width,opacity,margin-left] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                   isActive
-                    ? 'max-w-[70px] opacity-100 ml-2'
+                    ? 'max-w-[78px] opacity-100 ml-2'
                     : 'max-w-0 opacity-0 ml-0'
                 }`}
               >

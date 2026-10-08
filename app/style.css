@@ -28,8 +28,9 @@ a, img, svg {
     background-color: var(--color-base-200);
     position: absolute;
     width: 100%;
-    height: calc(100dvh - var(--safe-area-inset-top, env(safe-area-inset-top, 0px)) - var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
-    top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+    height: 100dvh;
+    top: 0;
+    left: 0;
 }
 
 @plugin "daisyui/theme" {
@@ -59,7 +60,7 @@ a, img, svg {
     --color-error-content: #ffffff;
     --radius-selector: 0.5rem;
     --radius-field: 1rem;
-    --radius-box: 1rem;
+    --radius-box: 1.5rem;
     --size-selector: 0.25rem;
     --size-field: 0.25rem;
     --border: 0;
