@@ -1,10 +1,10 @@
 import { computed, signal } from '@preact/signals'
 
 /* -------------------------------------------------------------------------- */
-/* Types & Interfaces                                                         */
+/* State Types (Zero interface discipline)                                   */
 /* -------------------------------------------------------------------------- */
 
-export interface MarketSentimentItem {
+export type MarketSentimentItem = {
   id: string
   title: string
   status: string
@@ -13,7 +13,7 @@ export interface MarketSentimentItem {
   timeframe: string
 }
 
-export interface RecentNewsItem {
+export type RecentNewsItem = {
   id: string
   symbol: string
   company: string
@@ -23,7 +23,7 @@ export interface RecentNewsItem {
   initial: string
 }
 
-export interface CommunityTradeActivity {
+export type CommunityTradeActivity = {
   id: string
   traderName: string
   actionType: 'buy' | 'copy'

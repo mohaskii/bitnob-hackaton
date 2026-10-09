@@ -6,7 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 gsap.registerPlugin(ScrollTrigger)
 ScrollTrigger.config({ ignoreMobileResize: true })
 
-interface UseScrollHeaderOptions {
+type UseScrollHeaderOptions = {
   currentPath: string
   scrollerId?: string
   headerId?: string

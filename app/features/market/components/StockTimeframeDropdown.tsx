@@ -24,7 +24,7 @@ export const StockTimeframeDropdown = () => {
       </div>
       <ul
         tabIndex={0}
-        class='dropdown-content menu z-20 p-1.5 shadow-lg bg-base-100 rounded-2xl w-36 text-xs border border-base-200 mt-1'
+        class='dropdown-content menu z-20 p-1.5  bg-base-100 rounded-2xl w-36 text-xs border border-base-200 mt-1'
       >
         {TIMEFRAMES.map((tf) => (
           <li key={tf}>

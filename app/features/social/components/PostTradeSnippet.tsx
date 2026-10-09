@@ -2,7 +2,7 @@ import { Copy } from 'lucide-preact'
 import { SocialPost } from '../../../state.ts'
 import { handleCopyPostTrade } from '../social-state.ts'
 
-interface PostTradeSnippetProps {
+type PostTradeSnippetProps = {
   post: SocialPost
 }
 

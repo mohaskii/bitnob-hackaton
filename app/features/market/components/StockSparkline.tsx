@@ -1,4 +1,4 @@
-interface StockSparklineProps {
+type StockSparklineProps = {
   data: number[]
   isPositive: boolean
   id: string

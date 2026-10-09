@@ -2,7 +2,7 @@ import { Copy, Heart, MessageCircle, Share2 } from 'lucide-preact'
 import { SocialPost } from '../../../state.ts'
 import { toggleLikePost } from '../social-state.ts'
 
-interface PostEngagementBarProps {
+type PostEngagementBarProps = {
   post: SocialPost
 }
 

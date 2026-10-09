@@ -5,7 +5,7 @@ import { StockCard } from '../features/market/components/StockCard.tsx'
 import { MarketSortMenu } from '../features/market/components/MarketSortMenu.tsx'
 import { StockTimeframeDropdown } from '../features/market/components/StockTimeframeDropdown.tsx'
 
-interface MarketScreenProps {
+type MarketScreenProps = {
   onStockSelect?: (stock: StockItem) => void
 }
 
@@ -34,8 +34,8 @@ export const MarketScreen = ({ onStockSelect }: MarketScreenProps) => {
           <StockTimeframeDropdown />
         </div>
 
-        {/* Stocks List */}
-        <div class='flex flex-col gap-2'>
+        {/* Stocks List with Increased Card Volume */}
+        <div class='flex flex-col gap-3.5'>
           {stocksList.map((stock) => (
             <StockCard
               key={stock.symbol}

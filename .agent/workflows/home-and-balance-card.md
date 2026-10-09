@@ -31,12 +31,16 @@ In accordance with the "Video-Game Style" Signals Architecture:
 app/features/home/
 ├── home-state.ts                        # State engine: signals, computeds, actions
 └── components/
-    ├── BalanceQuickActions.tsx          # Bitnob quick actions tray (Déposer, Retirer, Carte Visa)
-    ├── MarketSentimentCards.tsx         # Market direction & momentum indicators
-    ├── RecentMarketNews.tsx             # Highlighted news card with BRVM ticker
-    └── CommunityActivityFeed.tsx        # Community trade feed with 1-tap copy
+    ├── BalanceWatermark.tsx             # Concentric circles SVG watermark (~20 lines)
+    ├── BalanceAvatar.tsx                # Embedded safe-area avatar target (~25 lines)
+    ├── BalanceValueDisplay.tsx          # Total wealth typography display (~30 lines)
+    ├── BalanceQuickActions.tsx          # Bitnob quick actions tray (~70 lines)
+    ├── MarketSentimentCards.tsx         # Market direction & momentum indicators (~40 lines)
+    ├── RecentMarketNews.tsx             # Highlighted news card with BRVM ticker (~60 lines)
+    ├── CommunityActivityItem.tsx        # Single community trade card with copy button (~60 lines)
+    └── CommunityActivityFeed.tsx        # Community trade feed orchestrator (~25 lines)
 app/components/
-└── BalanceCard.tsx                      # Grande Carte Noire container (~80 lines)
+└── BalanceCard.tsx                      # Grande Carte Noire container (< 60 lines)
 app/screens/
 └── HomeScreen.tsx                       # Thin orchestrator (< 50 lines)
 ```

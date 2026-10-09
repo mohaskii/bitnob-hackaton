@@ -1,10 +1,10 @@
 import { signal } from '@preact/signals'
 
 /* -------------------------------------------------------------------------- */
-/* Types & Interfaces                                                         */
+/* State Types (Zero interface discipline)                                   */
 /* -------------------------------------------------------------------------- */
 
-export interface Trader {
+export type Trader = {
   id: string
   name: string
   handle: string
@@ -19,7 +19,7 @@ export interface Trader {
   badge?: string
 }
 
-export interface TrendingAsset {
+export type TrendingAsset = {
   id: string
   symbol: string
   name: string
@@ -29,7 +29,14 @@ export interface TrendingAsset {
   logoText: string
 }
 
-export interface SocialPost {
+export type SocialPostTrade = {
+  symbol: string
+  action: 'ACHAT' | 'VENTE'
+  priceFcfa: number
+  changePercent: number
+}
+
+export type SocialPost = {
   id: string
   authorName: string
   authorHandle: string
@@ -37,12 +44,7 @@ export interface SocialPost {
   verified: boolean
   timeAgo: string
   content: string
-  trade?: {
-    symbol: string
-    action: 'ACHAT' | 'VENTE'
-    priceFcfa: number
-    changePercent: number
-  }
+  trade?: SocialPostTrade
   sentiment?: 'bullish' | 'bearish'
   likesCount: number
   isLiked: boolean

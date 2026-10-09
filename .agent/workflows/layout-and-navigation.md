@@ -138,7 +138,12 @@ gracefully across varying mobile phone viewports (from 360px Android devices to
    width of buttons inside the nav is strictly constant. Switching tabs never
    causes the navigation bar to stretch, shrink, or jitter.
 
-4. **Micro-Transitions & Easing (0.3s)**:
+4. **Subcomponent Decomposition (Rule 5)**:
+   - `NavTabButton.tsx`: Dedicated button component encapsulating active width
+     expansion, icon scaling, and label fade transition (< 50 lines).
+   - `BottomNav.tsx`: Thin bar container orchestrator (< 60 lines).
+
+5. **Micro-Transitions & Easing (0.3s)**:
    - High-performance GPU-accelerated transition:
      `transition-[width,background-color,color,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]`.
    - Micro-scale on active icon (`scale-105`) with increased stroke width

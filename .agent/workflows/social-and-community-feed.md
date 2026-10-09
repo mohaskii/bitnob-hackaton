@@ -60,7 +60,7 @@ The screen follows the exact layout sequence:
 ### 4. Floating Action Button (FAB) & Dedicated Compose Screen (`app/screens/ComposeScreen.tsx`)
 
 - **FAB**: Pinned ergonomically directly above the floating pill nav:
-  `fixed bottom-[calc(max(1rem,calc(env(safe-area-inset-bottom,0px)+0.5rem))+4rem)] right-4 z-40 w-12 h-12 rounded-full bg-primary text-primary-content shadow-lg shadow-primary/25`.
+  `fixed bottom-[calc(max(1rem,calc(env(safe-area-inset-bottom,0px)+0.5rem))+4rem)] right-4 z-40 w-12 h-12 rounded-full bg-primary text-primary-content`.
 - **Adapted to TekkiTrade Project Design System**:
   - **Colors & Tokens**: Uses DaisyUI tokens (`bg-base-100`, `bg-base-200`,
     `text-base-content`, `primary`, `success`, `error`) instead of hardcoded
@@ -96,7 +96,37 @@ The screen follows the exact layout sequence:
   - Submitting appends the post to `socialPosts.value` in `app/state.ts` for
     immediate reactive feed updates.
 
-### 5. Interactive Copy-Trading Modal Sheet (`app/features/social/components/CopyTradingModal.tsx`)
+### 5. Fine-Grained Subcomponent Decomposition (Rule 5)
+
+- **Top Traders Carousel**:
+  - `TraderCard.tsx`: Thin card orchestrator (< 25 lines).
+  - `TraderCardHeader.tsx`: Avatar, verification, name, handle, specialty badge
+    (< 45 lines).
+  - `TraderCardMetrics.tsx`: 30-day percentage return and copiers count (< 35
+    lines).
+  - `TraderCardCopyButton.tsx`: Full-width 1-tap copy action button (< 45
+    lines).
+- **Post Feed Cards**:
+  - `PostCard.tsx`: Thin card orchestrator (< 35 lines).
+  - `PostAuthorHeader.tsx`: Author avatar, verified badge, timestamp, sentiment
+    badge (< 60 lines).
+  - `PostTradeSnippet.tsx`: Embedded trade pill (< 50 lines).
+  - `PostEngagementBar.tsx`: Interactive likes, comments, and shares (< 50
+    lines).
+- **Dedicated Compose View (`ComposeScreen.tsx`)**:
+  - `ComposeScreen.tsx`: Thin layout assembler (< 35 lines).
+  - `ComposeHeader.tsx`: Close target, drafts, and publish CTA (< 50 lines).
+  - `ComposeAuthorRow.tsx`: User avatar & audience selector pill (< 30 lines).
+  - `ComposeTextarea.tsx`: Borderless text canvas (< 20 lines).
+  - `ComposeAssetPicker.tsx`: Picker container orchestrator (< 30 lines).
+  - `ComposeSymbolChips.tsx`: Horizontal scrollable asset tags (< 55 lines).
+  - `ComposeSentimentSelector.tsx`: Bullish/Bearish pills (< 45 lines).
+  - `ComposeToolbar.tsx`: Bottom dock orchestrator (< 25 lines).
+  - `ComposeReplyRestriction.tsx`: Reply permissions toggle (< 30 lines).
+  - `ComposeMediaActions.tsx`: Media toolbar icons (< 60 lines).
+  - `ComposeProgressMeter.tsx`: Dynamic SVG circular ring (< 75 lines).
+
+### 6. Interactive Copy-Trading Modal Sheet (`app/features/social/components/CopyTradingModal.tsx`)
 
 - **Decomposition Discipline (Rule 5)**:
   - `CopyTradingModal.tsx`: Thin layout assembler (< 45 lines).
@@ -120,54 +150,52 @@ The screen follows the exact layout sequence:
 
 ---
 
-## 3. Data Schemas
+## 3. Data Schemas (Derived from @01edu/api/validator)
 
 ```ts
-export interface Trader {
-  id: string
-  name: string
-  handle: string
-  avatarUrl: string
-  verified: boolean
-  returnPercent: number
-  timeframe: string
-  copiersCount: number
-  winRate: number
-  riskLevel: 'Faible' | 'Modéré' | 'Élevé'
-  isCopied: boolean
-  badge?: string
-}
+export const TraderSchema = OBJ({
+  id: STR(),
+  name: STR(),
+  handle: STR(),
+  avatarUrl: STR(),
+  verified: BOOL(),
+  returnPercent: NUM(),
+  timeframe: STR(),
+  copiersCount: NUM(),
+  winRate: NUM(),
+  riskLevel: LIST(['Faible', 'Modéré', 'Élevé'] as const),
+  isCopied: BOOL(),
+  badge: optional(STR()),
+})
+export type Trader = Asserted<typeof TraderSchema>
 
-export interface TrendingAsset {
-  id: string
-  symbol: string
-  name: string
-  postCount: number
-  changePercent: number
-  logoBg: string
-  logoText: string
-}
+export const TrendingAssetSchema = OBJ({
+  id: STR(),
+  symbol: STR(),
+  name: STR(),
+  postCount: NUM(),
+  changePercent: NUM(),
+  logoBg: STR(),
+  logoText: STR(),
+})
+export type TrendingAsset = Asserted<typeof TrendingAssetSchema>
 
-export interface SocialPost {
-  id: string
-  authorName: string
-  authorHandle: string
-  avatarUrl: string
-  verified: boolean
-  timeAgo: string
-  content: string
-  trade?: {
-    symbol: string
-    action: 'ACHAT' | 'VENTE'
-    priceFcfa: number
-    changePercent: number
-  }
-  sentiment?: 'bullish' | 'bearish'
-  likesCount: number
-  isLiked: boolean
-  commentsCount: number
-  copiersCount: number
-}
+export const SocialPostSchema = OBJ({
+  id: STR(),
+  authorName: STR(),
+  authorHandle: STR(),
+  avatarUrl: STR(),
+  verified: BOOL(),
+  timeAgo: STR(),
+  content: STR(),
+  trade: optional(SocialPostTradeSchema),
+  sentiment: optional(LIST(['bullish', 'bearish'] as const)),
+  likesCount: NUM(),
+  isLiked: BOOL(),
+  commentsCount: NUM(),
+  copiersCount: NUM(),
+})
+export type SocialPost = Asserted<typeof SocialPostSchema>
 ```
 
 ---

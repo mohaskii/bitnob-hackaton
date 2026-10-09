@@ -3,7 +3,7 @@ import { MarketSentimentCards } from '../features/home/components/MarketSentimen
 import { RecentMarketNews } from '../features/home/components/RecentMarketNews.tsx'
 import { CommunityActivityFeed } from '../features/home/components/CommunityActivityFeed.tsx'
 
-interface HomeScreenProps {
+type HomeScreenProps = {
   onDeposit?: () => void
   onWithdraw?: () => void
   onCard?: () => void

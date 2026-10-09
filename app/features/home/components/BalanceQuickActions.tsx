@@ -5,7 +5,7 @@ import {
   openWithdrawModal,
 } from '../home-state.ts'
 
-interface BalanceQuickActionsProps {
+type BalanceQuickActionsProps = {
   onDeposit?: () => void
   onWithdraw?: () => void
   onCard?: () => void
@@ -63,7 +63,7 @@ export const BalanceQuickActions = ({
         onClick={onCard}
         class='flex flex-col items-center group cursor-pointer active:scale-95 transition-transform focus:outline-none'
       >
-        <div class='w-12 h-12 rounded-full bg-primary text-primary-content flex items-center justify-center transition-transform group-hover:scale-105 shadow-sm shadow-primary/20'>
+        <div class='w-12 h-12 rounded-full bg-primary text-primary-content flex items-center justify-center transition-transform group-hover:scale-105  '>
           <CreditCard size={21} strokeWidth={2.2} />
         </div>
         <span class='text-xs font-bold text-primary mt-1.5'>Carte Visa</span>

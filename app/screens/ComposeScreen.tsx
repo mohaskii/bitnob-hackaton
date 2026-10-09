@@ -4,7 +4,7 @@ import { ComposeTextarea } from '../features/compose/components/ComposeTextarea.
 import { ComposeAssetPicker } from '../features/compose/components/ComposeAssetPicker.tsx'
 import { ComposeToolbar } from '../features/compose/components/ComposeToolbar.tsx'
 
-interface ComposeScreenProps {
+type ComposeScreenProps = {
   onClose?: () => void
 }
 

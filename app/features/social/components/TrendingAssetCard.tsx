@@ -2,7 +2,7 @@ import { TrendingDown, TrendingUp } from 'lucide-preact'
 import { TrendingAsset } from '../../../state.ts'
 import { activeFilterSymbol, setActiveFilterSymbol } from '../social-state.ts'
 
-interface TrendingAssetCardProps {
+type TrendingAssetCardProps = {
   asset: TrendingAsset
 }
 

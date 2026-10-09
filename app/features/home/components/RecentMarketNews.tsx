@@ -1,6 +1,6 @@
 import { recentNews } from '../home-state.ts'
 
-interface RecentMarketNewsProps {
+type RecentMarketNewsProps = {
   onSeeMore?: () => void
 }
 

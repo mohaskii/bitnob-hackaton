@@ -4,11 +4,15 @@ import {
   CURRENT_USER,
   isBottomNavHidden,
   isComposeOpen,
-  SocialPost,
+  type SocialPost,
 } from '../../state.ts'
 import { navigate } from '../../router.tsx'
 
-export interface AssetOption {
+/* -------------------------------------------------------------------------- */
+/* State Types (Zero interface discipline)                                   */
+/* -------------------------------------------------------------------------- */
+
+export type AssetOption = {
   symbol: string
   name: string
   price: number

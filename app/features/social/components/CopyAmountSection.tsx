@@ -47,7 +47,7 @@ export const CopyAmountSection = () => {
             onClick={() => setCopyAmount(amt)}
             class={`h-8 rounded-xl text-xs font-bold cursor-pointer transition-all ${
               amount === amt
-                ? 'bg-primary text-primary-content shadow-sm shadow-primary/20'
+                ? 'bg-primary text-primary-content  '
                 : 'bg-base-200 text-base-content/70 hover:bg-base-300'
             }`}
           >

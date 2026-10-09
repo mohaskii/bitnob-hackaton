@@ -29,11 +29,13 @@ language inspired by the reference screens:
 app/features/market/
 ├── market-state.ts                      # State engine: signals, computeds, hoisted actions
 └── components/
-    ├── MarketSearchBar.tsx              # Search input + Sort button trigger
-    ├── MarketSortMenu.tsx               # Sort popover modal menu
-    ├── SectorFilterChips.tsx            # Scrollable horizontal sector filters
-    ├── StockTimeframeDropdown.tsx       # Timeframe dropdown (1D, 1W, 1M, 1Y)
-    ├── StockCard.tsx                    # Individual stock item card with sparkline & price
+    ├── MarketSearchBar.tsx              # Search input + Sort button trigger (~45 lines)
+    ├── MarketSortMenu.tsx               # Sort popover modal menu (~60 lines)
+    ├── SectorFilterChips.tsx            # Scrollable horizontal sector filters (~25 lines)
+    ├── StockTimeframeDropdown.tsx       # Timeframe dropdown (1D, 1W, 1M, 1Y) (~45 lines)
+    ├── StockCardIdentity.tsx            # Monogram logo, symbol & company name (~30 lines)
+    ├── StockCardPrice.tsx               # Real-time price in FCFA & % change badge (~45 lines)
+    ├── StockCard.tsx                    # Individual stock card orchestrator (< 40 lines)
     └── StockSparkline.tsx               # High-res SVG Catmull-Rom cubic bezier chart
 app/screens/
 └── MarketScreen.tsx                     # Thin orchestrator (< 60 lines)
@@ -84,8 +86,8 @@ export const MarketScreen = ({ onStockSelect }: MarketScreenProps) => {
           <StockTimeframeDropdown />
         </div>
 
-        {/* Stocks List */}
-        <div class='flex flex-col gap-2'>
+        {/* Stocks List with Increased Card Volume */}
+        <div class='flex flex-col gap-3.5'>
           {stocksList.map((stock) => (
             <StockCard
               key={stock.symbol}

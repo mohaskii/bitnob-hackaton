@@ -1,10 +1,10 @@
 import { computed, signal } from '@preact/signals'
 
 /* -------------------------------------------------------------------------- */
-/* Types & Interfaces                                                         */
+/* State Types (Zero interface discipline)                                   */
 /* -------------------------------------------------------------------------- */
 
-export interface StockItem {
+export type StockItem = {
   symbol: string
   name: string
   sector: string

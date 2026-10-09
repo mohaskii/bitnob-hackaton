@@ -5,7 +5,7 @@ import {
   submitComposePost,
 } from '../compose-state.ts'
 
-interface ComposeHeaderProps {
+type ComposeHeaderProps = {
   onClose?: () => void
 }
 
@@ -36,9 +36,9 @@ export const ComposeHeader = ({ onClose }: ComposeHeaderProps) => {
           type='button'
           disabled={!canSubmit}
           onClick={submitComposePost}
-          class={`px-5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer shadow-sm ${
+          class={`px-5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer  ${
             canSubmit
-              ? 'bg-primary text-primary-content hover:brightness-105 active:scale-95 shadow-primary/25'
+              ? 'bg-primary text-primary-content hover:brightness-105 active:scale-95 '
               : 'bg-primary/25 text-primary-content/40 cursor-not-allowed'
           }`}
         >

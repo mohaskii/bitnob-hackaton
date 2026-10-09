@@ -52,7 +52,7 @@ export const App = () => {
           : (
             /* Placeholder Container for other tabs (Market, Social, Portfolio) */
             <div class='flex-1 flex flex-col items-center justify-center p-4 pt-[calc(env(safe-area-inset-top,0px)+1.5rem)] text-center select-none'>
-              <div class='w-14 h-14 rounded-2xl bg-base-100 flex items-center justify-center mb-3 text-primary shadow-sm shadow-primary/10'>
+              <div class='w-14 h-14 rounded-2xl bg-base-100 flex items-center justify-center mb-3 text-primary  '>
                 <span class='text-xs font-mono font-bold text-primary'>
                   {currentPath.slice(1)}
                 </span>

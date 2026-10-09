@@ -14,7 +14,7 @@ export const SectorFilterChips = () => {
             onClick={() => setSelectedSector(sector)}
             class={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap cursor-pointer transition-all ${
               isSelected
-                ? 'bg-secondary text-secondary-content shadow-2xs font-bold'
+                ? 'bg-secondary text-secondary-content  font-bold'
                 : 'bg-base-100 text-base-content/60 hover:text-base-content hover:bg-base-100/80'
             }`}
           >
