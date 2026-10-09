@@ -19,6 +19,7 @@ interface BottomNavProps {
   activeTab?: string
   tabs?: NavTabItem[]
   onTabChange?: (tab: NavTabItem) => void
+  hidden?: boolean
 }
 
 /**
@@ -34,6 +35,7 @@ export const BottomNav = ({
   activeTab,
   tabs = DEFAULT_TABS,
   onTabChange,
+  hidden = false,
 }: BottomNavProps) => {
   const currentPath = activeTab ?? (url.path || '/')
 
@@ -45,7 +47,13 @@ export const BottomNav = ({
   }
 
   return (
-    <div class='fixed bottom-[max(1rem,calc(env(safe-area-inset-bottom,0px)+0.5rem))] inset-x-0 flex justify-center z-50 pointer-events-none select-none px-4'>
+    <div
+      class={`fixed bottom-[max(1rem,calc(env(safe-area-inset-bottom,0px)+0.5rem))] inset-x-0 flex justify-center z-50 pointer-events-none select-none px-4 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        hidden
+          ? 'translate-y-36 opacity-0 pointer-events-none'
+          : 'translate-y-0 opacity-100'
+      }`}
+    >
       <nav
         aria-label='Bottom Navigation'
         class='pointer-events-auto w-full max-w-[360px] bg-secondary/10 backdrop-blur rounded-full p-2 flex items-center justify-between gap-1.5'
@@ -79,8 +87,10 @@ export const BottomNav = ({
                 />
               </div>
 
-              {/* Fixed-width text slot: Always expands to 78px when active, collapses to 0 when inactive.
-                  This guarantees the total active item width is identical across all tabs */}
+              {
+                /* Fixed-width text slot: Always expands to 78px when active, collapses to 0 when inactive.
+                  This guarantees the total active item width is identical across all tabs */
+              }
               <span
                 class={`text-[13.5px] font-semibold tracking-tight whitespace-nowrap overflow-hidden transition-[max-width,opacity,margin-left] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                   isActive

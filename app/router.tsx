@@ -44,7 +44,8 @@ addEventListener('hashchange', dispatchNavigation)
 // Intercept Android hardware back button via Capacitor.
 // Without this, Capacitor calls Activity.finish() and exits the app.
 CapacitorApp.addListener('backButton', ({ canGoBack }) => {
-  const isAtRoot = urlSignal.value.pathname === '/' || urlSignal.value.pathname === ''
+  const isAtRoot = urlSignal.value.pathname === '/' ||
+    urlSignal.value.pathname === ''
   if (!isAtRoot) {
     if (canGoBack) {
       history.back()
@@ -56,7 +57,7 @@ CapacitorApp.addListener('backButton', ({ canGoBack }) => {
   }
 })
 
-const navigateUrl = (to: string, replace = false) => {
+export const navigateUrl = (to: string, replace = false) => {
   history[replace ? 'replaceState' : 'pushState']({}, '', to)
   dispatchNavigation()
 }
@@ -199,8 +200,8 @@ const params = new Proxy({} as Record<string, Signal<string | null>>, {
 // url.path: 'user/settings'
 // url.hash: 'display'
 // url.params: { id: 454, option: 'open' }
-const hashSignal = computed(() => urlSignal.value.hash)
-const pathSignal = computed(() => urlSignal.value.pathname)
+export const hashSignal = computed(() => urlSignal.value.hash)
+export const pathSignal = computed(() => urlSignal.value.pathname)
 export const url = {
   get path() {
     return pathSignal.value
