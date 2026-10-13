@@ -28,10 +28,10 @@ export const NavTabButton = ({
     <button
       type='button'
       onClick={onClick}
-      class={`relative h-15 rounded-full flex items-center justify-center cursor-pointer transition-[width,background-color,color,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.97] focus:outline-none overflow-hidden ${
+      class={`relative h-13 rounded-full flex items-center justify-center cursor-pointer transition-[width,background-color,color,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.97] focus:outline-none overflow-hidden ${
         isActive
-          ? 'w-[110px] bg-primary text-primary-content'
-          : 'w-15 text-base-content/50 rounded-full bg-base-200'
+          ? 'w-[108px] bg-primary text-primary-content'
+          : 'w-13 text-base-content/50 rounded-full'
       }`}
     >
       <div
@@ -40,14 +40,16 @@ export const NavTabButton = ({
         }`}
       >
         <Icon
-          size={21}
+          size={20}
           strokeWidth={isActive ? 2.4 : 1.9}
         />
       </div>
 
       <span
         class={`text-[13.5px] font-semibold tracking-tight whitespace-nowrap overflow-hidden transition-[max-width,opacity,margin-left] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-          isActive ? 'max-w-[70px] opacity-100 ml-2' : 'max-w-0 opacity-0 ml-0'
+          isActive
+            ? 'max-w-[68px] opacity-100 ml-1.5'
+            : 'max-w-0 opacity-0 ml-0'
         }`}
       >
         {tab.label}

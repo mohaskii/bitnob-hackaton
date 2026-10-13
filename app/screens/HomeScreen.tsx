@@ -1,52 +1,40 @@
-import { BalanceCard } from '../components/BalanceCard.tsx'
-import { MarketSentimentCards } from '../features/home/components/MarketSentimentCards.tsx'
-import { RecentMarketNews } from '../features/home/components/RecentMarketNews.tsx'
-import { CommunityActivityFeed } from '../features/home/components/CommunityActivityFeed.tsx'
+import { useEffect } from 'preact/hooks'
+import { SectionTitle } from '../components/ui.tsx'
+import { TipCard } from '../features/learn/Explainer.tsx'
+import { loadHome } from '../features/home/home-state.ts'
+import { loadMarket } from '../features/market/market-state.ts'
+import {
+  HomeCards,
+  HomeHero,
+  JourneyChecklist,
+  MarketPulse,
+  SecondaryLinks,
+} from '../features/home/HomeSections.tsx'
 
-type HomeScreenProps = {
-  onDeposit?: () => void
-  onWithdraw?: () => void
-  onCard?: () => void
-  onAvatarClick?: () => void
-  onSeeMoreNews?: () => void
+const startHome = () => {
+  void loadHome()
+  void loadMarket()
 }
 
 /**
- * HomeScreen:
- * - Thin layout orchestrator (Rule 5: Decomposition Discipline)
- * - State engine lives in app/features/home/home-state.ts
- * - Zero top gap: BalanceCard starts directly at physical top (straight bottom edge)
- * - Mini Feed sheet rests on top of the bottom edge with rounded-t-[var(--radius-box,2rem)]
+ * HomeScreen: the user's path to a first BRVM investment, in one glance.
+ * Thin orchestrator; state lives in features/home/home-state.ts.
  */
-export const HomeScreen = ({
-  onDeposit,
-  onWithdraw,
-  onCard,
-  onAvatarClick,
-  onSeeMoreNews,
-}: HomeScreenProps) => {
+export const HomeScreen = () => {
+  useEffect(startHome, [])
   return (
-    <div class='flex-1 flex flex-col w-full pt-0 pb-6 select-none'>
-      {/* 1. Grande Carte Noire starting directly at Y: 0 */}
-      <BalanceCard
-        avatarUrl='https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop'
-        onDeposit={onDeposit}
-        onWithdraw={onWithdraw}
-        onCard={onCard}
-        onAvatarClick={onAvatarClick}
-      />
-
-      {/* 2. Overlapping Mini Feed Sheet */}
-      <section class='relative -mt-6 z-10 w-full bg-base-200 rounded-t-[var(--radius-box,2rem)] px-4 pt-4 pb-6 flex flex-col gap-4'>
-        {/* Market Direction & Momentum */}
-        <MarketSentimentCards />
-
-        {/* Recent Market News */}
-        <RecentMarketNews onSeeMore={onSeeMoreNews} />
-
-        {/* Social Trading & Community Activity */}
-        <CommunityActivityFeed />
-      </section>
+    <div class='flex-1 flex flex-col w-full pb-6'>
+      <HomeHero />
+      <div class='px-4 pt-5 flex flex-col gap-6'>
+        <HomeCards />
+        <MarketPulse />
+        <TipCard term='titresEntiers' />
+        <section class='flex flex-col gap-3'>
+          <SectionTitle title='Votre parcours' />
+          <JourneyChecklist />
+        </section>
+        <SecondaryLinks />
+      </div>
     </div>
   )
 }

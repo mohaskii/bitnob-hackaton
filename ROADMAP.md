@@ -1,32 +1,37 @@
-# Market Platform Feature Roadmap
+# Feuille de route TekkiTrade
 
-The platform focuses on live-commerce (live streaming with integrated shopping). Below is a well-ordered list of features we need to implement, indicating our current progress:
+Référence : [docs/TekkiTrade_Bilan_et_trajectoire.md](docs/TekkiTrade_Bilan_et_trajectoire.md)
 
-### Phase 1: Core Foundation & Infrastructure
-- [x] **Project Scaffolding:** Preact, Vite, TailwindCSS, and Capacitor setup.
-- [x] **Basic Feed UI:** Infinite scroll or standard feed layout for discovering content.
-- [x] **Live Streaming PoC (Android):** Basic seller broadcasting via custom Capacitor plugin.
-- [x] **Buyer Viewing Interfaces:** HLS and FLV players integrated for consuming live video.
-- [ ] **Cross-Platform Parity:** Port the `CameraStreamPlugin` to iOS.
+## Fait (démo hackathon)
 
-### Phase 2: User Accounts & Profiles
-- [ ] **Authentication:** User registration, login, and secure session management.
-- [ ] **Role Management:** Differentiating between Buyers and Sellers.
-- [ ] **User Profiles:** Displaying user details, profile pictures, and past streams/orders.
+- [x] Cours BRVM réels et différés : source, date et statut de séance affichés, cache de 60 s, dernier relevé en secours, historique quotidien.
+- [x] Fiches titres en langage simple (47 sociétés cotées) et explications contextuelles.
+- [x] Estimation des frais : titres entiers, courtage SGI, taxe, BRVM 0,20 %, DC/BR 0,10 %.
+- [x] Entraînement : achat et vente distincts, PRU, plus-values, avis d'opéré simulé, transactions SQL.
+- [x] Parcours SGI : comparaison, pièces, consentement, dossier, statuts, espace partenaire.
+- [x] Approvisionnement via Bitnob : cotation XOF, facture Lightning ou adresse stablecoin, versement à la SGI avec référence, webhook idempotent.
+- [x] Sécurité de base : sessions signées, PBKDF2 avec sel, webhook vérifié, secrets hors git.
+- [x] Tests du domaine (`deno task test`).
 
-### Phase 3: E-commerce & Checkout Flow
-- [ ] **Product Catalog:** Ability for sellers to add, edit, and delete products.
-- [ ] **Live Inventory:** Linking products to active live streams.
-- [ ] **Shopping Bag/Cart:** Persistent cart state for buyers.
-- [ ] **Checkout Process:** Secure payment integration (e.g., Stripe, PayPal, or Local Mobile Money).
-- [ ] **Order Management:** Tracking orders for buyers and fulfillment dashboards for sellers.
+## P0 : avant un pilote
 
-### Phase 4: Social & Interactive Live Features
-- [ ] **Real-time Chat:** WebSocket-based chat system for buyers to interact during a live stream.
-- [ ] **Reactions & Likes:** Floating emojis or likes over the video player.
-- [ ] **Live Overlay:** Floating products during the stream for quick 1-click purchases.
+- [ ] Entretiens avec des débutants (dont la diaspora) et 2 à 3 SGI. Choisir la cible et l'indicateur de réussite.
+- [ ] Remplacer une SGI de démonstration par la SGI pilote : grille homologuée, pièces, délais, portefeuille de collecte.
+- [x] Sandbox Bitnob : signature, cotations, adresses, Lightning, versement réel `SUCCESS` (13 oct.).
+- [ ] Approvisionnement réel depuis une adresse générée par l’app, Bitnob Trading (BTC → USDT) testé en réel.
+- [ ] Analyse réglementaire : rôle de TekkiTrade (apporteur, agent ?), règles BCEAO sur les paiements et les crypto-actifs, KYC Bitnob.
 
-### Phase 5: Retention & Discovery
-- [ ] **Push Notifications:** Alerting followers when a seller goes live.
-- [ ] **Search & Filtering:** Finding specific products, categories, or active streams.
-- [ ] **Analytics Dashboard:** Providing sellers with metrics on viewership, engagement, and sales.
+## P1 : pilote
+
+- [ ] API ou back-office de la SGI pour les statuts de dossier et la confirmation du crédit (remplace l'espace SGI de démo).
+- [ ] Authentification de l'espace partenaire (rôles, journaux d'accès).
+- [ ] Accord de diffusion des cours BRVM (flux différé officiel) à la place de la lecture HTML.
+- [ ] Notifications (statut du dossier, fonds reçus).
+- [ ] Sauvegardes, supervision, rotation des secrets.
+
+## P2 : extensions sous réserve de validation
+
+- [ ] Ordres réels transmis à la SGI et avis d'opéré réels.
+- [ ] Retour des ventes et dividendes vers la diaspora via Bitnob.
+- [ ] Stratégies d'observation enrichies (sans copie d'ordres réels).
+- [ ] Fractions d'action, uniquement si une SGI et le régulateur valident un montage.

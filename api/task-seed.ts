@@ -1,220 +1,124 @@
-import { SocialPost, sql, sqlQuery, Stock, Trader, User, Wallet } from './schema.ts'
+import { sql, sqlQuery } from './schema.ts'
 import { log } from './lib/log.ts'
+import { getMarketView } from './market-data.ts'
 
-log.info('[DB Seed] Initializing TekkiTrade SQLite seed data...')
+/**
+ * Seeds illustrative community content and warms the BRVM quote cache.
+ * No price is invented: quotes only come from brvm.org.
+ */
 
-// 1. Seed Demo User
-const existingUser = sqlQuery<{ userId: number }>`SELECT userId FROM user WHERE userId = 1`.all()[0]
+log.info('[DB Seed] Initializing TekkiTrade seed data...')
 
-if (!existingUser) {
-  const now = Date.now()
-  sql`
-    INSERT INTO user (userId, email, login, phone, password, bitnobCustomerId, createdAt)
-    VALUES (1, 'vous@tekkitrade.africa', 'Moi_Trader', '+221770000000', X'00', 'cust_demo_tekkitrade', ${now})
-  `.run()
-
-  sql`
-    INSERT INTO wallet (walletId, userId, balanceFcfa, balanceUsdt, updatedAt)
-    VALUES (1, 1, 209890, 345.20, ${now})
-  `.run()
-
-  log.info('[DB Seed] Demo user (ID 1) & wallet initialized (209 890 FCFA)')
-}
-
-// 2. Seed BRVM Stocks
-const BRVM_SEED_STOCKS = [
+const EXAMPLE_TRADERS = [
   {
-    symbol: 'SNTS',
-    name: 'Sonatel',
-    sector: 'Télécoms',
-    priceFcfa: 18500,
-    changePercent: 1.85,
-    history: [18100, 18150, 18200, 18180, 18300, 18400, 18350, 18500],
-    logoColor: 'bg-primary/20 text-primary-content',
-    logoText: 'S',
-  },
-  {
-    symbol: 'ORAC',
-    name: 'Orange Côte d\'Ivoire',
-    sector: 'Télécoms',
-    priceFcfa: 11200,
-    changePercent: 0.65,
-    history: [11100, 11150, 11120, 11180, 11200],
-    logoColor: 'bg-accent/20 text-accent-content',
-    logoText: 'O',
-  },
-  {
-    symbol: 'SGBC',
-    name: 'Société Générale CI',
-    sector: 'Finance',
-    priceFcfa: 21000,
-    changePercent: -1.41,
-    history: [21400, 21350, 21200, 21100, 21000],
-    logoColor: 'bg-error/20 text-error-content',
-    logoText: 'SG',
-  },
-  {
-    symbol: 'ETIT',
-    name: 'Ecobank Transnational Inc.',
-    sector: 'Finance',
-    priceFcfa: 19,
-    changePercent: 5.56,
-    history: [18, 18, 18.5, 18.5, 19],
-    logoColor: 'bg-info/20 text-info-content',
-    logoText: 'E',
-  },
-  {
-    symbol: 'TTLS',
-    name: 'Total Sénégal',
-    sector: 'Énergie',
-    priceFcfa: 2450,
-    changePercent: 0.00,
-    history: [2450, 2450, 2450, 2450, 2450],
-    logoColor: 'bg-warning/20 text-warning-content',
-    logoText: 'T',
-  },
-  {
-    symbol: 'PALC',
-    name: 'Palm Côte d\'Ivoire',
-    sector: 'Agriculture',
-    priceFcfa: 6800,
-    changePercent: -2.16,
-    history: [6980, 6950, 6900, 6850, 6800],
-    logoColor: 'bg-success/20 text-success-content',
-    logoText: 'P',
-  },
-  {
-    symbol: 'CABC',
-    name: 'Coris Bank International',
-    sector: 'Finance',
-    priceFcfa: 10400,
-    changePercent: 3.20,
-    history: [10000, 10100, 10250, 10300, 10400],
-    logoColor: 'bg-secondary/20 text-secondary-content',
-    logoText: 'CB',
-  },
-]
-
-for (const stock of BRVM_SEED_STOCKS) {
-  const existing = sqlQuery<{ stockId: number }>`SELECT stockId FROM stock WHERE symbol = ${stock.symbol}`.all()[0]
-  if (!existing) {
-    sql`
-      INSERT INTO stock (symbol, name, sector, priceFcfa, changePercent, historyJson, logoColor, logoText, updatedAt)
-      VALUES (${stock.symbol}, ${stock.name}, ${stock.sector}, ${stock.priceFcfa}, ${stock.changePercent}, ${JSON.stringify(stock.history)}, ${stock.logoColor}, ${stock.logoText}, ${Date.now()})
-    `.run()
-  }
-}
-log.info(`[DB Seed] BRVM stocks verified (${BRVM_SEED_STOCKS.length} seeded)`)
-
-// 3. Seed Top Traders
-const SEED_TRADERS = [
-  {
-    traderId: 1,
-    name: 'Fatou Sall',
-    handle: 'Fatou_Invest',
+    name: 'Aïcha (exemple)',
+    handle: 'profil_dividendes',
     avatarUrl:
       'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=256&auto=format&fit=crop',
-    verified: 1,
-    returnPercent: 38.4,
-    timeframe: 'Ce mois',
-    copiersCount: 142,
-    winRate: 84,
+    returnPercent: 9.4,
+    timeframe: '12 mois (simulé)',
+    followersCount: 0,
+    winRate: 64,
     riskLevel: 'Faible',
-    badge: 'Top 1% BRVM',
+    badge: 'Stratégie dividendes',
   },
   {
-    traderId: 2,
-    name: 'Amadou Koné',
-    handle: 'Amadou_CI',
+    name: 'Koffi (exemple)',
+    handle: 'profil_banques',
     avatarUrl:
       'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=256&auto=format&fit=crop',
-    verified: 1,
-    returnPercent: 29.1,
-    timeframe: 'Ce mois',
-    copiersCount: 98,
-    winRate: 78,
+    returnPercent: 14.1,
+    timeframe: '12 mois (simulé)',
+    followersCount: 0,
+    winRate: 58,
     riskLevel: 'Modéré',
-    badge: 'Spécialiste Finance',
+    badge: 'Secteur bancaire',
   },
   {
-    traderId: 3,
-    name: 'Moussa Diop',
-    handle: 'Moussa_Dkr',
+    name: 'Mariam (exemple)',
+    handle: 'profil_telecoms',
     avatarUrl:
       'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&auto=format&fit=crop',
-    verified: 1,
-    returnPercent: 22.8,
-    timeframe: 'Ce mois',
-    copiersCount: 67,
-    winRate: 72,
+    returnPercent: 6.2,
+    timeframe: '12 mois (simulé)',
+    followersCount: 0,
+    winRate: 61,
     riskLevel: 'Faible',
-    badge: 'Dividendes Focus',
+    badge: 'Télécoms régionaux',
   },
 ]
 
-for (const t of SEED_TRADERS) {
-  const existing = sqlQuery<{ traderId: number }>`SELECT traderId FROM trader WHERE traderId = ${t.traderId}`.all()[0]
-  if (!existing) {
+const traderCount =
+  sqlQuery<{ n: number }>`SELECT COUNT(*) AS n FROM trader`.get()!.n
+if (!traderCount) {
+  for (const t of EXAMPLE_TRADERS) {
     sql`
-      INSERT INTO trader (traderId, name, handle, avatarUrl, verified, returnPercent, timeframe, copiersCount, winRate, riskLevel, badge)
-      VALUES (${t.traderId}, ${t.name}, ${t.handle}, ${t.avatarUrl}, ${t.verified}, ${t.returnPercent}, ${t.timeframe}, ${t.copiersCount}, ${t.winRate}, ${t.riskLevel}, ${t.badge})
+      INSERT INTO trader (name, handle, avatarUrl, returnPercent, timeframe,
+        followersCount, winRate, riskLevel, badge)
+      VALUES (${t.name}, ${t.handle}, ${t.avatarUrl}, ${t.returnPercent}, ${t.timeframe},
+        ${t.followersCount}, ${t.winRate}, ${t.riskLevel}, ${t.badge})
     `.run()
   }
+  log.info(`[DB Seed] ${EXAMPLE_TRADERS.length} example profiles added`)
 }
-log.info('[DB Seed] Top Traders seeded')
 
-// 4. Seed Initial Social Feed Posts
-const SEED_POSTS = [
+const EXAMPLE_POSTS = [
   {
-    postId: 1,
-    userId: 1,
-    authorName: 'Fatou Sall',
-    authorHandle: 'Fatou_Invest',
-    avatarUrl:
-      'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=256&auto=format&fit=crop',
-    verified: 1,
+    authorName: 'Aïcha (exemple)',
+    authorHandle: 'profil_dividendes',
+    avatarUrl: EXAMPLE_TRADERS[0].avatarUrl,
     content:
-      'Dividende record confirmé pour Sonatel à 1 750 FCFA par part ! Je viens de renforcer ma position avec 25 parts via le solde Lightning Bitnob. Objectif 20 000 FCFA d\'ici la clôture annuelle.',
-    symbol: 'SNTS',
-    tradeAction: 'ACHAT',
-    priceFcfa: 18500,
-    changePercent: 1.85,
-    sentiment: 'bullish',
-    likesCount: 34,
-    commentsCount: 8,
-    copiersCount: 19,
-    createdAt: Date.now() - 14 * 60000,
+      'Avant mon premier ordre, j’ai comparé le courtage de deux SGI : sur 50 000 FCFA, l’écart de frais représentait plus de 300 FCFA. Ça vaut le coup de regarder la grille tarifaire.',
+    symbol: null,
+    sentiment: null,
   },
   {
-    postId: 2,
-    userId: 2,
-    authorName: 'Amadou Koné',
-    authorHandle: 'Amadou_CI',
-    avatarUrl:
-      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=256&auto=format&fit=crop',
-    verified: 1,
+    authorName: 'Koffi (exemple)',
+    authorHandle: 'profil_banques',
+    avatarUrl: EXAMPLE_TRADERS[1].avatarUrl,
     content:
-      'Prise de bénéfices partielle sur SGBC (+14% sur 2 semaines). Je bascule 50% des gains en USDT stables sur ma carte virtuelle Bitnob pour sécuriser la performance.',
+      'Rappel utile : à la BRVM, on achète des titres entiers. Avec un budget fixe, le simulateur montre combien de titres on peut vraiment acheter, frais compris.',
     symbol: 'SGBC',
-    tradeAction: 'VENTE',
-    priceFcfa: 21000,
-    changePercent: 2.44,
     sentiment: 'bullish',
-    likesCount: 22,
-    commentsCount: 5,
-    copiersCount: 12,
-    createdAt: Date.now() - 45 * 60000,
+  },
+  {
+    authorName: 'Mariam (exemple)',
+    authorHandle: 'profil_telecoms',
+    avatarUrl: EXAMPLE_TRADERS[2].avatarUrl,
+    content:
+      'Je m’entraîne depuis un mois sur le portefeuille fictif avant d’ouvrir mon compte-titres. Les cours sont différés, mais c’est parfait pour comprendre l’avis d’opéré.',
+    symbol: 'SNTS',
+    sentiment: 'bullish',
   },
 ]
 
-for (const p of SEED_POSTS) {
-  const existing = sqlQuery<{ postId: number }>`SELECT postId FROM socialPost WHERE postId = ${p.postId}`.all()[0]
-  if (!existing) {
+const postCount =
+  sqlQuery<{ n: number }>`SELECT COUNT(*) AS n FROM socialPost`.get()!.n
+if (!postCount) {
+  const now = Date.now()
+  EXAMPLE_POSTS.forEach((p, i) => {
     sql`
-      INSERT INTO socialPost (postId, userId, authorName, authorHandle, avatarUrl, verified, content, symbol, tradeAction, priceFcfa, changePercent, sentiment, likesCount, commentsCount, copiersCount, createdAt)
-      VALUES (${p.postId}, ${p.userId}, ${p.authorName}, ${p.authorHandle}, ${p.avatarUrl}, ${p.verified}, ${p.content}, ${p.symbol}, ${p.tradeAction}, ${p.priceFcfa}, ${p.changePercent}, ${p.sentiment}, ${p.likesCount}, ${p.commentsCount}, ${p.copiersCount}, ${p.createdAt})
+      INSERT INTO socialPost (userId, authorName, authorHandle, avatarUrl, isExample,
+        content, symbol, sentiment, likesCount, commentsCount, createdAt)
+      VALUES (0, ${p.authorName}, ${p.authorHandle}, ${p.avatarUrl}, 1, ${p.content},
+        ${p.symbol}, ${p.sentiment}, ${12 - i * 3}, ${3 - i}, ${
+      now - i * 3_600_000
+    })
     `.run()
-  }
+  })
+  log.info(`[DB Seed] ${EXAMPLE_POSTS.length} example posts added`)
 }
-log.info('[DB Seed] Social posts seeded')
-log.info('[DB Seed] Seeding completed successfully!')
+
+try {
+  const view = await getMarketView()
+  log.info(
+    `[DB Seed] BRVM cache warmed: ${view.snapshot.quotes.length} delayed quotes`,
+  )
+} catch (error) {
+  log.warn(
+    '[DB Seed] brvm.org unreachable, quotes will load on first request',
+    {
+      error: String(error),
+    },
+  )
+}

@@ -1,47 +1,116 @@
-# TekkiTrade — Fintech & Social Trading Platform for BRVM
+# TekkiTrade : votre première action BRVM, étape par étape
 
-TekkiTrade is a mobile-first financial technology application designed to democratize investing on the **Bourse Régionale des Valeurs Mobilières (BRVM)** (West Africa's regional stock exchange across UEMOA/WAEMU).
+TekkiTrade accompagne les débutants de la découverte de la **BRVM** (Bourse Régionale des Valeurs Mobilières, UEMOA) jusqu'à un compte-titres ouvert **et approvisionné** chez une SGI agréée.
 
-It introduces three core pillars:
-1. **Fractional Share Investing**: Buy into premier BRVM equities (Sonatel, Orange CI, Société Générale CI, Coris Bank, etc.) starting from **1 000 FCFA** rather than full share prices (18 000+ FCFA).
-2. **Social Copy-Trading**: Follow and automatically replicate top verified regional traders, complete with transparent win rates, performance metrics, and stop-loss limits.
-3. **Bitnob Payment Rails**: Universal on/off-ramps bridging global crypto and African mobile money:
-   - **Bitcoin Lightning Network**: Instant low-fee micro-deposits via BOLT-11 invoices.
-   - **USDT Stablecoins**: TRC-20 and ERC-20 on-chain deposits.
-   - **Local Mobile Money Cashouts**: Direct withdrawals to **Wave** and **Orange Money**.
-   - **Virtual Visa Cards**: Instant card issuance to spend dividend earnings directly on global subscriptions and online merchants.
+- **TekkiTrade guide** : cours sourcés, frais expliqués, entraînement, préparation du dossier, suivi.
+- **La SGI partenaire exécute** : ouverture du compte, vérifications d'identité, ordres réels, conservation des titres.
+- **Bitnob transporte l'argent** : l'investisseur envoie USDT, USDC ou Bitcoin depuis n'importe où, et la SGI reçoit des **FCFA** avec sa référence.
+
+> Bilan, trajectoire et plan de travail : [docs/TekkiTrade_Bilan_et_trajectoire.md](docs/TekkiTrade_Bilan_et_trajectoire.md)
 
 ---
 
-## Architecture Overview
+## Le parcours (6 étapes)
+
+| # | Étape | Ce que voit l'utilisateur | Données |
+|---|---|---|---|
+| 1 | Découvrir un titre | Fiche : activité de l'entreprise, cours daté, source, volume | **Réelles** (brvm.org, différé) |
+| 2 | Comprendre les coûts | Estimation : titres entiers, courtage, taxe, BRVM 0,20 %, DC/BR 0,10 % | Barème BRVM publié + barème SGI |
+| 3 | S'entraîner | Ordre fictif, avis d'opéré simulé, portefeuille, plus-values | Argent fictif, cours réels |
+| 4 | Choisir une SGI | Comparaison : frais sur 100 000 FCFA, minimum, délai, pièces | SGI **de démonstration** |
+| 5 | Ouvrir son compte | Liste de pièces, consentement, dossier transmis, statuts | Statuts fournis par la SGI |
+| 6 | Approvisionner | Cotation Bitnob, QR Lightning ou adresse USDT, suivi jusqu'au crédit | **Bitnob** (simulation / sandbox / live) |
+
+Un **espace SGI** (`/partner`) montre le côté partenaire : entonnoir d'acquisition, dossiers pseudonymisés, fonds reçus via Bitnob à créditer.
+
+## Pourquoi Bitnob est au centre
+
+L'approvisionnement du compte est l'étape où l'on perd le plus d'investisseurs, en particulier ceux de la diaspora. Il faut faire un virement international, payer des frais de change, attendre plusieurs jours, et la SGI doit rapprocher le versement à la main. TekkiTrade s'appuie sur ce que Bitnob sait faire en 2026 :
+
+- **Entrées** : stablecoins USDC/USDT sur une adresse dédiée (`POST /api/addresses`) et Bitcoin via facture Lightning (`POST /api/lightning/invoices`).
+- **Conversion** : les BTC reçus sont vendus en USDT via Bitnob Trading, ce qui supprime le risque de prix avant le versement.
+- **Sorties en FCFA** : versements Mobile Money vers la Côte d'Ivoire, le Sénégal et le Niger, de 100 à 2 000 000 FCFA (`/api/payouts/quotes` → `initialize` → `finalize`).
+- **Rapprochement** : chaque versement porte la référence `TKT-…` du client, et la SGI confirme le crédit.
+
+Tout cela a été vérifié en sandbox le 13 octobre 2026 : dépôt réel de 20 USDC reçu, puis versement de 100 FCFA vers un portefeuille Orange Money en Côte d'Ivoire, au statut `SUCCESS`.
+
+TekkiTrade **ne détient jamais les fonds**. En mode simulation, aucun transfert n'a lieu, et l'interface l'indique partout.
+
+## Ce qui est réel, simulé ou à valider
+
+| Élément | État |
+|---|---|
+| Cours, indices, bulletin officiel | Réels, **différés**, lus sur brvm.org. Cache de 60 s et dernier relevé servi si le site est indisponible. Aucun prix n'est inventé. |
+| Commissions BRVM / DC/BR | Réelles (0,20 % + 0,10 %, [source BRVM](https://www.brvm.org/en/what-are-applicable-fees)) |
+| Courtage, minimums, délais des SGI | **Démonstration** : à remplacer par la grille homologuée de la SGI pilote |
+| Ordres et portefeuille | **Simulés** (argent fictif, titres entiers, exécution au dernier cours publié) |
+| Statuts de dossier | Simulés depuis l'espace SGI, à remplacer par l'API ou le back-office de la SGI |
+| Bitnob | Simulation par défaut. Sandbox ou live avec des identifiants Bitnob (requêtes signées HMAC-SHA256) |
+| Communauté | Profils et performances **d'exemple**. Aucun ordre n'est copié. |
+
+Ce que TekkiTrade **ne promet pas** sans validation : fractions d'action, copy trading réel, ouverture instantanée, frais nuls.
+
+## Architecture
 
 ```
-tekkitrade/
-├── api/                             # Deno Backend Service (Port 8000)
-│   ├── bitnob/
-│   │   ├── client.ts                # Bitnob API Client (Lightning, USDT, MoMo, Cards)
-│   │   └── webhook.ts               # HMAC-SHA512 Webhook handler & SQLite balance settlement
-│   ├── lib/                         # Env & logging utilities
-│   ├── routes.ts                    # HTTP endpoints using @01edu/api/router & @01edu/api/validator
-│   ├── schema.ts                    # SQLite tables (@01edu/db) & parameterized sqlQuery
-│   ├── server.ts                    # Server entrypoint (Deno.serve)
-│   └── task-seed.ts                 # Database seeder (Demo user, BRVM stocks, traders, feed)
-├── app/                             # Preact Frontend & Mobile UI (Port 5173)
-│   ├── components/                  # Shared modular components (BottomNav, BalanceCard, etc.)
-│   ├── features/                    # Feature engines & fine-grained subcomponents (20-50 lines)
-│   │   ├── compose/                 # Social post creation & trade attachments
-│   │   ├── home/                    # Wealth overview & quick action modals
-│   │   ├── market/                  # BRVM stock catalog, search, sparklines, order drawer
-│   │   └── social/                  # Leaderboard, copy-trading modal, community feed
-│   ├── hooks/                       # GSAP safe-area scroll triggers
-│   ├── state.ts                     # Video-game style Preact Signals reactive engine
-│   └── App.tsx                      # Root screen router
-├── capacitor/                       # Capacitor 8 Native Mobile Container
-│   ├── android/                     # Native Android Studio project
-│   ├── capacitor.config.json        # Capacitor configuration
-│   └── package.json                 # Capacitor CLI & native plugins
-└── deno.json                        # Root Deno workspace & tasks
+api/                     Backend Deno (port 8000)
+  domain/                Logique métier pure et testée
+    fees.ts              Barème BRVM + courtage SGI, titres entiers
+    paper.ts             Entraînement : achat/vente, PRU, P&L, transactions SQL
+    sgi.ts               Catalogue des SGI (démo) + portefeuille de collecte Bitnob
+    journey.ts           Parcours, dossier, statuts, entonnoir partenaire
+    funding.ts           Approvisionnement via Bitnob (cotation, dépôt, versement)
+    companies.ts         Fiches entreprises en langage simple
+    domain_test.ts       Tests (deno task test)
+  bitnob/client.ts       Client Bitnob signé (simulation | sandbox | live)
+  bitnob/webhook.ts      Webhook vérifié et idempotent
+  lib/auth.ts            PBKDF2 avec sel par utilisateur, sessions signées HMAC
+  market-data.ts         Lecture des pages BRVM, cache, historique, secours
+  routes.ts              Routes HTTP (GET /api/doc pour la liste)
+app/                     Front Preact + signals (port 5173)
+  features/<feature>/    *-state.ts (moteur) + composants
+  screens/               Accueil, Marché, Pratique, Compte, Financer, Espace SGI, Communauté
+capacitor/               Coque mobile Android
 ```
+
+---
+
+## Démarrage rapide
+
+```bash
+deno install
+cp .env.example .env        # identifiants Bitnob vides = mode simulation
+deno task db:reset          # crée la base, ajoute les exemples, récupère les cours BRVM
+deno task server            # API sur http://localhost:8000
+deno task dev               # app sur http://localhost:5173
+deno task test              # tests du domaine (frais, entraînement, parcours, Bitnob, sessions)
+```
+
+### Passer Bitnob en sandbox
+
+1. Créez une clé API sandbox dans le tableau de bord Bitnob (Settings > API Keys) et ajoutez l'IP de la machine qui fait tourner l'API à la liste blanche.
+2. Renseignez `BITNOB_CLIENT_ID` et `BITNOB_CLIENT_SECRET` dans `.env`. `BITNOB_STABLECOIN_CHAIN=ethereum` correspond au testnet Sepolia en sandbox.
+3. Vérifiez la configuration (signature, cotations par pays, sans afficher de secret) :
+
+```bash
+deno task bitnob:check
+```
+
+4. Les dépôts sont détectés automatiquement (lecture des transactions Bitnob toutes les 10 s). Le webhook est facultatif : pour l'activer, exposez `POST /api/bitnob/webhook` via un tunnel HTTPS et renseignez `BITNOB_WEBHOOK_SECRET`.
+
+Pour obtenir des USDC de test, utilisez [faucet.circle.com](https://faucet.circle.com/) (Ethereum Sepolia).
+
+En sandbox, l'endpoint de solde Bitnob affiche parfois 0 alors que le registre des transactions est correct : ne vous fiez pas à ce solde.
+
+### Script de démo (5 minutes)
+
+1. « Commencer sans compte » ouvre un compte invité neuf, ce qui rend la démo rejouable.
+2. Marché → SNTS : fiche, cours daté et source, puis « Estimer un achat » avec un budget de 50 000 FCFA (1 titre entier et frais détaillés).
+3. Passer l'ordre fictif et lire l'avis d'opéré.
+4. Compte : comparer les 3 SGI, choisir, cocher les pièces, consentir, transmettre.
+5. Espace SGI : passer le dossier en « Compte-titres ouvert ».
+6. Financer : 5 000 FCFA en USDC donnent une cotation Bitnob, une adresse de dépôt (QR code) et une référence. En simulation, cliquez sur « Simuler la réception » ; en sandbox, envoyez les USDC de test et l'app détecte le dépôt toute seule.
+7. Espace SGI : « Confirmer le crédit ». L'accueil affiche alors 6/6.
 
 ---
 
@@ -145,75 +214,6 @@ Android builds require OpenJDK 17 or 21:
    ```bash
    sudo gem install cocoapods
    ```
-
----
-
-## Project Setup & Quick Start
-
-### 1. Install Dependencies
-
-Install the project dependencies for both the root workspace and Capacitor:
-
-```bash
-# In project root:
-deno install
-
-# In capacitor directory:
-cd capacitor && npm install && cd ..
-```
-
-### 2. Environment Configuration
-
-Create or verify the `.env` file in the project root:
-
-```env
-DATABASE_PATH=tekkitrade.db
-PORT=8000
-BITNOB_BASE_URL=https://sandboxapi.bitnob.co/api/v1
-BITNOB_API_KEY=mock_sandbox_key
-BITNOB_WEBHOOK_SECRET=mock_webhook_secret
-SESSION_SECRET=tekkitrade-dev-secret-key-change-in-production
-```
-
-> **Note on Bitnob Sandbox**: When using `mock_sandbox_key` or running without active internet, the Bitnob client automatically engages resilient simulations for Lightning invoices, USDT addresses, and virtual Visa cards.
-
-### 3. Seed the SQLite Database
-
-Initialize the database with the demo account, 7 BRVM equities, top traders, and social feed posts:
-
-```bash
-deno task db:seed
-```
-
-Output:
-```
-ℹ️ [DB Seed] Initializing TekkiTrade SQLite seed data...
-ℹ️ [DB Seed] Demo user (ID 1) & wallet initialized (209 890 FCFA)
-ℹ️ [DB Seed] BRVM stocks verified (7 seeded)
-ℹ️ [DB Seed] Top Traders seeded
-ℹ️ [DB Seed] Social posts seeded
-ℹ️ [DB Seed] Seeding completed successfully!
-```
-
-### 4. Run the Backend API Server
-
-Start the REST API server:
-
-```bash
-deno task server
-```
-
-The server binds to `http://0.0.0.0:8000`.
-
-### 5. Run the Frontend Web Application
-
-In a separate terminal, launch the Vite dev server:
-
-```bash
-deno task dev
-```
-
-The web app is accessible at `http://localhost:5173`.
 
 ---
 
@@ -380,84 +380,15 @@ Configure signing in Xcode:
 
 ---
 
-## API Documentation & Curl Examples
+## Qualité et vérification
 
-The backend is built with `@01edu/api/router` and `@01edu/api/validator`. Below are quick test commands:
-
-### 1. Get Current User & Portfolio Valuation
-```bash
-curl -s http://localhost:8000/api/user/me
-```
-
-### 2. Fetch BRVM Stock Catalog
-```bash
-curl -s http://localhost:8000/api/market/stocks
-```
-
-### 3. Place a Fractional Stock Order (dès 1 000 FCFA)
-```bash
-curl -s -X POST http://localhost:8000/api/market/order \
-  -H "Content-Type: application/json" \
-  -d '{"symbol":"SNTS","action":"ACHAT","amountFcfa":5000}'
-```
-
-### 4. Create a Bitcoin Lightning Deposit Invoice (Bitnob)
-```bash
-curl -s -X POST http://localhost:8000/api/wallet/deposit/lightning \
-  -H "Content-Type: application/json" \
-  -d '{"amountFcfa":10000,"amountSat":15000}'
-```
-
-### 5. Generate a USDT Deposit Address (Bitnob)
-```bash
-curl -s -X POST http://localhost:8000/api/wallet/deposit/usdt \
-  -H "Content-Type: application/json" \
-  -d '{"chain":"TRX"}'
-```
-
-### 6. Create Copy-Trading Contract
-```bash
-curl -s -X POST http://localhost:8000/api/social/copy \
-  -H "Content-Type: application/json" \
-  -d '{"traderId":"1","allocatedFcfa":25000,"stopLossPercent":15,"copyOpenTrades":true}'
-```
-
-### 7. Simulate Bitnob Webhook Payment Crediting
-```bash
-curl -s -X POST http://localhost:8000/api/bitnob/webhook \
-  -H "Content-Type: application/json" \
-  -d '{"event":"lightning.invoice.paid","data":{"id":"inv_test","reference":"LN_REF","amount":10000,"status":"SUCCESS"}}'
-```
-
----
-
-## Code Quality & Patterns
-
-The codebase strictly follows the rules documented in [`.agent/rules/pattern.md`](.agent/rules/pattern.md):
-
-- **Zero `useState` in Components**: All mutable state is owned by hoisted signal engines (`home-state.ts`, `market-state.ts`, `social-state.ts`, `compose-state.ts`).
-- **Decomposition Discipline**: UI components are fine-grained (20-50 lines each), preventing monolithic components and ensuring surgical re-renders.
-- **Zero Emojis**: Clean, professional fintech typography with Lucide vector icons.
-- **Strict Typing (Zero `interface`)**: All data structures are declared as `type` and derived directly from `@01edu/api/validator` schemas.
-- **Safe SQL**: All SQLite queries use parameterized placeholders (`?`) to prevent SQL injection and quoting issues.
-
----
-
-## Verification & Typecheck
-
-Run the complete TypeScript verification across both frontend and backend:
+- État front : moteurs à base de signals (`*-state.ts`), composants fins, aucune logique dans les composants (voir [`.agent/rules/pattern.md`](.agent/rules/pattern.md)).
+- SQL paramétré. Les écritures qui touchent plusieurs tables passent par `withTransaction`.
+- Sessions signées, mots de passe PBKDF2 avec sel par utilisateur, webhook Bitnob refusé sans signature valide hors simulation.
 
 ```bash
-deno check \
-  api/server.ts \
-  api/routes.ts \
-  api/schema.ts \
-  api/bitnob/client.ts \
-  api/bitnob/webhook.ts \
-  api/task-seed.ts \
-  app/App.tsx \
-  app/state.ts \
-  app/screens/HomeScreen.tsx \
-  app/screens/MarketScreen.tsx \
-  app/screens/ComposeScreen.tsx
+deno task test
+deno check api/server.ts api/task-seed.ts app/main.tsx
 ```
+
+La liste des routes est disponible sur `GET /api/doc`.

@@ -23,8 +23,8 @@ export const MarketSearchBar = () => {
           type='text'
           value={query}
           onInput={(e) => setSearchQuery((e.target as HTMLInputElement).value)}
-          placeholder='Rechercher une action BRVM (ex: SNTS, Orange)...'
-          class='w-full h-11 pl-10 pr-4 rounded-2xl bg-base-100 text-xs text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-1 focus:ring-primary/40 '
+          placeholder='Rechercher (ex : SNTS, Orange)'
+          class='w-full h-12 pl-10 pr-4 rounded-2xl bg-base-100 text-[13px] text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-1 focus:ring-primary/40 '
         />
       </div>
 
@@ -32,7 +32,7 @@ export const MarketSearchBar = () => {
       <button
         type='button'
         onClick={toggleSortMenu}
-        class={`h-11 px-3.5 rounded-2xl flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 transition-all  ${
+        class={`h-12 px-3.5 rounded-2xl flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 transition-all  ${
           isSorted
             ? 'bg-primary text-primary-content font-bold'
             : 'bg-base-100 text-base-content/70 hover:text-base-content hover:bg-base-100/80'
