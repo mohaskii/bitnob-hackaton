@@ -1,14 +1,15 @@
-import { Home, PieChart, TrendingUp, Users } from 'lucide-preact'
+import { Building2, Home, PieChart, Send, TrendingUp } from 'lucide-preact'
 import { navigate, url } from '../router.tsx'
 import { NavTabButton, NavTabItem } from './NavTabButton.tsx'
 
 export type { NavTabItem }
 
 export const DEFAULT_TABS: NavTabItem[] = [
-  { id: 'home', label: 'Home', path: '/', icon: Home },
-  { id: 'market', label: 'Market', path: '/market', icon: TrendingUp },
-  { id: 'social', label: 'Social', path: '/social', icon: Users },
-  { id: 'portfolio', label: 'Portfolio', path: '/portfolio', icon: PieChart },
+  { id: 'home', label: 'Accueil', path: '/', icon: Home },
+  { id: 'market', label: 'Marché', path: '/market', icon: TrendingUp },
+  { id: 'portfolio', label: 'Pratique', path: '/portfolio', icon: PieChart },
+  { id: 'journey', label: 'Compte', path: '/journey', icon: Building2 },
+  { id: 'fund', label: 'Financer', path: '/fund', icon: Send },
 ]
 
 type BottomNavProps = {
@@ -45,8 +46,8 @@ export const BottomNav = ({
       }`}
     >
       <nav
-        aria-label='Bottom Navigation'
-        class='pointer-events-auto w-full max-w-[360px] bg-secondary/10 backdrop-blur rounded-full p-2 flex items-center justify-between gap-1.5'
+        aria-label='Navigation principale'
+        class='pointer-events-auto w-full max-w-[372px] bg-base-100/85 shadow-[0_8px_30px_rgba(0,0,0,0.12)] backdrop-blur-xl rounded-full p-1.5 flex items-center justify-between gap-1'
       >
         {tabs.map((tab) => {
           const isActive = tab.path === '/'

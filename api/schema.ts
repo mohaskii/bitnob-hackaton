@@ -32,6 +32,11 @@ export const sqlQuery = <
 
 export const sql = sqlQuery
 
+/**
+ * Runs `fn` inside a SQLite transaction: either every write lands, or none.
+ */
+export const withTransaction = <T>(fn: () => T): T => db.transaction(fn)()
+
 /* -------------------------------------------------------------------------- */
 /* SQLite Tables Definition (via @01edu/db)                                    */
 /* -------------------------------------------------------------------------- */
@@ -41,100 +46,157 @@ export const User = createTable('user', {
   email: { type: 'TEXT' },
   login: { type: 'TEXT' },
   phone: { type: 'TEXT', optional: true },
-  password: { type: 'BLOB' },
+  passwordHash: { type: 'BLOB' },
+  passwordSalt: { type: 'BLOB' },
+  isGuest: { type: 'INTEGER' }, // 0 or 1
   bitnobCustomerId: { type: 'TEXT', optional: true },
   createdAt: { type: 'REAL' },
 })
 
-export const Wallet = createTable('wallet', {
-  walletId: { type: 'INTEGER', primary: true },
-  userId: { type: 'INTEGER' },
-  balanceFcfa: { type: 'REAL' },
-  balanceUsdt: { type: 'REAL' },
-  updatedAt: { type: 'REAL' },
-})
-
+/** Latest delayed BRVM quote per listed share. */
 export const Stock = createTable('stock', {
   stockId: { type: 'INTEGER', primary: true },
   symbol: { type: 'TEXT' },
   name: { type: 'TEXT' },
-  sector: { type: 'TEXT' },
   priceFcfa: { type: 'REAL' },
   changePercent: { type: 'REAL' },
-  historyJson: { type: 'TEXT', optional: true },
-  logoColor: { type: 'TEXT', optional: true },
-  logoText: { type: 'TEXT', optional: true },
   updatedAt: { type: 'REAL' },
 })
 
-export const FractionalShare = createTable('fractionalShare', {
-  shareId: { type: 'INTEGER', primary: true },
+/** One published close per share and per day, used for sparklines. */
+export const QuoteHistory = createTable('quoteHistory', {
+  historyId: { type: 'INTEGER', primary: true },
+  symbol: { type: 'TEXT' },
+  day: { type: 'TEXT' }, // YYYY-MM-DD
+  priceFcfa: { type: 'REAL' },
+})
+
+/** Last successful BRVM snapshot, served when brvm.org is unreachable. */
+export const MarketCache = createTable('marketCache', {
+  cacheId: { type: 'INTEGER', primary: true },
+  payloadJson: { type: 'TEXT' },
+  fetchedAt: { type: 'TEXT' },
+})
+
+/** Practice account: fictitious money, real delayed prices. */
+export const PaperAccount = createTable('paperAccount', {
+  accountId: { type: 'INTEGER', primary: true },
+  userId: { type: 'INTEGER' },
+  cashFcfa: { type: 'REAL' },
+  startingCashFcfa: { type: 'REAL' },
+  realizedPnlFcfa: { type: 'REAL' },
+  feesPaidFcfa: { type: 'REAL' },
+  updatedAt: { type: 'REAL' },
+})
+
+export const PaperPosition = createTable('paperPosition', {
+  positionId: { type: 'INTEGER', primary: true },
   userId: { type: 'INTEGER' },
   symbol: { type: 'TEXT' },
-  quantity: { type: 'REAL' },
-  averageBuyPriceFcfa: { type: 'REAL' },
+  quantity: { type: 'INTEGER' }, // BRVM shares trade as whole units
+  averageCostFcfa: { type: 'REAL' }, // per share, buy fees included
   updatedAt: { type: 'REAL' },
 })
 
-export const Order = createTable('orderRecord', {
+export const PaperOrder = createTable('paperOrder', {
   orderId: { type: 'INTEGER', primary: true },
   userId: { type: 'INTEGER' },
   symbol: { type: 'TEXT' },
-  action: { type: 'TEXT' }, // 'ACHAT' | 'VENTE'
-  amountFcfa: { type: 'REAL' },
-  sharesFilled: { type: 'REAL' },
+  side: { type: 'TEXT' }, // 'BUY' | 'SELL'
+  quantity: { type: 'INTEGER' },
   priceFcfa: { type: 'REAL' },
-  status: { type: 'TEXT' }, // 'COMPLETED' | 'PENDING' | 'CANCELLED'
+  grossFcfa: { type: 'REAL' },
+  feesJson: { type: 'TEXT' },
+  totalFeesFcfa: { type: 'REAL' },
+  netFcfa: { type: 'REAL' }, // cash debited (BUY) or credited (SELL)
+  realizedPnlFcfa: { type: 'REAL', optional: true },
+  sgiId: { type: 'TEXT' },
+  quoteTime: { type: 'TEXT' },
+  status: { type: 'TEXT' }, // 'SIMULATED_FILLED'
   createdAt: { type: 'REAL' },
 })
 
+/**
+ * Funding of a securities account at the partner SGI through Bitnob:
+ * the investor sends BTC (Lightning) or a stablecoin, Bitnob converts and pays
+ * XOF to the SGI's collection wallet with the investor's reference.
+ * TekkiTrade orchestrates and tracks; it never holds the funds.
+ */
+export const FundingRequest = createTable('fundingRequest', {
+  fundingId: { type: 'INTEGER', primary: true },
+  userId: { type: 'INTEGER' },
+  sgiId: { type: 'TEXT' },
+  reference: { type: 'TEXT' },
+  mode: { type: 'TEXT' }, // 'simulation' | 'sandbox' | 'live'
+  asset: { type: 'TEXT' }, // 'USDT' | 'USDC' | 'BTC'
+  senderName: { type: 'TEXT' }, // required by Bitnob for XOF payouts
+  senderCountry: { type: 'TEXT' }, // ISO alpha-2 country of residence
+  amountFcfa: { type: 'REAL' }, // XOF expected at the SGI
+  cryptoAmount: { type: 'TEXT' },
+  rate: { type: 'REAL' },
+  bitnobFeesFcfa: { type: 'REAL' },
+  quoteId: { type: 'TEXT', optional: true },
+  depositId: { type: 'TEXT', optional: true },
+  depositInstruction: { type: 'TEXT', optional: true },
+  depositNetwork: { type: 'TEXT', optional: true },
+  payoutId: { type: 'TEXT', optional: true },
+  status: { type: 'TEXT' },
+  statusLogJson: { type: 'TEXT' },
+  expiresAt: { type: 'TEXT', optional: true },
+  createdAt: { type: 'REAL' },
+  updatedAt: { type: 'REAL' },
+})
+
+/** A user's path towards an account at a partner SGI. */
+export const Journey = createTable('journey', {
+  journeyId: { type: 'INTEGER', primary: true },
+  userId: { type: 'INTEGER' },
+  sgiId: { type: 'TEXT', optional: true },
+  status: { type: 'TEXT' },
+  checklistJson: { type: 'TEXT' },
+  consentAt: { type: 'REAL', optional: true },
+  submittedAt: { type: 'REAL', optional: true },
+  updatedAt: { type: 'REAL' },
+})
+
+/** Status changes communicated by (or simulated for) the partner SGI. */
+export const JourneyStatusLog = createTable('journeyStatusLog', {
+  logId: { type: 'INTEGER', primary: true },
+  journeyId: { type: 'INTEGER' },
+  status: { type: 'TEXT' },
+  note: { type: 'TEXT', optional: true },
+  createdAt: { type: 'REAL' },
+})
+
+/** Product analytics feeding the partner funnel. No personal data. */
+export const JourneyEvent = createTable('journeyEvent', {
+  eventId: { type: 'INTEGER', primary: true },
+  userId: { type: 'INTEGER' },
+  type: { type: 'TEXT' },
+  symbol: { type: 'TEXT', optional: true },
+  sgiId: { type: 'TEXT', optional: true },
+  createdAt: { type: 'REAL' },
+})
+
+/** Example community profiles: illustrative, not real investors. */
 export const Trader = createTable('trader', {
   traderId: { type: 'INTEGER', primary: true },
-  userId: { type: 'INTEGER', optional: true },
   name: { type: 'TEXT' },
   handle: { type: 'TEXT' },
   avatarUrl: { type: 'TEXT' },
-  verified: { type: 'INTEGER' }, // 0 or 1
   returnPercent: { type: 'REAL' },
   timeframe: { type: 'TEXT' },
-  copiersCount: { type: 'INTEGER' },
+  followersCount: { type: 'INTEGER' },
   winRate: { type: 'REAL' },
   riskLevel: { type: 'TEXT' }, // 'Faible' | 'Modéré' | 'Élevé'
   badge: { type: 'TEXT', optional: true },
 })
 
-export const CopyContract = createTable('copyContract', {
-  contractId: { type: 'INTEGER', primary: true },
-  copierUserId: { type: 'INTEGER' },
+/** A user observing an example strategy. Never mirrors real orders. */
+export const VirtualFollow = createTable('virtualFollow', {
+  followId: { type: 'INTEGER', primary: true },
+  userId: { type: 'INTEGER' },
   traderId: { type: 'INTEGER' },
-  allocatedFcfa: { type: 'REAL' },
-  stopLossPercent: { type: 'REAL' },
-  copyOpenTrades: { type: 'INTEGER' }, // 0 or 1
-  status: { type: 'TEXT' }, // 'ACTIVE' | 'PAUSED' | 'CLOSED'
-  createdAt: { type: 'REAL' },
-})
-
-export const BitnobTransaction = createTable('bitnobTransaction', {
-  transactionId: { type: 'INTEGER', primary: true },
-  userId: { type: 'INTEGER' },
-  reference: { type: 'TEXT' },
-  type: { type: 'TEXT' }, // 'LIGHTNING_INVOICE' | 'USDT_DEPOSIT' | 'MOMO_PAYOUT' | 'CARD_TOPUP'
-  amountFcfa: { type: 'REAL' },
-  amountUsdt: { type: 'REAL' },
-  bitnobId: { type: 'TEXT', optional: true },
-  status: { type: 'TEXT' }, // 'PENDING' | 'SUCCESS' | 'FAILED'
-  metadata: { type: 'TEXT', optional: true },
-  createdAt: { type: 'REAL' },
-})
-
-export const VirtualCard = createTable('virtualCard', {
-  cardId: { type: 'INTEGER', primary: true },
-  userId: { type: 'INTEGER' },
-  bitnobCardId: { type: 'TEXT' },
-  cardBrand: { type: 'TEXT' }, // 'VISA'
-  maskedPan: { type: 'TEXT', optional: true },
-  cardStatus: { type: 'TEXT' }, // 'ACTIVE' | 'FROZEN' | 'TERMINATED'
-  balanceUsdt: { type: 'REAL' },
   createdAt: { type: 'REAL' },
 })
 
@@ -144,16 +206,12 @@ export const SocialPost = createTable('socialPost', {
   authorName: { type: 'TEXT' },
   authorHandle: { type: 'TEXT' },
   avatarUrl: { type: 'TEXT' },
-  verified: { type: 'INTEGER' }, // 0 or 1
+  isExample: { type: 'INTEGER' }, // 0 or 1
   content: { type: 'TEXT' },
   symbol: { type: 'TEXT', optional: true },
-  tradeAction: { type: 'TEXT', optional: true },
-  priceFcfa: { type: 'REAL', optional: true },
-  changePercent: { type: 'REAL', optional: true },
   sentiment: { type: 'TEXT', optional: true },
   likesCount: { type: 'INTEGER' },
   commentsCount: { type: 'INTEGER' },
-  copiersCount: { type: 'INTEGER' },
   createdAt: { type: 'REAL' },
 })
 
@@ -161,17 +219,28 @@ export const SocialPost = createTable('socialPost', {
 /* Database Indexes                                                           */
 /* -------------------------------------------------------------------------- */
 
-sql`CREATE INDEX IF NOT EXISTS idx_user_email ON user(email)`.run()
-sql`CREATE INDEX IF NOT EXISTS idx_wallet_user_id ON wallet(userId)`.run()
-sql`CREATE INDEX IF NOT EXISTS idx_stock_symbol ON stock(symbol)`.run()
-sql`CREATE INDEX IF NOT EXISTS idx_share_user_symbol ON fractionalShare(userId, symbol)`
+sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_user_email ON user(email)`.run()
+sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_user_login ON user(login)`.run()
+sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_stock_symbol ON stock(symbol)`.run()
+sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_history_symbol_day ON quoteHistory(symbol, day)`
   .run()
-sql`CREATE INDEX IF NOT EXISTS idx_order_user ON orderRecord(userId)`.run()
-sql`CREATE INDEX IF NOT EXISTS idx_copy_copier ON copyContract(copierUserId)`
+sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_paper_account_user ON paperAccount(userId)`
   .run()
-sql`CREATE INDEX IF NOT EXISTS idx_tx_reference ON bitnobTransaction(reference)`
+sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_position_user_symbol ON paperPosition(userId, symbol)`
   .run()
-sql`CREATE INDEX IF NOT EXISTS idx_card_user ON virtualCard(userId)`.run()
+sql`CREATE INDEX IF NOT EXISTS idx_order_user ON paperOrder(userId, createdAt DESC)`
+  .run()
+sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_funding_reference ON fundingRequest(reference)`
+  .run()
+sql`CREATE INDEX IF NOT EXISTS idx_funding_user ON fundingRequest(userId, createdAt DESC)`
+  .run()
+sql`CREATE INDEX IF NOT EXISTS idx_funding_sgi ON fundingRequest(sgiId, createdAt DESC)`
+  .run()
+sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_journey_user ON journey(userId)`.run()
+sql`CREATE INDEX IF NOT EXISTS idx_event_type ON journeyEvent(type, sgiId)`
+  .run()
+sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_follow_user_trader ON virtualFollow(userId, traderId)`
+  .run()
 sql`CREATE INDEX IF NOT EXISTS idx_post_created ON socialPost(createdAt DESC)`
   .run()
 
@@ -180,12 +249,5 @@ sql`CREATE INDEX IF NOT EXISTS idx_post_created ON socialPost(createdAt DESC)`
 /* -------------------------------------------------------------------------- */
 
 export type UserRow = Row<typeof User.properties>
-export type WalletRow = Row<typeof Wallet.properties>
-export type StockRow = Row<typeof Stock.properties>
-export type FractionalShareRow = Row<typeof FractionalShare.properties>
-export type OrderRow = Row<typeof Order.properties>
-export type TraderRow = Row<typeof Trader.properties>
-export type CopyContractRow = Row<typeof CopyContract.properties>
-export type BitnobTransactionRow = Row<typeof BitnobTransaction.properties>
-export type VirtualCardRow = Row<typeof VirtualCard.properties>
-export type SocialPostRow = Row<typeof SocialPost.properties>
+export type PaperOrderRow = Row<typeof PaperOrder.properties>
+export type JourneyRow = Row<typeof Journey.properties>

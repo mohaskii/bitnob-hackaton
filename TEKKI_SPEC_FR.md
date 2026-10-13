@@ -1,3 +1,5 @@
+> **Document historique, remplacé.** Ce cahier décrit la première idée (fractions dès 1 000 FCFA, copy trading automatique, carte Visa). Ces promesses ont été retirées parce qu'elles ne sont pas validées par une SGI ni par le régulateur. Le positionnement actuel est décrit dans [docs/TekkiTrade_Bilan_et_trajectoire.md](docs/TekkiTrade_Bilan_et_trajectoire.md).
+
 # TekkiTrade — La Bourse Régionale pour Tous
 > **Document de Cadrage & Spécification Hackathon Bitnob**  
 > *Nom du projet :* **TekkiTrade** (ou **Tekki**)  

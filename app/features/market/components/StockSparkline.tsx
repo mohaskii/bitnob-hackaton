@@ -19,6 +19,8 @@ export const StockSparkline = ({
   width = 80,
   height = 32,
 }: StockSparklineProps) => {
+  if (data.length < 2) return null
+
   const padding = 4
   const min = Math.min(...data)
   const max = Math.max(...data)
