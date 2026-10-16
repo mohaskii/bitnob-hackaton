@@ -3,7 +3,9 @@ import {
   AI_PROVIDER,
   GEMINI_API_KEY,
   GEMINI_BASE_URL,
+  GEMINI_FALLBACK_MODELS,
   GEMINI_MODEL,
+  GEMINI_TTS_FALLBACK_MODELS,
   GEMINI_TTS_MODEL,
   GEMINI_TTS_VOICE,
   OLLAMA_API_KEY,
@@ -65,7 +67,17 @@ type GeminiPart = {
   inlineData?: { mimeType: string; data: string }
 }
 
-const geminiCall = async (model: string, body: Record<string, unknown>) => {
+/** Statuses worth retrying: rate limit, overload, transient server errors. */
+const RETRYABLE = new Set([429, 500, 502, 503, 504])
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+class GeminiHttpError extends ProviderError {
+  constructor(message: string, readonly status: number) {
+    super(message)
+  }
+}
+
+const geminiOnce = async (model: string, body: Record<string, unknown>) => {
   const res = await fetch(
     `${GEMINI_BASE_URL}/models/${model}:generateContent`,
     {
@@ -78,24 +90,56 @@ const geminiCall = async (model: string, body: Record<string, unknown>) => {
       signal: AbortSignal.timeout(45_000),
     },
   ).catch((err) => {
-    throw new ProviderError(`Gemini injoignable : ${String(err)}`)
+    throw new GeminiHttpError(`Gemini injoignable : ${String(err)}`, 503)
   })
   const data = await res.json().catch(() => ({}))
   if (!res.ok) {
-    throw new ProviderError(
+    throw new GeminiHttpError(
       data?.error?.message ?? `Gemini a répondu ${res.status}`,
+      res.status,
     )
   }
   const parts: GeminiPart[] = data?.candidates?.[0]?.content?.parts ?? []
   return parts
 }
 
+/**
+ * Calls the first model of the chain, retrying transient errors with a short
+ * backoff, then moves to the next model. Gemini can answer 503 "high demand"
+ * during peaks: a demo must not stop on that.
+ */
+const geminiCall = async (models: string[], body: Record<string, unknown>) => {
+  let lastError: unknown
+  for (const model of models) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        return await geminiOnce(model, body)
+      } catch (error) {
+        lastError = error
+        const status = error instanceof GeminiHttpError ? error.status : 0
+        if (!RETRYABLE.has(status)) break // e.g. 400/404: try next model
+        if (attempt === 0) await sleep(800)
+      }
+    }
+  }
+  throw lastError instanceof ProviderError
+    ? lastError
+    : new ProviderError('Gemini indisponible.')
+}
+
+const modelChain = (primary: string, fallbacks: string) =>
+  [primary, ...fallbacks.split(',').map((m) => m.trim()).filter(Boolean)]
+    .filter((m, i, all) => all.indexOf(m) === i)
+
+const TEXT_MODELS = modelChain(GEMINI_MODEL, GEMINI_FALLBACK_MODELS)
+const TTS_MODELS = modelChain(GEMINI_TTS_MODEL, GEMINI_TTS_FALLBACK_MODELS)
+
 export const geminiProvider: AIProvider = {
   name: 'gemini',
   model: GEMINI_MODEL,
   available: Boolean(GEMINI_API_KEY),
   async chat({ system, user, json, temperature = 0.3 }) {
-    const parts = await geminiCall(GEMINI_MODEL, {
+    const parts = await geminiCall(TEXT_MODELS, {
       systemInstruction: { parts: [{ text: system }] },
       contents: [{ role: 'user', parts: [{ text: user }] }],
       generationConfig: {
@@ -113,7 +157,7 @@ export const geminiSpeechToText: SpeechToTextProvider = {
   name: 'gemini-stt',
   available: Boolean(GEMINI_API_KEY),
   async transcribe(audio, mimeType) {
-    const parts = await geminiCall(GEMINI_MODEL, {
+    const parts = await geminiCall(TEXT_MODELS, {
       contents: [{
         role: 'user',
         parts: [
@@ -190,7 +234,7 @@ export const geminiTextToSpeech: TextToSpeechProvider = {
     const style = language === 'wo'
       ? 'Lis ce texte en wolof, d’une voix calme et claire, comme un conseiller bienveillant : '
       : 'Lis ce texte en français, d’une voix calme et claire : '
-    const parts = await geminiCall(GEMINI_TTS_MODEL, {
+    const parts = await geminiCall(TTS_MODELS, {
       contents: [{ role: 'user', parts: [{ text: style + text }] }],
       generationConfig: {
         responseModalities: ['AUDIO'],

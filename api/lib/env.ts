@@ -56,6 +56,15 @@ export const GEMINI_BASE_URL = ENV(
 export const GEMINI_MODEL = ENV('GEMINI_MODEL', 'gemini-3.8-flash')
 /** Speech generation model. */
 export const GEMINI_TTS_MODEL = ENV('GEMINI_TTS_MODEL', 'gemini-3.8-flash-tts')
+/** Comma-separated fallbacks used when the primary model is overloaded. */
+export const GEMINI_FALLBACK_MODELS = ENV(
+  'GEMINI_FALLBACK_MODELS',
+  'gemini-3.5-flash,gemini-flash-latest',
+)
+export const GEMINI_TTS_FALLBACK_MODELS = ENV(
+  'GEMINI_TTS_FALLBACK_MODELS',
+  'gemini-3.8-flash-lite-tts,gemini-3.1-flash-tts-preview',
+)
 export const GEMINI_TTS_VOICE = ENV('GEMINI_TTS_VOICE', 'Kore')
 
 export const OLLAMA_API_KEY = ENV('OLLAMA_API_KEY', '')
