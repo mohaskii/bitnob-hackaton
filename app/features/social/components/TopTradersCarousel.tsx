@@ -19,7 +19,7 @@ export const TopTradersCarousel = () => {
             </h2>
           </div>
           <p class='text-xs text-base-content/50 mt-0.5'>
-            Les investisseurs les plus performants à copier
+            Profils d’exemple à observer et comprendre
           </p>
         </div>
 
