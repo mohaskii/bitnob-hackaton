@@ -479,9 +479,33 @@ Configuration, côté serveur uniquement :
 ```env
 AI_PROVIDER=gemini
 GEMINI_API_KEY=...
-GEMINI_MODEL=gemini-3.8-flash
-GEMINI_TTS_MODEL=gemini-3.8-flash-tts
+GEMINI_MODEL=gemini-3-flash-preview
+GEMINI_TTS_MODEL=gemini-3.8-flash-lite-tts
+GEMINI_THINKING_LEVEL=minimal
+OOLEL_TTS_URL=http://127.0.0.1:8010
 ```
+
+Le quota gratuit de Gemini est compté par modèle et par jour (20 requêtes sur les plus récents). Tekki passe au modèle suivant de `GEMINI_FALLBACK_MODELS` dès qu'un modèle est saturé ou à court de quota, et met en cache les réponses et l'audio déjà produits.
+
+### Voix wolof : Oolel-Voices (Soynade Research)
+
+Les réponses en wolof sont lues par [Oolel-Voices](https://huggingface.co/soynade-research/Oolel-Voices), un modèle de synthèse vocale conçu pour le wolof par Soynade Research (licence AGPL-3.0). Il tourne en local (`tools/oolel/server.py`), sur GPU NVIDIA de préférence. Le français reste lu par Gemini, et Gemini prend le relais si Oolel est arrêté.
+
+Installation (une fois, environ 5 Go) :
+
+```bash
+uv venv --python 3.12 tools/oolel/.venv
+uv pip install --python tools/oolel/.venv/Scripts/python.exe torch==2.8.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cu128
+uv pip install --python tools/oolel/.venv/Scripts/python.exe -r tools/oolel/requirements.txt
+```
+
+Lancement (le modèle est téléchargé au premier démarrage) :
+
+```bash
+tools/oolel/.venv/Scripts/python.exe tools/oolel/server.py
+```
+
+Sous macOS/Linux, remplacer `.venv/Scripts/python.exe` par `.venv/bin/python` et installer `torch` sans l'index CUDA.
 
 Routes : `POST /api/tekki/ask`, `POST /api/tekki/facts`, `POST /api/tekki/transcribe`, `POST /api/tekki/speak`, `GET /api/tekki/traders`, `GET /api/tekki/market`, `GET /api/tekki/status`.
 

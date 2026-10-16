@@ -14,8 +14,10 @@ import {
   answer,
   ask,
   asking,
+  audioEnded,
   audioError,
   audioLoading,
+  audioPending,
   audioUrl,
   cancelListening,
   closeTekki,
@@ -155,7 +157,15 @@ const AudioControls = () => {
   return (
     <div class='flex flex-col gap-2'>
       {audioUrl.value
-        ? <audio src={audioUrl.value} controls autoPlay class='w-full h-10' />
+        ? (
+          <audio
+            src={audioUrl.value}
+            controls
+            autoPlay
+            onEnded={audioEnded}
+            class='w-full h-10'
+          />
+        )
         : (
           <button
             type='button'
@@ -169,6 +179,11 @@ const AudioControls = () => {
             Écouter
           </button>
         )}
+      {audioUrl.value && audioPending.value && (
+        <p class='text-[11px] text-base-content/50 flex items-center gap-1.5'>
+          <Loader2 size={12} class='animate-spin' /> La suite se prépare…
+        </p>
+      )}
       {audioError.value && (
         <p class='text-[11px] text-base-content/50'>{audioError.value}</p>
       )}

@@ -52,24 +52,44 @@ export const GEMINI_BASE_URL = ENV(
   'GEMINI_BASE_URL',
   'https://generativelanguage.googleapis.com/v1beta',
 )
-/** Text and transcription model (check `GET /models` for the exact name). */
-export const GEMINI_MODEL = ENV('GEMINI_MODEL', 'gemini-3.8-flash')
+/**
+ * Text and transcription model (check `GET /models` for the exact name).
+ * gemini-3-flash-preview had the best Wolof transcription in our tests.
+ */
+export const GEMINI_MODEL = ENV('GEMINI_MODEL', 'gemini-3-flash-preview')
 /** Speech generation model. */
-export const GEMINI_TTS_MODEL = ENV('GEMINI_TTS_MODEL', 'gemini-3.8-flash-tts')
-/** Comma-separated fallbacks used when the primary model is overloaded. */
+export const GEMINI_TTS_MODEL = ENV(
+  'GEMINI_TTS_MODEL',
+  'gemini-3.8-flash-lite-tts',
+)
+/**
+ * Comma-separated fallbacks used when a model is overloaded or out of quota.
+ * Free-tier quotas are per model (20 requests/day on the newest ones), so the
+ * chain also spreads the daily budget.
+ */
 export const GEMINI_FALLBACK_MODELS = ENV(
   'GEMINI_FALLBACK_MODELS',
-  'gemini-3.5-flash,gemini-flash-latest',
+  'gemini-3.5-flash,gemini-3.6-flash,gemini-3.8-flash',
 )
 export const GEMINI_TTS_FALLBACK_MODELS = ENV(
   'GEMINI_TTS_FALLBACK_MODELS',
-  'gemini-3.8-flash-lite-tts,gemini-3.1-flash-tts-preview',
+  'gemini-3.8-flash-tts,gemini-3.1-flash-tts-preview',
 )
+/** Reasoning depth: "minimal" answers in ~2 s instead of ~8 s (measured). */
+export const GEMINI_THINKING_LEVEL = ENV('GEMINI_THINKING_LEVEL', 'minimal')
 export const GEMINI_TTS_VOICE = ENV('GEMINI_TTS_VOICE', 'Kore')
+
+/**
+ * Oolel-Voices (Soynade Research) sidecar for Wolof speech, see tools/oolel.
+ * Empty (default) disables it; Gemini then reads Wolof answers too.
+ */
+export const OOLEL_TTS_URL = ENV('OOLEL_TTS_URL', '')
 
 export const OLLAMA_API_KEY = ENV('OLLAMA_API_KEY', '')
 export const OLLAMA_BASE_URL = ENV(
   'OLLAMA_BASE_URL',
-  AI_PROVIDER === 'ollama-local' ? 'http://localhost:11434' : 'https://ollama.com',
+  AI_PROVIDER === 'ollama-local'
+    ? 'http://localhost:11434'
+    : 'https://ollama.com',
 )
 export const OLLAMA_MODEL = ENV('OLLAMA_MODEL', 'qwen3:8b')

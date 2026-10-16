@@ -1,4 +1,5 @@
 import { sql } from '../schema.ts'
+import { boundedCache } from '../lib/cache.ts'
 import { log } from '../lib/log.ts'
 import { computeFees } from './fees.ts'
 import {
@@ -479,6 +480,9 @@ const recordInteraction = (input: {
   }
 }
 
+/** Model answers keyed by prompt (facts included): Gemini quota is small. */
+const answerCache = boundedCache<TekkiAnswer>(100)
+
 export const askTekki = async (input: {
   userId: number
   question: string
@@ -581,6 +585,11 @@ export const askTekki = async (input: {
     `QUESTION : ${question}`,
   ].filter(Boolean).join('\n')
 
+  // Same question on the same data → same answer, without a model call.
+  const cacheKey = JSON.stringify([replyLanguage, level, user])
+  const cached = answerCache.get(cacheKey)
+  if (cached) return { ...cached, suggestions }
+
   let parsed: {
     answer?: string
     points?: TekkiAnswer['points']
@@ -652,7 +661,7 @@ export const askTekki = async (input: {
     }
   }
 
-  return {
+  const result: TekkiAnswer = {
     ...base,
     answer,
     points,
@@ -661,6 +670,8 @@ export const askTekki = async (input: {
     provider: reasoningProvider.name,
     guardrailTriggered: false,
   }
+  answerCache.set(cacheKey, result)
+  return result
 }
 
 /** Facts only (no model call): used by previews such as "Répliquer". */

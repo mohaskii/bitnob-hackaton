@@ -103,7 +103,7 @@ export const tekkiApi = {
       {
         reasoning: { available: boolean; provider: string }
         speechToText: { available: boolean }
-        textToSpeech: { available: boolean }
+        textToSpeech: { available: boolean; wolof?: string }
       }
     >(
       'GET',

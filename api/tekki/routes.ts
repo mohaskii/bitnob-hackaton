@@ -1,5 +1,6 @@
 import type { RequestContext } from '@01edu/api/context'
 import { route } from '@01edu/api/router'
+import { boundedCache } from '../lib/cache.ts'
 import { respond } from '@01edu/api/response'
 import { LIST, NUM, OBJ, optional, STR } from '@01edu/api/validator'
 import { decodeBase64 } from '@std/encoding/base64'
@@ -46,6 +47,12 @@ const asBadRequest = (error: unknown): never => {
   }
   throw error
 }
+
+/**
+ * Replaying an answer must not spend a TTS request (free quota is per day).
+ * Clips are a sentence or two (~1 MB of base64 WAV), so 30 stay bounded.
+ */
+const speechCache = boundedCache<{ mimeType: string; base64: string }>(30)
 
 export const tekkiRoutes = {
   'GET/api/tekki/status': route({
@@ -230,11 +237,15 @@ export const tekkiRoutes = {
       if (!textToSpeech.available) {
         throw new respond.BadRequestError({ message: 'Audio indisponible.' })
       }
-      return respond.OK(
-        await textToSpeech.synthesize(text.slice(0, 1200), { language }).catch(
-          asBadRequest,
-        ),
+      const clip = text.slice(0, 1200)
+      const key = `${language}:${clip}`
+      const cached = speechCache.get(key)
+      if (cached) return respond.OK(cached)
+      const audio = await textToSpeech.synthesize(clip, { language }).catch(
+        asBadRequest,
       )
+      speechCache.set(key, audio)
+      return respond.OK(audio)
     },
     input: OBJ({ text: STR(), language: LIST(['fr', 'wo', 'mixed'] as const) }),
     description: 'Text-to-speech for a Tekki answer',

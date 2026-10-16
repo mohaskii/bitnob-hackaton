@@ -63,9 +63,13 @@ export const conversationLanguage = signal<'fr' | 'wo' | 'mixed'>('fr')
 
 export const audioUrl = signal<string | null>(null)
 export const audioLoading = signal(false)
+/** Later sentences of a Wolof answer are still being synthesized. */
+export const audioPending = signal(false)
 export const audioError = signal<string | null>(null)
 
 export const voiceAvailable = signal(false)
+/** Wolof is read by the local Oolel model, sentence by sentence. */
+let wolofVoiceIsLocal = false
 export const aiAvailable = signal(false)
 
 export const selectedStock = signal<RealStock | null>(null)
@@ -129,15 +133,27 @@ const loadStatus = async () => {
     const status = await tekkiApi.status()
     aiAvailable.value = status.reasoning.available
     voiceAvailable.value = status.speechToText.available
+    wolofVoiceIsLocal = status.textToSpeech.wolof === 'oolel-voices'
   } catch {
     statusLoaded = false
   }
 }
 
+/** Sentence clips of the current answer, played back to back. */
+let clips: string[] = []
+let playingClip = 0
+let waitingForClip = false
+let audioRun = 0
+
 const clearAudio = () => {
-  if (audioUrl.value) URL.revokeObjectURL(audioUrl.value)
+  audioRun++ // stops a sentence-by-sentence synthesis still running
+  clips.forEach((url) => URL.revokeObjectURL(url))
+  clips = []
+  playingClip = 0
+  waitingForClip = false
   audioUrl.value = null
   audioError.value = null
+  audioPending.value = false
 }
 
 export const openTekki = (ctx: TekkiContext, autoQuestion?: string) => {
@@ -277,21 +293,69 @@ const base64ToBlobUrl = (base64: string, mimeType: string) => {
   return URL.createObjectURL(new Blob([bytes], { type: mimeType }))
 }
 
-/** Text answer first; audio is optional and never blocks the answer. */
+/**
+ * The first sentence alone, so playback starts early; then clips of
+ * ~200 characters, generated while the previous one plays.
+ */
+const splitForSpeech = (text: string) =>
+  text.split(/(?<=[.!?;])\s+/).reduce<string[]>((out, sentence) => {
+    const last = out.at(-1)
+    if (out.length > 1 && last && last.length + sentence.length < 200) {
+      out[out.length - 1] = `${last} ${sentence}`
+    } else out.push(sentence)
+    return out
+  }, []).filter((clip) => clip.trim())
+
+const showClip = (index: number) => {
+  playingClip = index
+  waitingForClip = false
+  audioUrl.value = clips[index]
+}
+
+/** Called by the player at the end of a clip: chain the next sentence. */
+export const audioEnded = () => {
+  if (clips[playingClip + 1]) showClip(playingClip + 1)
+  else if (audioPending.value) waitingForClip = true
+}
+
+/**
+ * Text answer first; audio is optional and never blocks the answer.
+ * The local Wolof voice takes a few seconds per sentence: the first one
+ * plays while the next ones are synthesized.
+ */
 export const listenToAnswer = async () => {
   const current = answer.value
   if (!current || audioLoading.value) return
+  clearAudio()
+  const run = audioRun
+  // Only the local voice is split: with Gemini each clip would cost quota.
+  const parts = current.language !== 'fr' && wolofVoiceIsLocal
+    ? splitForSpeech(current.answer)
+    : [current.answer]
   audioLoading.value = true
-  audioError.value = null
+  audioPending.value = parts.length > 1
   try {
-    const audio = await tekkiApi.speak(current.answer, current.language)
-    clearAudio()
-    audioUrl.value = base64ToBlobUrl(audio.base64, audio.mimeType)
+    for (const [index, part] of parts.entries()) {
+      const audio = await tekkiApi.speak(part, current.language)
+      if (run !== audioRun) return
+      clips[index] = base64ToBlobUrl(audio.base64, audio.mimeType)
+      if (index === 0) {
+        audioLoading.value = false
+        showClip(0)
+      } else if (waitingForClip && index === playingClip + 1) {
+        showClip(index)
+      }
+    }
   } catch {
-    audioError.value =
-      'Audio indisponible : la réponse écrite reste disponible.'
+    if (run !== audioRun) return
+    audioError.value = clips.length
+      ? 'La suite de l’audio est indisponible : la réponse écrite reste complète.'
+      : 'Audio indisponible : la réponse écrite reste disponible.'
   } finally {
-    audioLoading.value = false
+    if (run === audioRun) {
+      audioLoading.value = false
+      audioPending.value = false
+    }
   }
 }
 
