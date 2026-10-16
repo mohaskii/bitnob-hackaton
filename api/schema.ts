@@ -32,6 +32,9 @@ export const sqlQuery = <
 
 export const sql = sqlQuery
 
+/** Runs `fn` inside a SQLite transaction: every write lands, or none. */
+export const withTransaction = <T>(fn: () => T): T => db.transaction(fn)()
+
 /* -------------------------------------------------------------------------- */
 /* SQLite Tables Definition (via @01edu/db)                                    */
 /* -------------------------------------------------------------------------- */
@@ -156,6 +159,59 @@ export const SocialPost = createTable('socialPost', {
   copiersCount: { type: 'INTEGER' },
   createdAt: { type: 'REAL' },
 })
+
+/* -------------------------------------------------------------------------- */
+/* Tekki AI & real market data                                                */
+/* -------------------------------------------------------------------------- */
+
+/** One published close per share and per day (real BRVM data). */
+export const QuoteHistory = createTable('quoteHistory', {
+  historyId: { type: 'INTEGER', primary: true },
+  symbol: { type: 'TEXT' },
+  day: { type: 'TEXT' }, // YYYY-MM-DD
+  priceFcfa: { type: 'REAL' },
+})
+
+/** Last successful BRVM snapshot, served when brvm.org is unreachable. */
+export const MarketCache = createTable('marketCache', {
+  cacheId: { type: 'INTEGER', primary: true },
+  payloadJson: { type: 'TEXT' },
+  fetchedAt: { type: 'TEXT' },
+})
+
+/**
+ * Executed trades of a public profile, the single source for Tekki Analytics.
+ * Seeded example profiles are flagged `isExample` and shown as such.
+ */
+export const SocialTrade = createTable('socialTrade', {
+  tradeId: { type: 'INTEGER', primary: true },
+  traderId: { type: 'TEXT' },
+  symbol: { type: 'TEXT' },
+  side: { type: 'TEXT' }, // 'BUY' | 'SELL'
+  quantity: { type: 'INTEGER' },
+  priceFcfa: { type: 'REAL' },
+  executedAt: { type: 'TEXT' }, // ISO date
+  isExample: { type: 'INTEGER' }, // 0 or 1
+})
+
+/** Metadata of each Tekki AI answer (no audio, no raw conversation). */
+export const AIInteraction = createTable('aiInteraction', {
+  interactionId: { type: 'INTEGER', primary: true },
+  userId: { type: 'INTEGER', optional: true },
+  task: { type: 'TEXT' },
+  provider: { type: 'TEXT' },
+  model: { type: 'TEXT' },
+  language: { type: 'TEXT' },
+  contextVersion: { type: 'TEXT' },
+  sourcesJson: { type: 'TEXT' },
+  guardrailTriggered: { type: 'INTEGER' },
+  createdAt: { type: 'TEXT' },
+})
+
+sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_history_symbol_day ON quoteHistory(symbol, day)`
+  .run()
+sql`CREATE INDEX IF NOT EXISTS idx_social_trade ON socialTrade(traderId, executedAt)`
+  .run()
 
 /* -------------------------------------------------------------------------- */
 /* Database Indexes                                                           */

@@ -28,6 +28,7 @@ import {
 import { bitnob } from './bitnob/client.ts'
 import { handleBitnobWebhook } from './bitnob/webhook.ts'
 import { log } from './lib/log.ts'
+import { tekkiRoutes } from './tekki/routes.ts'
 
 /* -------------------------------------------------------------------------- */
 /* Helper Functions & Session Handling                                        */
@@ -1013,6 +1014,8 @@ const defs = {
     }),
     description: 'Increment likes counter on a community post',
   }),
+
+  ...tekkiRoutes,
 } as const
 
 export type RouteDefinitions = typeof defs

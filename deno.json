@@ -2,7 +2,8 @@
   "tasks": {
     "dev": "deno run -A app/build-config.ts",
     "server": "deno run --env-file -A --unstable-worker-options --unstable-ffi api/server.ts",
-    "db:seed": "deno run --env-file -A --unstable-ffi api/task-seed.ts"
+    "db:seed": "deno run --env-file -A --unstable-ffi api/task-seed.ts",
+    "test": "DATABASE_PATH=:memory: APP_ENV=test deno test -A --unstable-ffi api/"
   },
   "fmt": {
     "useTabs": false,
@@ -10,7 +11,9 @@
     "indentWidth": 2,
     "semiColons": false,
     "singleQuote": true,
-    "exclude": ["metafile.json"]
+    "exclude": [
+      "metafile.json"
+    ]
   },
   "lock": false,
   "nodeModulesDir": "auto",

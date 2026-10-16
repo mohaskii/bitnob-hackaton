@@ -10,6 +10,13 @@ const server = await createServer(defineConfig({
   ],
   server: {
     host: true,
+    // Forward API calls to the Deno backend (Tekki AI keys stay server-side).
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+    },
   },
 }))
 

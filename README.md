@@ -461,3 +461,26 @@ deno check \
   app/screens/MarketScreen.tsx \
   app/screens/ComposeScreen.tsx
 ```
+
+---
+
+## Tekki AI & Tekki Voice
+
+Tekki explique ce que l'utilisateur regarde (action, profil, opération, réplication). Il ne conseille pas.
+
+- **Tekki Analytics** (`api/tekki/analytics.ts`) calcule toutes les métriques à partir des historiques d'opérations : performance, taux de trades gagnants, gain et perte moyens, drawdown, durée de détention, exposition sectorielle, concentration, impact d'une réplication. Ce sont des règles explicites, testées dans `api/tekki/tekki_test.ts`.
+- **RAG** (`api/tekki/knowledge.ts`) : une base de passages sourcés (BRVM, AMF-UMOA, Bitnob, fiches TekkiTrade). Chaque réponse affiche ses sources.
+- **Garde-fous** (`api/tekki/guardrails.ts`) : consignes du modèle, plus un filtre de sortie côté serveur qui bloque les formulations de conseil en français et en wolof.
+- **Fournisseurs interchangeables** (`api/tekki/providers.ts`) : Gemini (texte, transcription wolof et français, synthèse vocale) ou Ollama. Sans clé, Tekki répond à partir de ses calculs et de sa base documentaire.
+- **Profils d'exemple** : les historiques des profils de démonstration sont générés (déterministes, à partir des cours BRVM réels) et affichés comme exemples.
+
+Configuration, côté serveur uniquement :
+
+```env
+AI_PROVIDER=gemini
+GEMINI_API_KEY=...
+GEMINI_MODEL=gemini-3.8-flash
+GEMINI_TTS_MODEL=gemini-3.8-flash-tts
+```
+
+Routes : `POST /api/tekki/ask`, `POST /api/tekki/facts`, `POST /api/tekki/transcribe`, `POST /api/tekki/speak`, `GET /api/tekki/traders`, `GET /api/tekki/market`, `GET /api/tekki/status`.

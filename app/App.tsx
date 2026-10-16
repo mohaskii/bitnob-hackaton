@@ -8,6 +8,12 @@ import { SocialScreen } from './screens/SocialScreen.tsx'
 import { ComposeScreen } from './screens/ComposeScreen.tsx'
 import { useScrollHeader } from './hooks/useScrollHeader.ts'
 import { isBottomNavHidden } from './state.ts'
+import { TekkiSheet } from './features/tekki/components/TekkiSheet.tsx'
+import {
+  AskTekkiButton,
+  ReplicateSheet,
+  StockDetailSheet,
+} from './features/tekki/components/TekkiEntryPoints.tsx'
 
 export const App = () => {
   const currentPath = pathSignal.value || '/'
@@ -78,6 +84,12 @@ export const App = () => {
         hidden={isBottomNavHidden.value || currentPath === '/compose'}
         onTabChange={(tab) => navigateUrl(tab.path)}
       />
+
+      {/* Tekki AI: global entry point and contextual sheets */}
+      {currentPath !== '/compose' && <AskTekkiButton />}
+      <StockDetailSheet />
+      <ReplicateSheet />
+      <TekkiSheet />
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import { computed, effect, signal } from '@preact/signals'
+import { tekkiApi } from '../tekki/tekki-api.ts'
 import {
   isBottomNavHidden,
   isComposeOpen,
@@ -272,3 +273,50 @@ effect(() => {
   const isModalOpen = copyingTrader.value !== null || isComposeOpen.value
   isBottomNavHidden.value = isModalOpen
 })
+
+/* -------------------------------------------------------------------------- */
+/* Tekki Analytics: profile metrics computed from recorded trade logs         */
+/* -------------------------------------------------------------------------- */
+
+/** handle → traderId, for feed posts. */
+export const traderIdByHandle = computed(() =>
+  Object.fromEntries(traders.value.map((t) => [t.handle, t.id]))
+)
+
+let analyticsLoaded = false
+export const loadTraderAnalytics = async () => {
+  if (analyticsLoaded) return
+  analyticsLoaded = true
+  try {
+    const { traders: computedTraders } = await tekkiApi.traders()
+    const byId = Object.fromEntries(computedTraders.map((t) => [t.traderId, t]))
+    traders.value = traders.value.map((t) => {
+      const a = byId[t.id]?.analytics
+      return a
+        ? {
+          ...t,
+          returnPercent: a.performancePercent,
+          winRate: a.winRatePercent ?? 0,
+          timeframe: `${a.closedTrades} trades clôturés`,
+          verified: false,
+          badge: 'Profil d’exemple',
+        }
+        : t
+    })
+  } catch {
+    analyticsLoaded = false
+  }
+}
+
+/** Follow / unfollow a profile. No copy contract, no automatic order. */
+export const toggleFollowTrader = (trader: Trader) => {
+  traders.value = traders.value.map((t) =>
+    t.id === trader.id
+      ? {
+        ...t,
+        isCopied: !t.isCopied,
+        copiersCount: t.isCopied ? t.copiersCount - 1 : t.copiersCount + 1,
+      }
+      : t
+  )
+}

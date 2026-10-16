@@ -2,6 +2,7 @@ import { Trader } from '../../../state.ts'
 import { TraderCardHeader } from './TraderCardHeader.tsx'
 import { TraderCardMetrics } from './TraderCardMetrics.tsx'
 import { TraderCardCopyButton } from './TraderCardCopyButton.tsx'
+import { AnalyzeTraderButton } from '../../tekki/components/TekkiEntryPoints.tsx'
 
 type TraderCardProps = {
   trader: Trader
@@ -17,6 +18,7 @@ export const TraderCard = ({ trader }: TraderCardProps) => {
       <TraderCardHeader trader={trader} />
       <TraderCardMetrics trader={trader} />
       <TraderCardCopyButton trader={trader} />
+      <AnalyzeTraderButton traderId={trader.id} name={trader.name} />
     </div>
   )
 }

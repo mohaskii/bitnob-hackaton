@@ -1,4 +1,12 @@
-import { filteredStocks, StockItem } from '../features/market/market-state.ts'
+import { useEffect } from 'preact/hooks'
+import {
+  filteredStocks,
+  loadRealStocks,
+  marketSource,
+  realStocks,
+  StockItem,
+} from '../features/market/market-state.ts'
+import { openStockDetail } from '../features/tekki/tekki-state.ts'
 import { MarketSearchBar } from '../features/market/components/MarketSearchBar.tsx'
 import { SectorFilterChips } from '../features/market/components/SectorFilterChips.tsx'
 import { StockCard } from '../features/market/components/StockCard.tsx'
@@ -14,7 +22,13 @@ type MarketScreenProps = {
  * - Thin layout orchestrator (Rule 5: Decomposition Discipline)
  * - State engine lives in app/features/market/market-state.ts
  */
+const selectStock = (stock: StockItem) => {
+  const real = realStocks.value[stock.symbol]
+  if (real) openStockDetail(real)
+}
+
 export const MarketScreen = ({ onStockSelect }: MarketScreenProps) => {
+  useEffect(() => void loadRealStocks(), [])
   const stocksList = filteredStocks.value
 
   return (
@@ -24,6 +38,13 @@ export const MarketScreen = ({ onStockSelect }: MarketScreenProps) => {
 
       {/* 2. Sector Filter Chips */}
       <SectorFilterChips />
+
+      {marketSource.value && (
+        <p class='text-[11px] font-semibold text-base-content/50 -mt-1'>
+          Cours BRVM différés · {marketSource.value.sessionStatus} · publiés le{' '}
+          {new Date(marketSource.value.publishedAt).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}
+        </p>
+      )}
 
       {/* 3. Stock Activities Section */}
       <div class='flex flex-col gap-2.5'>
@@ -40,7 +61,7 @@ export const MarketScreen = ({ onStockSelect }: MarketScreenProps) => {
             <StockCard
               key={stock.symbol}
               stock={stock}
-              onSelect={onStockSelect}
+              onSelect={onStockSelect ?? selectStock}
             />
           ))}
 

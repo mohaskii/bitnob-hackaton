@@ -1,4 +1,5 @@
 import { computed, signal } from '@preact/signals'
+import { type RealStock, tekkiApi } from '../tekki/tekki-api.ts'
 
 /* -------------------------------------------------------------------------- */
 /* State Types (Zero interface discipline)                                   */
@@ -24,7 +25,15 @@ export type SortOption =
   | 'price-asc'
   | 'name-asc'
 
-export const SECTORS = ['Tous', 'Télécoms', 'Finance', 'Énergie', 'Agriculture']
+export const SECTORS = [
+  'Tous',
+  'Télécoms',
+  'Finance',
+  'Énergie',
+  'Consommation',
+  'Industrie',
+  'Services publics',
+]
 export const TIMEFRAMES = ['This month', 'Today', 'This week', 'This year']
 
 export const SORT_OPTIONS: { id: SortOption; label: string }[] = [
@@ -181,4 +190,50 @@ export const toggleSortMenu = () => {
 
 export const closeSortMenu = () => {
   isSortMenuOpen.value = false
+}
+
+/* -------------------------------------------------------------------------- */
+/* Real BRVM data (delayed) — replaces the static list when available         */
+/* -------------------------------------------------------------------------- */
+
+export const realStocks = signal<Record<string, RealStock>>({})
+export const marketSource = signal<{ publishedAt: string; sessionStatus: string } | null>(null)
+
+const SECTOR_COLORS: Record<string, string> = {
+  'Télécoms': 'bg-primary/20 text-primary-content',
+  'Finance': 'bg-info/20 text-info-content',
+  'Énergie': 'bg-warning/20 text-warning-content',
+  'Consommation': 'bg-success/20 text-success-content',
+  'Industrie': 'bg-secondary/15 text-base-content',
+  'Services publics': 'bg-accent/20 text-accent-content',
+}
+
+const toStockItem = (s: RealStock): StockItem => {
+  const previous = s.priceFcfa / (1 + s.changePercent / 100)
+  return {
+    symbol: s.symbol,
+    name: s.name,
+    sector: s.sector,
+    priceFcfa: s.priceFcfa,
+    changePercent: s.changePercent,
+    sparkline: s.changePercent >= 0 ? 'up' : 'down',
+    // Two real points only (previous close → last price): no invented curve.
+    history: [Math.round(previous), s.priceFcfa],
+    logoColor: SECTOR_COLORS[s.sector] ?? 'bg-base-200 text-base-content',
+    logoText: s.symbol.slice(0, 2),
+  }
+}
+
+let realLoaded = false
+export const loadRealStocks = async () => {
+  if (realLoaded) return
+  realLoaded = true
+  try {
+    const market = await tekkiApi.market()
+    realStocks.value = Object.fromEntries(market.stocks.map((s) => [s.symbol, s]))
+    stocks.value = market.stocks.map(toStockItem)
+    marketSource.value = { publishedAt: market.publishedAt, sessionStatus: market.sessionStatus }
+  } catch {
+    realLoaded = false // keep the bundled list, retry on next visit
+  }
 }

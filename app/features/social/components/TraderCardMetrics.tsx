@@ -14,19 +14,20 @@ export const TraderCardMetrics = ({ trader }: TraderCardMetricsProps) => {
     <div class='my-3 py-2.5 px-3 bg-base-200/50 rounded-xl flex items-center justify-between'>
       <div>
         <span class='text-[10px] font-semibold text-base-content/50 block uppercase tracking-wider'>
-          Rendement
+          Performance
         </span>
         <span class='text-base font-extrabold text-success flex items-center gap-0.5 mt-0.5'>
           <TrendingUp size={14} strokeWidth={2.5} />
-          +{trader.returnPercent}%
+          {trader.returnPercent > 0 ? '+' : ''}
+          {trader.returnPercent}%
         </span>
       </div>
       <div class='text-right'>
         <span class='text-[10px] font-semibold text-base-content/50 block uppercase tracking-wider'>
-          Copieurs
+          Trades gagnants
         </span>
         <span class='text-sm font-bold text-base-content mt-0.5 block'>
-          {trader.copiersCount}
+          {trader.winRate}%
         </span>
       </div>
     </div>
