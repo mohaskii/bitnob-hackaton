@@ -29,6 +29,7 @@ import { bitnob } from './bitnob/client.ts'
 import { handleBitnobWebhook } from './bitnob/webhook.ts'
 import { log } from './lib/log.ts'
 import { tekkiRoutes } from './tekki/routes.ts'
+import { sgiRoutes } from './sgi/routes.ts'
 
 /* -------------------------------------------------------------------------- */
 /* Helper Functions & Session Handling                                        */
@@ -1016,6 +1017,7 @@ const defs = {
   }),
 
   ...tekkiRoutes,
+  ...sgiRoutes,
 } as const
 
 export type RouteDefinitions = typeof defs

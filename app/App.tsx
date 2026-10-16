@@ -6,6 +6,8 @@ import { HomeScreen } from './screens/HomeScreen.tsx'
 import { MarketScreen } from './screens/MarketScreen.tsx'
 import { SocialScreen } from './screens/SocialScreen.tsx'
 import { ComposeScreen } from './screens/ComposeScreen.tsx'
+import { PortfolioScreen } from './screens/PortfolioScreen.tsx'
+import { OrderSheet } from './features/orders/components/OrderSheet.tsx'
 import { useScrollHeader } from './hooks/useScrollHeader.ts'
 import { isBottomNavHidden } from './state.ts'
 import { TekkiSheet } from './features/tekki/components/TekkiSheet.tsx'
@@ -55,6 +57,8 @@ export const App = () => {
           ? <SocialScreen />
           : currentPath === '/compose'
           ? <ComposeScreen onClose={() => history.back()} />
+          : currentPath === '/portfolio'
+          ? <PortfolioScreen />
           : (
             /* Placeholder Container for other tabs (Market, Social, Portfolio) */
             <div class='flex-1 flex flex-col items-center justify-center p-4 pt-[calc(env(safe-area-inset-top,0px)+1.5rem)] text-center select-none'>
@@ -89,6 +93,7 @@ export const App = () => {
       {currentPath !== '/compose' && <AskTekkiButton />}
       <StockDetailSheet />
       <ReplicateSheet />
+      <OrderSheet />
       <TekkiSheet />
     </div>
   )

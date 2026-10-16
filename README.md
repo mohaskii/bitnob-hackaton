@@ -484,3 +484,24 @@ GEMINI_TTS_MODEL=gemini-3.8-flash-tts
 ```
 
 Routes : `POST /api/tekki/ask`, `POST /api/tekki/facts`, `POST /api/tekki/transcribe`, `POST /api/tekki/speak`, `GET /api/tekki/traders`, `GET /api/tekki/market`, `GET /api/tekki/status`.
+
+---
+
+## Connecteur SGI (`api/sgi/`)
+
+TekkiTrade ne passe pas d'ordre en bourse. Il transmet l'intention de l'utilisateur à une SGI à travers une interface unique, `SGIProvider` (`api/sgi/provider.ts`) : instruments, cotations, compte, passage, suivi et annulation d'ordres, positions, mouvements.
+
+- **`MockSGIProvider`** (`api/sgi/mock.ts`) simule l'API d'une SGI régulée, ce n'est pas une fausse bourse. Il fournit :
+  - une référence SGI (`ORD-2026-…`) ;
+  - les statuts `PENDING → ACCEPTED → PARTIALLY_FILLED / FILLED`, `REJECTED`, `CANCELLED` ;
+  - les frais BRVM (0,20 %), DC/BR (0,10 %), le courtage et la taxe ;
+  - les rejets motivés (solde, titres, seuil de ±7,5 %) ;
+  - les ordres limités qui attendent dans le carnet ;
+  - l'idempotence ;
+  - l'investissement fractionné **simulé** et signalé comme tel.
+
+  Les prix sont les vrais cours différés de la BRVM.
+- **Orchestration TekkiTrade** (`api/sgi/routes.ts`) : aperçu (quantité, frais, cash avant/après, exposition, avertissements), puis **confirmation explicite obligatoire**, puis transmission à la SGI et suivi des statuts.
+- **Passage à une vraie SGI** : il suffit d'implémenter `SGIProvider` et de changer `SGI_PROVIDER` dans `api/sgi/index.ts`. L'interface, Tekki AI et le portefeuille ne changent pas : les positions affichées viennent toujours de la SGI.
+
+Routes : `GET /api/sgi/info`, `GET /api/sgi/portfolio`, `POST /api/sgi/orders/preview`, `POST /api/sgi/orders` (avec `confirmed: true` et `idempotencyKey`), `GET /api/sgi/order`, `POST /api/sgi/orders/cancel`.

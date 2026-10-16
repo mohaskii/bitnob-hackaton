@@ -214,6 +214,72 @@ sql`CREATE INDEX IF NOT EXISTS idx_social_trade ON socialTrade(traderId, execute
   .run()
 
 /* -------------------------------------------------------------------------- */
+/* Mock SGI (sandbox): data owned by the simulated SGI, not by TekkiTrade      */
+/* -------------------------------------------------------------------------- */
+
+export const MockSgiAccount = createTable('mockSgiAccount', {
+  rowId: { type: 'INTEGER', primary: true },
+  accountId: { type: 'TEXT' },
+  userId: { type: 'INTEGER' },
+  cashFcfa: { type: 'REAL' },
+  createdAt: { type: 'TEXT' },
+})
+
+export const MockSgiOrder = createTable('mockSgiOrder', {
+  rowId: { type: 'INTEGER', primary: true },
+  orderId: { type: 'TEXT' },
+  sgiReference: { type: 'TEXT' },
+  accountId: { type: 'TEXT' },
+  idempotencyKey: { type: 'TEXT' },
+  symbol: { type: 'TEXT' },
+  side: { type: 'TEXT' },
+  orderType: { type: 'TEXT' },
+  quantity: { type: 'REAL' },
+  amountFcfa: { type: 'REAL', optional: true },
+  limitPriceFcfa: { type: 'REAL', optional: true },
+  referencePriceFcfa: { type: 'REAL' },
+  filledQuantity: { type: 'REAL' },
+  filledGrossFcfa: { type: 'REAL' },
+  feesJson: { type: 'TEXT' },
+  netAmountFcfa: { type: 'REAL' },
+  status: { type: 'TEXT' },
+  rejectionReason: { type: 'TEXT', optional: true },
+  fractional: { type: 'INTEGER' },
+  eventsJson: { type: 'TEXT' },
+  fillPlanJson: { type: 'TEXT' },
+  createdAt: { type: 'TEXT' },
+  updatedAt: { type: 'TEXT' },
+})
+
+export const MockSgiPosition = createTable('mockSgiPosition', {
+  rowId: { type: 'INTEGER', primary: true },
+  accountId: { type: 'TEXT' },
+  symbol: { type: 'TEXT' },
+  quantity: { type: 'REAL' },
+  averageCostFcfa: { type: 'REAL' },
+})
+
+export const MockSgiTransaction = createTable('mockSgiTransaction', {
+  rowId: { type: 'INTEGER', primary: true },
+  transactionId: { type: 'TEXT' },
+  accountId: { type: 'TEXT' },
+  type: { type: 'TEXT' },
+  amountFcfa: { type: 'REAL' },
+  orderId: { type: 'TEXT', optional: true },
+  label: { type: 'TEXT' },
+  at: { type: 'TEXT' },
+})
+
+sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_mock_sgi_account_user ON mockSgiAccount(userId)`
+  .run()
+sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_mock_sgi_order_id ON mockSgiOrder(orderId)`
+  .run()
+sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_mock_sgi_order_idem ON mockSgiOrder(accountId, idempotencyKey)`
+  .run()
+sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_mock_sgi_position ON mockSgiPosition(accountId, symbol)`
+  .run()
+
+/* -------------------------------------------------------------------------- */
 /* Database Indexes                                                           */
 /* -------------------------------------------------------------------------- */
 

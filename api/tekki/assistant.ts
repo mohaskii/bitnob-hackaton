@@ -211,12 +211,9 @@ const buildFacts = async (context: TekkiContext, userId: number) => {
       }
 
       if (context.page === 'replicate' && trade && context.amountFcfa) {
-        const portfolio = userPortfolio(userId)
-        const fees = computeFees(context.amountFcfa, {
-          brokerageRate: 0.01,
-          brokerageMinFcfa: 1000,
-          taxOnBrokerageRate: 0.18,
-        })
+        const portfolio = await userPortfolio(userId)
+        const { sgi } = await import('../sgi/index.ts')
+        const fees = computeFees(context.amountFcfa, sgi.tariff())
         const impact = replicationImpact({
           holdings: portfolio.holdings,
           cashFcfa: portfolio.cashFcfa,
@@ -257,7 +254,7 @@ const buildFacts = async (context: TekkiContext, userId: number) => {
   }
 
   if (context.page === 'portfolio') {
-    const portfolio = userPortfolio(userId)
+    const portfolio = await userPortfolio(userId)
     const total = portfolio.holdings.reduce((s, h) => s + h.valueFcfa, 0)
     facts.push(
       { label: 'Cash disponible', value: fcfa(portfolio.cashFcfa) },
@@ -396,7 +393,7 @@ const templateExplanation = (
       'Les données ne disent pas pourquoi il l’a faite, seulement ce qu’elle change dans son portefeuille. ' +
       (impact
         ? `Pour toi : ${impact.label.toLowerCase()} ${impact.value}, frais estimés ${
-          factValue(facts, 'Frais estimés (barème SGI de démonstration)')
+          factValue(facts, 'Frais estimés (barème de la SGI de simulation)')
         }, cash ${factValue(facts, 'Ton cash')}. `
         : '') +
       'La décision t’appartient, après confirmation.'

@@ -7,6 +7,8 @@ import {
   Sparkles,
   X,
 } from 'lucide-preact'
+import { openOrder } from '../../orders/order-state.ts'
+import { realStocks } from '../../market/market-state.ts'
 import {
   analyzeTrader,
   askAboutStock,
@@ -134,6 +136,17 @@ export const StockDetailSheet = () => {
         )}
         <button
           type='button'
+          onClick={() => {
+            const current = stock
+            closeStockDetail()
+            openOrder({ symbol: current.symbol, name: current.name })
+          }}
+          class='h-12 rounded-2xl bg-primary text-primary-content font-bold text-[14px] cursor-pointer'
+        >
+          Passer un ordre (SGI de simulation)
+        </button>
+        <button
+          type='button'
           onClick={() => askAboutStock(
             'Explique-moi ce que je regarde comme si je n’avais jamais investi.',
           )}
@@ -222,14 +235,24 @@ export const ReplicateSheet = () => {
         </button>
         <button
           type='button'
-          disabled
-          class='h-12 rounded-2xl bg-primary text-primary-content font-bold text-[14px] opacity-40'
+          onClick={() => {
+            const amount = replicateAmount.value
+            closeReplicate()
+            openOrder({
+              symbol: trade.symbol,
+              name: realStocks.value[trade.symbol]?.name ?? trade.symbol,
+              side: trade.side,
+              amountFcfa: trade.side === 'BUY' ? amount : undefined,
+              origin: `Réplication de l’opération de @${target.handle}`,
+            })
+          }}
+          class='h-12 rounded-2xl bg-primary text-primary-content font-bold text-[14px] cursor-pointer'
         >
-          Continuer vers la confirmation (SGI de simulation)
+          Continuer vers la confirmation
         </button>
         <p class='text-[11px] text-center text-base-content/45'>
-          Aucun ordre n’est passé sans ta confirmation. L’envoi à la SGI arrive
-          avec le connecteur SGI.
+          Aucun ordre n’est passé sans ta confirmation explicite. Il est ensuite
+          transmis à la SGI de simulation.
         </p>
       </div>
     </div>

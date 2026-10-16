@@ -69,24 +69,19 @@ export const latestTrade = (traderId: string, symbol?: string) => {
 export const describeTrade = (traderId: string, tradeId: number) =>
   tradeContext(traderTrades(traderId), tradeId, priceMap(), sectorOf)
 
-/** The user's holdings and cash from the existing demo wallet tables. */
-export const userPortfolio = (userId: number) => {
-  const prices = priceMap()
-  const wallet = sqlQuery<{ balanceFcfa: number }>`
-    SELECT balanceFcfa FROM wallet WHERE userId = ${userId}
-  `.get()
-  const holdings = sqlQuery<
-    { symbol: string; quantity: number; averageBuyPriceFcfa: number }
-  >`
-    SELECT symbol, quantity, averageBuyPriceFcfa FROM fractionalShare WHERE userId = ${userId}
-  `.all().map((h) => ({
-    symbol: h.symbol,
-    quantity: h.quantity,
-    valueFcfa: Math.round(
-      h.quantity * (prices.get(h.symbol) ?? h.averageBuyPriceFcfa),
-    ),
-  }))
-  return { cashFcfa: wallet?.balanceFcfa ?? 0, holdings }
+/** The user's holdings and cash, as reported by the SGI (source of truth). */
+export const userPortfolio = async (userId: number) => {
+  const { sgi } = await import('../sgi/index.ts')
+  const account = await sgi.getAccount(userId)
+  const positions = await sgi.getPositions(account.accountId)
+  return {
+    cashFcfa: account.availableFcfa,
+    holdings: positions.map((p) => ({
+      symbol: p.symbol,
+      quantity: p.quantity,
+      valueFcfa: p.valueFcfa,
+    })),
+  }
 }
 
 /** Stock facts for the current screen, from the latest real BRVM snapshot. */
