@@ -1,6 +1,7 @@
 import { Copy } from 'lucide-preact'
 import { SocialPost } from '../../../state.ts'
 import { handleCopyPostTrade } from '../social-state.ts'
+import { UnderstandPostButton } from '../../tekki/components/TekkiEntryPoints.tsx'
 
 type PostTradeSnippetProps = {
   post: SocialPost
@@ -33,14 +34,17 @@ export const PostTradeSnippet = ({ post }: PostTradeSnippetProps) => {
         </span>
       </div>
 
-      <button
-        type='button'
-        onClick={() => handleCopyPostTrade(post)}
-        class='h-7 px-3 rounded-full bg-primary text-primary-content text-xs font-bold flex items-center gap-1 cursor-pointer active:scale-95 transition-transform flex-shrink-0'
-      >
-        <Copy size={11} strokeWidth={2.5} />
-        <span>Copier</span>
-      </button>
+      <div class='flex items-center gap-1.5 flex-shrink-0'>
+        <UnderstandPostButton handle={post.authorHandle} symbol={trade.symbol} />
+        <button
+          type='button'
+          onClick={() => handleCopyPostTrade(post)}
+          class='h-7 px-3 rounded-full bg-primary text-primary-content text-xs font-bold flex items-center gap-1 cursor-pointer active:scale-95 transition-transform flex-shrink-0'
+        >
+          <Copy size={11} strokeWidth={2.5} />
+          <span>Copier</span>
+        </button>
+      </div>
     </div>
   )
 }

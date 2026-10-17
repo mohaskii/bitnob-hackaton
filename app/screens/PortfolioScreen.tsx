@@ -13,6 +13,7 @@ import {
   resetPortfolio,
 } from '../features/portfolio/portfolio-state.ts'
 import { loadMarket, openStock } from '../features/market/market-state.ts'
+import { TekkiPortfolioCard } from '../features/tekki/components/TekkiEntryPoints.tsx'
 
 /** Invested (yellow) vs cash (muted) with its legend, on the dark hero. */
 const AllocationBar = () => {
@@ -225,6 +226,7 @@ export const PortfolioScreen = () => {
           <Positions />
         </section>
         <div class='flex flex-col gap-6'>
+          <TekkiPortfolioCard />
           <OrderHistory />
           <ResetControl />
         </div>
