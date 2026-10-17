@@ -129,4 +129,18 @@ export const setAuthPassword = (value: string) => {
   authPassword.value = value
 }
 
+export const ensureSession = async () => {
+  if (!token.value) {
+    await startAsGuest()
+  } else if (!user.value) {
+    try {
+      const me = await api.get<{ user: SessionUser }>('/me')
+      user.value = me.user
+    } catch {
+      await startAsGuest()
+    }
+  }
+}
+
 void loadConfig()
+void ensureSession()
