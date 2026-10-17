@@ -159,7 +159,8 @@ export const ToastStack = () => (
           key={toast.id}
           type='button'
           onClick={() => dismissToast(toast.id)}
-          class='pointer-events-auto max-w-[440px] w-full flex items-start gap-2.5 bg-neutral text-neutral-content rounded-2xl px-4 py-3 text-left text-[13px] font-semibold shadow-xl tk-slide-down'
+          class='pointer-events-auto max-w-[440px] w-full flex items-start gap-2.5 bg-neutral text-neutral-content rounded-2xl px-4 py-3 text-left text-[13px] font-semibold tk-slide-down'
+
         >
           <Icon
             size={18}

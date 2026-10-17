@@ -24,7 +24,7 @@ export const MarketSearchBar = () => {
           value={query}
           onInput={(e) => setSearchQuery((e.target as HTMLInputElement).value)}
           placeholder='Rechercher une action BRVM (ex: SNTS, Orange)...'
-          class='w-full h-11 pl-10 pr-4 rounded-2xl bg-base-100 text-xs text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-1 focus:ring-primary/40 '
+          class='w-full h-11 pl-10 pr-4 rounded-2xl bg-base-100 focus:bg-base-200 text-xs text-base-content placeholder:text-base-content/40 focus:outline-none'
         />
       </div>
 

@@ -17,7 +17,8 @@ export const TraderCardHeader = ({ trader }: TraderCardHeaderProps) => {
           <img
             src={trader.avatarUrl}
             alt={trader.name}
-            class='w-11 h-11 rounded-full object-cover ring-2 ring-base-200'
+            class='w-11 h-11 rounded-full object-cover'
+
           />
           {trader.verified && (
             <div class='absolute -bottom-0.5 -right-0.5 bg-primary text-primary-content rounded-full p-0.5'>

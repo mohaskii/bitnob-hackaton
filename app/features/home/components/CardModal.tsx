@@ -12,8 +12,8 @@ export const CardModal = () => {
         if (e.target === e.currentTarget) closeCardModal()
       }}
     >
-      <div class='w-full sm:max-w-md bg-base-100 rounded-t-3xl sm:rounded-3xl p-5 pb-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)+1rem))] flex flex-col gap-4 shadow-2xl animate-in slide-in-from-bottom duration-200'>
-        <div class='flex items-center justify-between pb-2 border-b border-base-200'>
+      <div class='w-full sm:max-w-md bg-base-100 rounded-t-3xl sm:rounded-3xl p-5 pb-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)+1rem))] flex flex-col gap-4 animate-in slide-in-from-bottom duration-200'>
+        <div class='flex items-center justify-between pb-2'>
           <div class='flex items-center gap-2'>
             <div class='w-8 h-8 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold'>
               <CreditCard size={16} />
@@ -37,7 +37,8 @@ export const CardModal = () => {
         </div>
 
         {/* Mock Card Preview */}
-        <div class='w-full h-44 rounded-2xl bg-gradient-to-tr from-neutral to-neutral-focus p-4 text-neutral-content flex flex-col justify-between shadow-lg relative overflow-hidden'>
+        <div class='w-full h-44 rounded-2xl bg-neutral p-4 text-neutral-content flex flex-col justify-between relative overflow-hidden'>
+
           <div class='flex justify-between items-center'>
             <span class='font-black tracking-widest text-xs uppercase text-primary'>
               TekkiTrade Card

@@ -1,5 +1,7 @@
 import { computed, signal } from '@preact/signals'
 import { api, configureApi, errorMessage } from '../../lib/api.ts'
+import { showToast } from '../../state.ts'
+import { navigateUrl } from '../../router.tsx'
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
@@ -55,6 +57,7 @@ export const authPending = signal(false)
 export const authError = signal<string | null>(null)
 
 export const isAuthenticated = computed(() => token.value !== null)
+export const isGuest = computed(() => user.value?.isGuest === 1)
 export const bitnobMode = computed(() =>
   config.value?.bitnobMode ?? 'simulation'
 )
@@ -77,6 +80,7 @@ export const logout = () => {
   user.value = null
   storeToken(null)
   authMode.value = 'welcome'
+  navigateUrl('/')
 }
 
 configureApi({ getToken: () => token.value, onUnauthorized: logout })
@@ -89,34 +93,86 @@ const runAuth = async (call: () => Promise<SessionResponse>) => {
   authPending.value = true
   authError.value = null
   try {
-    applySession(await call())
+    const session = await call()
+    applySession(session)
+    return session
   } catch (error) {
     authError.value = errorMessage(error)
+    return null
   } finally {
     authPending.value = false
   }
 }
 
-export const startAsGuest = () =>
-  runAuth(() => api.post<SessionResponse>('/auth/guest'))
+export const startAsGuest = async () => {
+  const session = await runAuth(() => api.post<SessionResponse>('/auth/guest'))
+  if (session) {
+    showToast('Mode invité activé. Entraînez-vous sans risque !', 'info')
+    navigateUrl('/')
+  }
+  return session
+}
+
+export const submitRegister = async () => {
+  authMode.value = 'register'
+  if (!authEmail.value.trim() || !authLogin.value.trim() || !authPassword.value) {
+    authError.value = 'Veuillez remplir tous les champs.'
+    return null
+  }
+  const session = await runAuth(() =>
+    api.post<SessionResponse>('/auth/register', {
+      email: authEmail.value,
+      login: authLogin.value,
+      password: authPassword.value,
+    })
+  )
+  if (session) {
+    showToast('Compte créé avec succès ! Bienvenue sur TekkiTrade.', 'success')
+    navigateUrl('/')
+  }
+  return session
+}
+
+export const submitLogin = async () => {
+  authMode.value = 'login'
+  if (!authEmail.value.trim() || !authPassword.value) {
+    authError.value = 'Veuillez renseigner votre email et mot de passe.'
+    return null
+  }
+  const session = await runAuth(() =>
+    api.post<SessionResponse>('/auth/login', {
+      email: authEmail.value,
+      password: authPassword.value,
+    })
+  )
+  if (session) {
+    showToast(`Ravi de vous revoir, ${session.user.login} !`, 'success')
+    navigateUrl('/')
+  }
+  return session
+}
 
 export const submitAuth = () =>
-  runAuth(() =>
-    authMode.value === 'register'
-      ? api.post<SessionResponse>('/auth/register', {
-        email: authEmail.value,
-        login: authLogin.value,
-        password: authPassword.value,
-      })
-      : api.post<SessionResponse>('/auth/login', {
-        email: authEmail.value,
-        password: authPassword.value,
-      })
-  )
+  authMode.value === 'register' ? submitRegister() : submitLogin()
 
 export const setAuthMode = (mode: 'welcome' | 'login' | 'register') => {
   authMode.value = mode
   authError.value = null
+}
+
+export const goToRegister = () => {
+  setAuthMode('register')
+  navigateUrl('/register')
+}
+
+export const goToLogin = () => {
+  setAuthMode('login')
+  navigateUrl('/login')
+}
+
+export const goToWelcome = () => {
+  setAuthMode('welcome')
+  navigateUrl('/')
 }
 
 export const setAuthEmail = (value: string) => {
@@ -130,17 +186,16 @@ export const setAuthPassword = (value: string) => {
 }
 
 export const ensureSession = async () => {
-  if (!token.value) {
-    await startAsGuest()
-  } else if (!user.value) {
+  if (token.value && !user.value) {
     try {
       const me = await api.get<{ user: SessionUser }>('/me')
       user.value = me.user
     } catch {
-      await startAsGuest()
+      logout()
     }
   }
 }
 
 void loadConfig()
 void ensureSession()
+

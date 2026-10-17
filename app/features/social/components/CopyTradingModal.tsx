@@ -21,7 +21,8 @@ export const CopyTradingModal = () => {
         if (e.target === e.currentTarget) closeCopyModal()
       }}
     >
-      <div class='w-full sm:max-w-md bg-base-100 rounded-t-3xl sm:rounded-3xl p-5 pb-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)+1rem))] flex flex-col gap-4 shadow-2xl animate-in slide-in-from-bottom duration-200'>
+      <div class='w-full sm:max-w-md bg-base-100 rounded-t-3xl sm:rounded-3xl p-5 pb-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)+1rem))] flex flex-col gap-4 animate-in slide-in-from-bottom duration-200'>
+
         {/* Sheet Handle */}
         <div class='w-10 h-1 bg-base-content/20 rounded-full mx-auto -mt-1 mb-1 sm:hidden' />
 

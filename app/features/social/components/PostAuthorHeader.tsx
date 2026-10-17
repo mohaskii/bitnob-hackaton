@@ -18,7 +18,8 @@ export const PostAuthorHeader = ({ post }: PostAuthorHeaderProps) => {
         <img
           src={post.avatarUrl}
           alt={post.authorName}
-          class='w-10 h-10 rounded-full object-cover ring-1 ring-base-200 flex-shrink-0'
+          class='w-10 h-10 rounded-full object-cover flex-shrink-0'
+
         />
         <div class='min-w-0'>
           <div class='flex items-center gap-1.5'>

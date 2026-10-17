@@ -55,7 +55,7 @@ const NoteLines = () => {
           value={fcfa(line.amountFcfa)}
         />
       ))}
-      <div class='border-t border-base-200'>
+      <div class='mt-2 pt-1'>
         <AmountRow
           label={fill.side === 'BUY'
             ? 'Montant net débité'

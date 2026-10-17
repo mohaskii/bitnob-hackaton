@@ -10,14 +10,15 @@ export const CopyTraderProfileCard = () => {
   if (!trader) return null
 
   return (
-    <div class='bg-base-200/50 rounded-2xl p-3.5 border border-base-200 flex items-center justify-between gap-3'>
+    <div class='bg-base-200 rounded-2xl p-3.5 flex items-center justify-between gap-3'>
       <div class='flex items-center gap-3 min-w-0'>
         <div class='relative flex-shrink-0'>
           <img
             src={trader.avatarUrl}
             alt={trader.name}
-            class='w-12 h-12 rounded-full object-cover ring-2 ring-primary/20'
+            class='w-12 h-12 rounded-full object-cover'
           />
+
           {trader.verified && (
             <div class='absolute -bottom-0.5 -right-0.5 bg-primary text-primary-content rounded-full p-0.5'>
               <ShieldCheck size={11} strokeWidth={2.8} />

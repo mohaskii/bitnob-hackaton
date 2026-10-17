@@ -400,6 +400,10 @@ selectedArticles: (count) => `${count} item${count > 1 ? 's' : ''} selected`,
 - [ ] Large components/dialogs decomposed into isolated, fine-grained
       subcomponents (~20-50 lines each)
 - [ ] No cryptic component names (`Sec1`, `Sec2`); use semantic names
+- [ ] **No gradients**: Never use gradients (`bg-gradient-*`, `radial-gradient`, etc.). Use flat background colors.
+- [ ] **No borders**: Never add borders or rings (`border`, `ring-*`) unless explicitly requested by the user.
+- [ ] **Contrast via `bg-base` shades**: Use `bg-base-100`, `bg-base-200`, `bg-base-300` hierarchy for depth and separation (e.g. `bg-base-200` inputs inside a `bg-base-100` card).
+- [ ] **No shadows**: Never use box shadows (`shadow-*`, `box-shadow`, etc.).
 
 ## Common mistakes to avoid
 
@@ -418,3 +422,6 @@ selectedArticles: (count) => `${count} item${count > 1 ? 's' : ''} selected`,
    `t.value`.
 8. **Monolithic JSX trees (>80 lines in a single component)** — break out
    dedicated subcomponents for headers, controls, cards, alerts, and actions.
+9. **Using borders or shadows for separation** — always use `bg-base` color contrast instead.
+10. **Using gradients** — stick strictly to solid, flat backgrounds.
+

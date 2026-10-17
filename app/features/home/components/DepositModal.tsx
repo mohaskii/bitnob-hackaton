@@ -95,7 +95,7 @@ export const DepositModal = () => {
       const svg = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true })
       return (
         <div
-          class='w-48 h-48 bg-white rounded-2xl p-2 mx-auto flex items-center justify-center shadow-inner [&>svg]:w-full [&>svg]:h-full'
+          class='w-48 h-48 bg-white rounded-2xl p-2 mx-auto flex items-center justify-center [&>svg]:w-full [&>svg]:h-full'
           dangerouslySetInnerHTML={{ __html: svg }}
         />
       )
@@ -115,8 +115,8 @@ export const DepositModal = () => {
         if (e.target === e.currentTarget) closeDepositModal()
       }}
     >
-      <div class='w-full sm:max-w-md bg-base-100 rounded-t-3xl sm:rounded-3xl p-5 pb-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)+1rem))] flex flex-col gap-4 shadow-2xl max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom duration-200'>
-        <div class='flex items-center justify-between pb-2 border-b border-base-200'>
+      <div class='w-full sm:max-w-md bg-base-100 rounded-t-3xl sm:rounded-3xl p-5 pb-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)+1rem))] flex flex-col gap-4 max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom duration-200'>
+        <div class='flex items-center justify-between pb-2'>
           <div class='flex items-center gap-2'>
             <div class='w-8 h-8 rounded-full bg-primary/20 text-primary-content flex items-center justify-center font-bold'>
               <Zap size={16} />
@@ -159,7 +159,7 @@ export const DepositModal = () => {
                     value={amount}
                     onInput={(e) =>
                       setAmount(Number((e.target as HTMLInputElement).value))}
-                    class='w-full bg-base-200 rounded-xl px-4 py-3 text-base font-extrabold text-base-content focus:outline-none focus:ring-2 focus:ring-primary/40'
+                    class='w-full bg-base-200 rounded-xl px-4 py-3 text-base font-extrabold text-base-content focus:outline-none focus:bg-base-300 transition-colors'
                   />
                   <span class='absolute right-4 top-3.5 text-xs font-bold text-base-content/50'>
                     FCFA
@@ -197,20 +197,21 @@ export const DepositModal = () => {
                       key={opt.id}
                       type='button'
                       onClick={() => setAsset(opt.id as FundingAsset)}
-                      class={`p-3 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all border ${
+                      class={`p-3 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
                         asset === opt.id
-                          ? 'border-primary bg-primary/10 text-primary-content'
-                          : 'border-base-200 bg-base-200/50 text-base-content/70 hover:bg-base-200'
+                          ? 'bg-primary text-primary-content'
+                          : 'bg-base-200 text-base-content/70 hover:bg-base-300'
                       }`}
                     >
                       <span class='text-xs font-black'>{opt.label}</span>
-                      <span class='text-[10px] text-base-content/50 mt-0.5'>
+                      <span class='text-[10px] opacity-75 mt-0.5'>
                         {opt.sub}
                       </span>
                     </button>
                   ))}
                 </div>
               </div>
+
 
               <button
                 type='button'

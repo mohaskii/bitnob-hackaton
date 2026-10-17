@@ -21,10 +21,11 @@ export const RegisterScreen = () => (
     </div>
 
     <main class='flex-1 px-5 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))] flex flex-col gap-4 max-w-[480px] w-full mx-auto'>
-      <div class='bg-base-100 rounded-3xl p-5 shadow-xs border border-base-200/50 flex flex-col gap-4'>
+      <div class='bg-base-100 rounded-3xl p-5 flex flex-col gap-4'>
         <RegisterForm />
       </div>
       <RegisterFooter />
     </main>
   </div>
 )
+

@@ -20,8 +20,9 @@ export const MarketSortMenu = () => {
         if (e.target === e.currentTarget) closeSortMenu()
       }}
     >
-      <div class='w-full sm:max-w-xs bg-base-100 rounded-t-3xl sm:rounded-3xl p-4 pb-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)+1rem))] flex flex-col gap-2 shadow-xl animate-in slide-in-from-bottom duration-150'>
-        <div class='flex items-center justify-between pb-2 border-b border-base-200'>
+      <div class='w-full sm:max-w-xs bg-base-100 rounded-t-3xl sm:rounded-3xl p-4 pb-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)+1rem))] flex flex-col gap-2 animate-in slide-in-from-bottom duration-150'>
+        <div class='flex items-center justify-between pb-2'>
+
           <span class='text-xs font-bold text-base-content uppercase tracking-wider'>
             Trier par
           </span>

@@ -13,7 +13,8 @@ type TraderCardProps = {
  */
 export const TraderCard = ({ trader }: TraderCardProps) => {
   return (
-    <div class='w-[245px] sm:w-[260px] flex-shrink-0 bg-base-100 rounded-2xl p-4 flex flex-col justify-between select-none border border-base-200/60'>
+    <div class='w-[245px] sm:w-[260px] flex-shrink-0 bg-base-100 rounded-2xl p-4 flex flex-col justify-between select-none'>
+
       <TraderCardHeader trader={trader} />
       <TraderCardMetrics trader={trader} />
       <TraderCardCopyButton trader={trader} />

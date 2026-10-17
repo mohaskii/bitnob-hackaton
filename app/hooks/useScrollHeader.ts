@@ -40,29 +40,10 @@ export function useScrollHeader({
       trigger: scroller,
       start: 'top top',
       end: 'max',
-      onUpdate: (self) => {
-        const scrollY = self.scroll()
-        if (isHome) {
-          if (scrollY > 4) {
-            header.classList.add('shadow-xs')
-          } else {
-            header.classList.remove('shadow-xs')
-          }
-        } else {
-          if (scrollY > 4) {
-            header.classList.add('border-b', 'border-base-300/40')
-          } else {
-            header.classList.remove('border-b', 'border-base-300/40')
-          }
-        }
-      },
     })
 
     return () => {
       trigger.kill()
-      if (header) {
-        header.classList.remove('shadow-xs', 'border-b', 'border-base-300/40')
-      }
     }
   }, [currentPath, scrollerId, headerId])
 }

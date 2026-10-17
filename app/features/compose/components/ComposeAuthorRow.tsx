@@ -10,7 +10,7 @@ export const ComposeAuthorRow = () => {
       <img
         src={CURRENT_USER.avatarUrl}
         alt={CURRENT_USER.name}
-        class='w-10 h-10 rounded-full object-cover ring-2 ring-base-200 flex-shrink-0'
+        class='w-10 h-10 rounded-full object-cover flex-shrink-0'
       />
       <div class='flex items-center gap-2'>
         <span class='font-bold text-sm text-base-content'>

@@ -13,11 +13,12 @@ export const TrendingAssetCard = ({ asset }: TrendingAssetCardProps) => {
   return (
     <div
       onClick={() => setActiveFilterSymbol(isSelected ? null : asset.symbol)}
-      class={`flex-shrink-0 w-[185px] sm:w-[200px] bg-base-100 rounded-2xl p-3 sm:p-3.5 flex items-center justify-between gap-2.5 cursor-pointer border select-none transition-all ${
+      class={`flex-shrink-0 w-[185px] sm:w-[200px] rounded-2xl p-3 sm:p-3.5 flex items-center justify-between gap-2.5 cursor-pointer select-none transition-all ${
         isSelected
-          ? 'border-primary shadow-xs ring-1 ring-primary/30'
-          : 'border-base-200/70 hover:border-base-300'
+          ? 'bg-base-300'
+          : 'bg-base-100 hover:bg-base-200'
       }`}
+
     >
       {/* Left: Bold Post Count + "POSTS" Label */}
       <div class='flex flex-col'>

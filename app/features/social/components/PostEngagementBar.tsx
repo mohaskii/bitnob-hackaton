@@ -8,7 +8,8 @@ type PostEngagementBarProps = {
 
 export const PostEngagementBar = ({ post }: PostEngagementBarProps) => {
   return (
-    <div class='flex items-center justify-between pt-1 border-t border-base-200/60 text-base-content/60 text-xs'>
+    <div class='flex items-center justify-between pt-1 text-base-content/60 text-xs'>
+
       <button
         type='button'
         onClick={() => toggleLikePost(post.id)}

@@ -24,7 +24,7 @@ export const TrendingCarousel = () => {
           <button
             type='button'
             onClick={() => scrollHorizontal(containerRef.current, 'left')}
-            class='w-8 h-8 rounded-full border border-base-300 flex items-center justify-center text-base-content/70 hover:text-base-content hover:bg-base-100 active:scale-95 transition-all cursor-pointer'
+            class='w-8 h-8 rounded-full bg-base-200 flex items-center justify-center text-base-content/70 hover:text-base-content hover:bg-base-300 active:scale-95 transition-all cursor-pointer'
             aria-label='Previous trending assets'
           >
             <ChevronLeft size={16} />
@@ -32,9 +32,10 @@ export const TrendingCarousel = () => {
           <button
             type='button'
             onClick={() => scrollHorizontal(containerRef.current, 'right')}
-            class='w-8 h-8 rounded-full border border-base-300 flex items-center justify-center text-base-content/70 hover:text-base-content hover:bg-base-100 active:scale-95 transition-all cursor-pointer'
+            class='w-8 h-8 rounded-full bg-base-200 flex items-center justify-center text-base-content/70 hover:text-base-content hover:bg-base-300 active:scale-95 transition-all cursor-pointer'
             aria-label='Next trending assets'
           >
+
             <ChevronRight size={16} />
           </button>
         </div>

@@ -7,6 +7,9 @@ import { MarketScreen } from './screens/MarketScreen.tsx'
 import { SocialScreen } from './screens/SocialScreen.tsx'
 import { ComposeScreen } from './screens/ComposeScreen.tsx'
 import { PortfolioScreen } from './screens/PortfolioScreen.tsx'
+import { RegisterScreen } from './screens/RegisterScreen.tsx'
+import { WelcomeScreen } from './features/session/WelcomeScreen.tsx'
+import { isAuthenticated } from './features/session/session-state.ts'
 import { ToastStack } from './components/ui.tsx'
 import { useScrollHeader } from './hooks/useScrollHeader.ts'
 import { isBottomNavHidden } from './state.ts'
@@ -14,6 +17,12 @@ import { isBottomNavHidden } from './state.ts'
 export const App = () => {
   const currentPath = pathSignal.value || '/'
   const isHome = currentPath === '/' || currentPath === '/home'
+  const isDarkTop =
+    isHome ||
+    currentPath === '/portfolio' ||
+    currentPath === '/register' ||
+    currentPath === '/login' ||
+    currentPath === '/welcome'
 
   // Coordinate safe area scroll pinning with GSAP ScrollTrigger
   useScrollHeader({ currentPath })
@@ -28,13 +37,23 @@ export const App = () => {
     }
   }, [])
 
+  // If unauthenticated and not on the dedicated register route, show the welcome onboarding screen
+  if (!isAuthenticated.value && currentPath !== '/register' && currentPath !== '/login') {
+    return (
+      <div class='h-full w-full flex flex-col bg-base-200 text-base-content overflow-hidden relative font-sans'>
+        <WelcomeScreen />
+        <ToastStack />
+      </div>
+    )
+  }
+
   return (
     <div class='h-full w-full flex flex-col bg-base-200 text-base-content overflow-hidden relative font-sans'>
       {/* Pinned Safe Area Top Header: prevents scrolling content from passing into safe area top */}
       <header
         id='safe-area-header'
         class={`fixed top-0 inset-x-0 h-[env(safe-area-inset-top,0px)] z-40 pointer-events-none transition-colors duration-200 ${
-          isHome ? 'bg-neutral' : 'bg-base-200'
+          isDarkTop ? 'bg-neutral' : 'bg-base-200'
         }`}
       />
 
@@ -53,6 +72,10 @@ export const App = () => {
           ? <ComposeScreen onClose={() => history.back()} />
           : currentPath === '/portfolio'
           ? <PortfolioScreen />
+          : currentPath === '/register' || currentPath === '/login'
+          ? <RegisterScreen />
+          : currentPath === '/welcome'
+          ? <WelcomeScreen />
           : (
             /* Fallback screen */
             <div class='flex-1 flex flex-col items-center justify-center p-4 pt-[calc(env(safe-area-inset-top,0px)+1.5rem)] text-center select-none'>
@@ -71,7 +94,13 @@ export const App = () => {
       {/* Floating Bottom Navigation Tab Bar */}
       <BottomNav
         activeTab={currentPath}
-        hidden={isBottomNavHidden.value || currentPath === '/compose'}
+        hidden={
+          isBottomNavHidden.value ||
+          currentPath === '/compose' ||
+          currentPath === '/register' ||
+          currentPath === '/login' ||
+          currentPath === '/welcome'
+        }
         onTabChange={(tab) => navigateUrl(tab.path)}
       />
 
@@ -80,3 +109,4 @@ export const App = () => {
     </div>
   )
 }
+

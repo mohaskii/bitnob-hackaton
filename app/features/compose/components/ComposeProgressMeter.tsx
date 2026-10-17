@@ -63,7 +63,7 @@ export const ComposeProgressMeter = () => {
       <button
         type='button'
         title='Ajouter au fil'
-        class='w-6 h-6 rounded-full border border-base-300 flex items-center justify-center text-base-content/60 hover:text-primary hover:border-primary active:scale-95 transition-all cursor-pointer'
+        class='w-6 h-6 rounded-full bg-base-200 hover:bg-base-300 flex items-center justify-center text-base-content/60 hover:text-primary active:scale-95 transition-all cursor-pointer'
       >
         <Plus size={13} strokeWidth={2.4} />
       </button>

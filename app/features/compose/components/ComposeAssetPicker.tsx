@@ -20,7 +20,7 @@ export const ComposeAssetPicker = () => {
   }
 
   return (
-    <div class='mt-auto pt-3 pb-1 border-t border-base-200 flex flex-col gap-3 animate-in fade-in duration-150'>
+    <div class='mt-auto pt-3 pb-1 flex flex-col gap-3 animate-in fade-in duration-150'>
       <ComposeSymbolChips />
       <ComposeSentimentSelector />
     </div>

@@ -14,7 +14,7 @@ export const ComposeHeader = ({ onClose }: ComposeHeaderProps) => {
   const handleClose = onClose ?? closeComposeScreen
 
   return (
-    <header class='flex items-center justify-between px-4 pt-[max(0.75rem,calc(env(safe-area-inset-top,0px)+0.5rem))] pb-3 border-b border-base-200'>
+    <header class='flex items-center justify-between px-4 pt-[max(0.75rem,calc(env(safe-area-inset-top,0px)+0.5rem))] pb-3'>
       <button
         type='button'
         onClick={handleClose}

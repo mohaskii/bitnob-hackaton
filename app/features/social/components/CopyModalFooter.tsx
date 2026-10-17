@@ -31,8 +31,9 @@ export const CopyModalFooter = () => {
         <button
           type='button'
           onClick={confirmCopy}
-          class='btn btn-sm btn-primary rounded-full flex-[2] text-xs font-bold shadow-md shadow-primary/25 cursor-pointer active:scale-95 transition-all'
+          class='btn btn-sm btn-primary rounded-full flex-[2] text-xs font-bold cursor-pointer active:scale-95 transition-all'
         >
+
           Lancer la copie ({new Intl.NumberFormat('fr-FR').format(amount)} F)
         </button>
       </div>

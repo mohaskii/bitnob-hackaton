@@ -31,7 +31,8 @@ export const CopyAmountSection = () => {
           value={amount}
           onInput={(e) =>
             setCopyAmount(Number((e.target as HTMLInputElement).value) || 0)}
-          class='input input-bordered w-full rounded-2xl bg-base-200/60 font-extrabold text-base text-base-content pr-16 focus:outline-none focus:ring-1 focus:ring-primary/40'
+          class='w-full px-4 py-3 rounded-2xl bg-base-200 font-extrabold text-base text-base-content pr-16 focus:outline-none focus:bg-base-300 transition-colors'
+
         />
         <span class='absolute right-4 text-xs font-bold text-base-content/50 pointer-events-none'>
           FCFA

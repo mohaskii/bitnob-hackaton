@@ -203,7 +203,7 @@ const QuoteCard = () => {
         {q.cryptoAmount} <span class='text-[16px]'>{q.asset}</span>
       </p>
       <p class='text-[11.5px] text-base-content/50'>Réseau {q.network}</p>
-      <div class='border-t border-base-200 mt-3'>
+      <div class='mt-3 pt-1'>
         <AmountRow
           label='Taux Bitnob'
           hint={q.mode === 'simulation'
@@ -245,12 +245,12 @@ const SenderFields = () => (
       value={senderName.value}
       onInput={(e) => setSenderName((e.target as HTMLInputElement).value)}
       placeholder='Nom complet'
-      class='h-11 px-3 rounded-xl bg-base-200 text-[13.5px] focus:outline-none focus:ring-2 focus:ring-primary'
+      class='h-11 px-3 rounded-xl bg-base-200 focus:bg-base-300 text-[13.5px] focus:outline-none'
     />
     <select
       value={senderCountry.value}
       onChange={(e) => setSenderCountry((e.target as HTMLSelectElement).value)}
-      class='h-11 px-3 rounded-xl bg-base-200 text-[13.5px] focus:outline-none'
+      class='h-11 px-3 rounded-xl bg-base-200 focus:bg-base-300 text-[13.5px] focus:outline-none'
     >
       {SENDER_COUNTRY_OPTIONS.map(([code, label]) => (
         <option key={code} value={code}>Pays de résidence : {label}</option>

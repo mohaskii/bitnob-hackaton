@@ -155,3 +155,78 @@ a, img, svg {
   --color-earth-900: #1a1a19;
   --color-earth-950: #0d0d0d;
 }
+
+@keyframes tk-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes tk-slide-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes tk-slide-down {
+  from {
+    transform: translateY(-12px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes tk-pulse-ring {
+  0% {
+    opacity: 1;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(0.98);
+  }
+}
+
+.tk-fade-in {
+  animation: tk-fade-in 180ms ease-out;
+}
+.tk-slide-up {
+  animation: tk-slide-up 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.tk-slide-down {
+  animation: tk-slide-down 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.tk-pulse {
+  animation: tk-pulse-ring 1.8s ease-out infinite;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Flat dark hero surface - no gradients */
+.tk-hero {
+  background-color: var(--color-neutral);
+  color: #f5f5f5;
+}
+
+.tk-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+

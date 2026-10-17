@@ -15,7 +15,7 @@ export const CopyRiskControls = () => {
   const openTrades = copyOpenTrades.value
 
   return (
-    <div class='bg-base-200/40 rounded-2xl p-3.5 flex flex-col gap-3 border border-base-200/60'>
+    <div class='bg-base-200 rounded-2xl p-3.5 flex flex-col gap-3'>
       <div>
         <div class='flex items-center justify-between mb-1.5'>
           <div class='flex items-center gap-1.5'>
@@ -43,7 +43,8 @@ export const CopyRiskControls = () => {
         </p>
       </div>
 
-      <div class='flex items-center justify-between pt-2 border-t border-base-200/60'>
+      <div class='flex items-center justify-between pt-2'>
+
         <div>
           <span class='text-xs font-bold text-base-content block'>
             Copier les positions existantes

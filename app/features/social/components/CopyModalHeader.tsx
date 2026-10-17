@@ -10,7 +10,8 @@ export const CopyModalHeader = () => {
   if (!trader) return null
 
   return (
-    <div class='flex items-center justify-between pb-3 border-b border-base-200'>
+    <div class='flex items-center justify-between pb-3'>
+
       <div class='flex items-center gap-2'>
         <Copy size={18} class='text-primary' />
         <h3 class='font-bold text-base text-base-content'>

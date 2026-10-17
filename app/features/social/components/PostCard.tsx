@@ -13,7 +13,8 @@ type PostCardProps = {
  */
 export const PostCard = ({ post }: PostCardProps) => {
   return (
-    <article class='bg-base-100 rounded-2xl p-4 flex flex-col gap-3 border border-base-200/60 select-none'>
+    <article class='bg-base-100 rounded-2xl p-4 flex flex-col gap-3 select-none'>
+
       {/* 1. Author and sentiment header */}
       <PostAuthorHeader post={post} />
 

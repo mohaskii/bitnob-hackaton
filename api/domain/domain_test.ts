@@ -198,3 +198,14 @@ Deno.test('auth: tampered or forged tokens are rejected', async () => {
   assertEquals(await verifySessionToken(`1.${exp}.${sig}`), null)
   assertEquals(await verifySessionToken('42'), null)
 })
+
+Deno.test('auth: password hashing and verification with salt', async () => {
+  const { hashPassword, newSalt, timingSafeEqual } = await import('../lib/auth.ts')
+  const salt = newSalt()
+  const hash = await hashPassword('tekkiPass123', salt)
+  const candidateValid = await hashPassword('tekkiPass123', salt)
+  const candidateWrong = await hashPassword('wrongPass123', salt)
+  assert(timingSafeEqual(hash, candidateValid))
+  assert(!timingSafeEqual(hash, candidateWrong))
+})
+

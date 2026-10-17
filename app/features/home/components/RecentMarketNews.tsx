@@ -49,7 +49,7 @@ export const RecentMarketNews = ({ onSeeMore }: RecentMarketNewsProps) => {
             {news.content}
           </p>
 
-          <div class='border-t border-base-200/80 pt-2.5 flex items-center justify-between text-[11px] text-base-content/50'>
+          <div class='pt-2 flex items-center justify-between text-[11px] text-base-content/50'>
             <span>{news.date}</span>
             <span class='font-medium text-base-content/70'>
               {news.source}

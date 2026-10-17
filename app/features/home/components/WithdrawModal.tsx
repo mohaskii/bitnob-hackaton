@@ -12,8 +12,9 @@ export const WithdrawModal = () => {
         if (e.target === e.currentTarget) closeWithdrawModal()
       }}
     >
-      <div class='w-full sm:max-w-md bg-base-100 rounded-t-3xl sm:rounded-3xl p-5 pb-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)+1rem))] flex flex-col gap-4 shadow-2xl animate-in slide-in-from-bottom duration-200'>
-        <div class='flex items-center justify-between pb-2 border-b border-base-200'>
+      <div class='w-full sm:max-w-md bg-base-100 rounded-t-3xl sm:rounded-3xl p-5 pb-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)+1rem))] flex flex-col gap-4 animate-in slide-in-from-bottom duration-200'>
+        <div class='flex items-center justify-between pb-2'>
+
           <div class='flex items-center gap-2'>
             <div class='w-8 h-8 rounded-full bg-base-200 text-base-content flex items-center justify-center font-bold'>
               <ArrowUpRight size={16} />

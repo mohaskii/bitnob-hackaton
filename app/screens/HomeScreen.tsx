@@ -10,6 +10,7 @@ import {
   openDepositModal,
   openWithdrawModal,
 } from '../features/home/home-state.ts'
+import { goToRegister } from '../features/session/session-state.ts'
 
 type HomeScreenProps = {
   onDeposit?: () => void
@@ -30,9 +31,10 @@ export const HomeScreen = ({
   onDeposit = openDepositModal,
   onWithdraw = openWithdrawModal,
   onCard = openCardModal,
-  onAvatarClick,
+  onAvatarClick = goToRegister,
   onSeeMoreNews,
 }: HomeScreenProps = {}) => {
+
   return (
     <div class='flex-1 flex flex-col w-full pt-0 pb-6 select-none'>
       {/* 1. Grande Carte Noire starting directly at Y: 0 */}

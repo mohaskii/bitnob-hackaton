@@ -58,16 +58,16 @@ const SideToggle = () => (
 const ModeToggle = () =>
   side.value === 'BUY'
     ? (
-      <div class='flex gap-4 text-[13px] font-bold'>
+      <div class='flex gap-1.5 p-1 bg-base-200 rounded-2xl text-[12px] font-bold'>
         {(['budget', 'quantity'] as const).map((mode) => (
           <button
             key={mode}
             type='button'
             onClick={() => setInputMode(mode)}
-            class={`pb-1 border-b-2 cursor-pointer ${
+            class={`flex-1 py-1.5 px-3 rounded-xl cursor-pointer transition-all ${
               inputMode.value === mode
-                ? 'border-primary text-base-content'
-                : 'border-transparent text-base-content/45'
+                ? 'bg-base-100 text-base-content font-bold'
+                : 'text-base-content/55 hover:text-base-content'
             }`}
           >
             {mode === 'budget' ? 'J’ai un budget' : 'Je choisis le nombre'}
@@ -186,7 +186,7 @@ const FeeBreakdown = () => {
           value={fcfa(line.amountFcfa)}
         />
       ))}
-      <div class='border-t border-base-200'>
+      <div class='mt-2 pt-1'>
         <AmountRow
           label={side.value === 'BUY' ? 'Total débité' : 'Total crédité'}
           value={fcfa(e.netFcfa)}
