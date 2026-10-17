@@ -2,7 +2,7 @@
 
 ## Architecture Overview
 
-The application uses a mobile-first shell designed for **Capacitor + Preact**,
+The application uses a mobile-first shell shipped as a **Preact PWA** (manifest + service worker in `app/public/`),
 styled using Tailwind CSS v4 and DaisyUI design tokens defined in
 `app/style.css`, with navigation powered by `@preact/signals` in
 `app/router.tsx` and micro-animations orchestrated with **GSAP**.
@@ -65,8 +65,9 @@ export const App = () => {
   respects `safe-area-inset-top`.
 - Always apply `pb-28` to `<main>` so that scrollable content on mobile
   viewports is never obscured by the floating pill nav.
-- Handle Capacitor `SystemBars.setStyle({ style: SystemBarsStyle.Dark })` in a
-  safe `try/catch` to render crisp white system icons over dark header cards.
+- The status bar is styled by `index.html` (`theme-color`,
+  `apple-mobile-web-app-status-bar-style: black-translucent`); the safe-area
+  header in `App.tsx` paints behind it.
 - **Zero `useState`**: Navigation uses `pathSignal` and `navigateUrl` from
   `app/router.tsx`, enabling 100% fine-grained reactivity via `@preact/signals`.
 
@@ -160,4 +161,33 @@ gracefully across varying mobile phone viewports (from 360px Android devices to
   - `/social` -> Social
   - `/portfolio` -> Portfolio
 - Active tab matching handles both root `/` (and `''`) as well as nested
-  sub-paths (`currentPath.startsWith(tab.path + '/')`).
+  sub-paths (`currentPath.startsWith(tab.path + '/')`), via the shared pure
+  helper `isTabActive` exported by `BottomNav.tsx`.
+
+---
+
+## 5. Desktop & Web Layout (`lg` ≥ 1024px)
+
+Mobile stays the reference design; desktop is layered on with Tailwind `lg:`
+(and `md:` for dialogs) variants only — no JS breakpoints, no extra state.
+
+- **Shell**: `App.tsx` is a row. `SideNav` (`components/SideNav.tsx`,
+  `SideNavLink.tsx`) is a 248px `bg-base-100` rail shown from `lg`, with the
+  `BrandMark`, the same `DEFAULT_TABS` and a `Publier` button that opens the
+  composer on `/social`. `BottomNav` and `FloatingPostButton` are `lg:hidden`;
+  `<main>` drops `pb-28` for `lg:pb-10`. Both navs are hidden on auth routes.
+- **Page container**: screens wrap their content in
+  `lg:max-w-6xl lg:mx-auto lg:px-8 lg:pt-8`.
+- **Two-column screens**: `lg:grid lg:grid-cols-[minmax(0,1fr)_360px|380px]`.
+  Home: balance card + sentiment + news left, community activity right.
+  Social: feed left, Top Traders + Trending right. Portfolio: positions left,
+  history + reset right. Market: stock cards in a 2-column grid.
+- **Full-bleed heroes become cards**: `BalanceCard` and the portfolio hero
+  switch to `lg:rounded-[var(--radius-box)]`.
+- **Sheets & dialogs**: `Sheet` (`ui.tsx`) centers from `md` with full
+  rounding and no drag handle; `ComposeScreen` becomes a centered `max-w-xl`
+  dialog over a dimmed canvas from `lg`.
+- **Auth screens** (`WelcomeScreen`, `RegisterScreen`): split screen, dark
+  `tk-hero` on the left half, form column on the right.
+- All design rules still apply: no borders, no shadows, no gradients; contrast
+  only through `bg-base-100/200/300`.

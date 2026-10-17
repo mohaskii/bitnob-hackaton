@@ -11,6 +11,12 @@ export const DEFAULT_TABS: NavTabItem[] = [
   { id: 'portfolio', label: 'Portfolio', path: '/portfolio', icon: PieChart },
 ]
 
+/** Root tab matches `/` and `''`; others also match their nested sub-paths. */
+export const isTabActive = (tab: NavTabItem, currentPath: string) =>
+  tab.path === '/'
+    ? currentPath === '/' || currentPath === ''
+    : currentPath === tab.path || currentPath.startsWith(tab.path + '/')
+
 type BottomNavProps = {
   activeTab?: string
   tabs?: NavTabItem[]
@@ -38,7 +44,7 @@ export const BottomNav = ({
 
   return (
     <div
-      class={`fixed bottom-[max(1rem,calc(env(safe-area-inset-bottom,0px)+0.5rem))] inset-x-0 flex justify-center z-50 pointer-events-none select-none px-4 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+      class={`lg:hidden fixed bottom-[max(1rem,calc(env(safe-area-inset-bottom,0px)+0.5rem))] inset-x-0 flex justify-center z-50 pointer-events-none select-none px-4 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
         hidden
           ? 'translate-y-36 opacity-0 pointer-events-none'
           : 'translate-y-0 opacity-100'
@@ -48,20 +54,14 @@ export const BottomNav = ({
         aria-label='Bottom Navigation'
         class='pointer-events-auto w-full max-w-[360px] bg-secondary/10 backdrop-blur rounded-full p-2 flex items-center justify-between gap-1.5'
       >
-        {tabs.map((tab) => {
-          const isActive = tab.path === '/'
-            ? currentPath === '/' || currentPath === ''
-            : currentPath === tab.path || currentPath.startsWith(tab.path + '/')
-
-          return (
-            <NavTabButton
-              key={tab.id}
-              tab={tab}
-              isActive={isActive}
-              onClick={() => handleTabClick(tab)}
-            />
-          )
-        })}
+        {tabs.map((tab) => (
+          <NavTabButton
+            key={tab.id}
+            tab={tab}
+            isActive={isTabActive(tab, currentPath)}
+            onClick={() => handleTabClick(tab)}
+          />
+        ))}
       </nav>
     </div>
   )

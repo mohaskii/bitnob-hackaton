@@ -1,6 +1,8 @@
 {
   "tasks": {
     "dev": "deno run -A app/build-config.ts",
+    "build": "deno run -A app/build-config.ts build",
+    "start": "deno task build && deno task server",
     "server": "deno run --env-file -A --unstable-worker-options --unstable-ffi api/server.ts",
     "db:seed": "deno run --env-file -A --unstable-ffi api/task-seed.ts",
     "db:reset": "deno run -A --env-file --unstable-ffi api/task-reset.ts",
@@ -39,9 +41,6 @@
     "@01edu/db": "jsr:@01edu/db@^0.1.7",
     "@01edu/time": "jsr:@01edu/time@^0.1.0",
     "@01edu/types": "jsr:@01edu/types@^0.1.4",
-    "@capacitor/app": "npm:@capacitor/app@^8.1.0",
-    "@capacitor/camera": "npm:@capacitor/camera@^8.2.0",
-    "@capacitor/core": "npm:@capacitor/core@^8.3.4",
     "@db/sqlite": "jsr:@cd/sqlite@^0.12.0",
     "@preact/preset-vite": "npm:@preact/preset-vite@^2.10.5",
     "@preact/signals": "npm:@preact/signals@^2.9.0",
@@ -51,7 +50,6 @@
     "@std/http": "jsr:@std/http@^1.0.13",
     "@std/path": "jsr:@std/path@^1.0.8",
     "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.3.0",
-    "capacitor": "npm:capacitor@^0.5.6",
     "daisyui": "npm:daisyui@^5.5.20",
     "gsap": "npm:gsap@^3.15.0",
     "lucide-preact": "npm:lucide-preact@^1.16.0",

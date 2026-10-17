@@ -1,7 +1,6 @@
-import { useEffect } from 'preact/hooks'
-import { SystemBars, SystemBarsStyle } from '@capacitor/core'
 import { navigateUrl, pathSignal } from './router.tsx'
 import { BottomNav } from './components/BottomNav.tsx'
+import { SideNav } from './components/SideNav.tsx'
 import { HomeScreen } from './screens/HomeScreen.tsx'
 import { MarketScreen } from './screens/MarketScreen.tsx'
 import { SocialScreen } from './screens/SocialScreen.tsx'
@@ -23,19 +22,12 @@ export const App = () => {
     currentPath === '/register' ||
     currentPath === '/login' ||
     currentPath === '/welcome'
+  const isAuthFlow = currentPath === '/register' ||
+    currentPath === '/login' ||
+    currentPath === '/welcome'
 
   // Coordinate safe area scroll pinning with GSAP ScrollTrigger
   useScrollHeader({ currentPath })
-
-  useEffect(() => {
-    try {
-      SystemBars.setStyle({
-        style: SystemBarsStyle.Dark,
-      })
-    } catch {
-      // Ignore when running outside native Capacitor environment
-    }
-  }, [])
 
   // If unauthenticated and not on the dedicated register route, show the welcome onboarding screen
   if (!isAuthenticated.value && currentPath !== '/register' && currentPath !== '/login') {
@@ -48,7 +40,7 @@ export const App = () => {
   }
 
   return (
-    <div class='h-full w-full flex flex-col bg-base-200 text-base-content overflow-hidden relative font-sans'>
+    <div class='h-full w-full flex bg-base-200 text-base-content overflow-hidden relative font-sans'>
       {/* Pinned Safe Area Top Header: prevents scrolling content from passing into safe area top */}
       <header
         id='safe-area-header'
@@ -57,10 +49,15 @@ export const App = () => {
         }`}
       />
 
+      {/* Desktop navigation rail (lg+); the floating BottomNav covers mobile */}
+      <SideNav activeTab={currentPath} hidden={isAuthFlow} />
+
       {/* Principal Layout: Main scrollable viewport container with bottom padding for floating pill nav */}
       <main
         id='main-viewport'
-        class='flex-1 min-h-0 relative overflow-y-auto overflow-x-hidden flex flex-col pb-28'
+        class={`flex-1 min-w-0 min-h-0 relative overflow-y-auto overflow-x-hidden flex flex-col ${
+          isAuthFlow ? '' : 'pb-28 lg:pb-10'
+        }`}
       >
         {currentPath === '/' || currentPath === '/home'
           ? <HomeScreen />
@@ -94,13 +91,8 @@ export const App = () => {
       {/* Floating Bottom Navigation Tab Bar */}
       <BottomNav
         activeTab={currentPath}
-        hidden={
-          isBottomNavHidden.value ||
-          currentPath === '/compose' ||
-          currentPath === '/register' ||
-          currentPath === '/login' ||
-          currentPath === '/welcome'
-        }
+        hidden={isBottomNavHidden.value || currentPath === '/compose' ||
+          isAuthFlow}
         onTabChange={(tab) => navigateUrl(tab.path)}
       />
 

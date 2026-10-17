@@ -36,8 +36,8 @@ export const HomeScreen = ({
 }: HomeScreenProps = {}) => {
 
   return (
-    <div class='flex-1 flex flex-col w-full pt-0 pb-6 select-none'>
-      {/* 1. Grande Carte Noire starting directly at Y: 0 */}
+    <div class='flex-1 flex flex-col w-full pt-0 pb-6 select-none lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-6 lg:max-w-6xl lg:mx-auto lg:px-8 lg:pt-8 lg:pb-0'>
+      {/* 1. Grande Carte Noire starting directly at Y: 0 (rounded card on desktop) */}
       <BalanceCard
         avatarUrl='https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop'
         onDeposit={onDeposit}
@@ -46,15 +46,17 @@ export const HomeScreen = ({
         onAvatarClick={onAvatarClick}
       />
 
-      {/* 2. Overlapping Mini Feed Sheet */}
-      <section class='relative -mt-6 z-10 w-full bg-base-200 rounded-t-[var(--radius-box,2rem)] px-4 pt-4 pb-6 flex flex-col gap-4'>
+      {/* 2. Overlapping Mini Feed Sheet (flat column under the card on desktop) */}
+      <section class='relative -mt-6 z-10 w-full bg-base-200 rounded-t-[var(--radius-box,2rem)] px-4 pt-4 flex flex-col gap-4 lg:col-start-1 lg:mt-0 lg:p-0 lg:rounded-none'>
         {/* Market Direction & Momentum */}
         <MarketSentimentCards />
 
         {/* Recent Market News */}
         <RecentMarketNews onSeeMore={onSeeMoreNews} />
+      </section>
 
-        {/* Social Trading & Community Activity */}
+      {/* 3. Social Trading & Community Activity (right rail on desktop) */}
+      <section class='w-full px-4 pt-4 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:p-0'>
         <CommunityActivityFeed />
       </section>
 

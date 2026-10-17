@@ -43,7 +43,7 @@ export const BalanceCard = ({
     : defaultFormattedUsdt.value
 
   return (
-    <div class='w-full bg-neutral text-neutral-content rounded-none pt-[calc(env(safe-area-inset-top,0px)+1.25rem)] px-5 pb-11 sm:px-6 sm:pb-12 select-none relative overflow-hidden'>
+    <div class='w-full bg-neutral text-neutral-content rounded-none pt-[calc(env(safe-area-inset-top,0px)+1.25rem)] px-5 pb-11 sm:px-6 sm:pb-12 lg:rounded-[var(--radius-box,1.5rem)] lg:px-8 lg:pt-7 lg:pb-8 select-none relative overflow-hidden'>
       <BalanceWatermark />
       <BalanceAvatar avatarUrl={avatarUrl} onClick={onAvatarClick} />
       <BalanceValueDisplay

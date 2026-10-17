@@ -1,6 +1,5 @@
 import type { JSX } from 'preact'
 import { computed, Signal } from '@preact/signals'
-import { App as CapacitorApp } from '@capacitor/app'
 
 // ensure we never have trailing /
 const initialUrl = new URL(location.href)
@@ -40,22 +39,6 @@ const dispatchNavigation = () => {
 
 addEventListener('popstate', dispatchNavigation)
 addEventListener('hashchange', dispatchNavigation)
-
-// Intercept Android hardware back button via Capacitor.
-// Without this, Capacitor calls Activity.finish() and exits the app.
-CapacitorApp.addListener('backButton', ({ canGoBack }) => {
-  const isAtRoot = urlSignal.value.pathname === '/' ||
-    urlSignal.value.pathname === ''
-  if (!isAtRoot) {
-    if (canGoBack) {
-      history.back()
-    } else {
-      navigateUrl('/', true)
-    }
-  } else {
-    CapacitorApp.exitApp()
-  }
-})
 
 export const navigateUrl = (to: string, replace = false) => {
   history[replace ? 'replaceState' : 'pushState']({}, '', to)

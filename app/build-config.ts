@@ -1,13 +1,17 @@
-import { createServer, defineConfig } from 'vite'
+import { build, createServer, defineConfig } from 'vite'
 import tailwindcss from '@tailwindcss/vite'
 import preact from '@preact/preset-vite'
 
-const server = await createServer(defineConfig({
+const config = defineConfig({
   root: import.meta.dirname!,
   plugins: [
     preact({ jsxImportSource: 'preact' }),
     tailwindcss(),
   ],
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+  },
   server: {
     host: true,
     proxy: {
@@ -17,7 +21,12 @@ const server = await createServer(defineConfig({
       },
     },
   },
-}))
+})
 
-await server.listen(5173)
-server.printUrls()
+if (Deno.args.includes('build')) {
+  await build(config)
+} else {
+  const server = await createServer(config)
+  await server.listen(5173)
+  server.printUrls()
+}

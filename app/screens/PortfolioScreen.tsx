@@ -32,7 +32,7 @@ const PortfolioHero = () => {
   const p = portfolio.value
   const up = (p?.totalPnlFcfa ?? 0) >= 0
   return (
-    <section class='tk-hero rounded-b-[2.25rem] px-5 pt-[calc(env(safe-area-inset-top,0px)+1.25rem)] pb-6 flex flex-col gap-4'>
+    <section class='tk-hero rounded-b-[2.25rem] lg:rounded-[var(--radius-box,1.5rem)] px-5 pt-[calc(env(safe-area-inset-top,0px)+1.25rem)] pb-6 lg:px-8 lg:pt-7 lg:pb-8 flex flex-col gap-4'>
       <div class='flex items-center justify-between'>
         <h1 class='text-[15px] font-extrabold'>Portefeuille d’entraînement</h1>
         <SimulatedTag dark />
@@ -213,15 +213,17 @@ const ResetControl = () =>
 export const PortfolioScreen = () => {
   useEffect(startPortfolio, [])
   return (
-    <div class='flex-1 flex flex-col w-full pb-6'>
+    <div class='flex-1 flex flex-col w-full pb-6 lg:max-w-6xl lg:mx-auto lg:px-8 lg:pt-8 lg:pb-0'>
       <PortfolioHero />
-      <div class='px-4 pt-5 flex flex-col gap-6'>
+      <div class='px-4 pt-5 flex flex-col gap-6 lg:px-0 lg:pt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start'>
         <section class='flex flex-col gap-3'>
           <SectionTitle title='Positions' />
           <Positions />
         </section>
-        <OrderHistory />
-        <ResetControl />
+        <div class='flex flex-col gap-6'>
+          <OrderHistory />
+          <ResetControl />
+        </div>
       </div>
     </div>
   )

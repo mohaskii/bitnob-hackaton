@@ -26,7 +26,7 @@ tekkitrade/
 │   ├── schema.ts                    # SQLite tables (@01edu/db) & parameterized sqlQuery
 │   ├── server.ts                    # Server entrypoint (Deno.serve)
 │   └── task-seed.ts                 # Database seeder (Demo user, BRVM stocks, traders, feed)
-├── app/                             # Preact Frontend & Mobile UI (Port 5173)
+├── app/                             # Preact PWA (dev: 5173, prod: servie par l'API sur 8000)
 │   ├── components/                  # Shared modular components (BottomNav, BalanceCard, etc.)
 │   ├── features/                    # Feature engines & fine-grained subcomponents (20-50 lines)
 │   │   ├── compose/                 # Social post creation & trade attachments
@@ -35,11 +35,8 @@ tekkitrade/
 │   │   └── social/                  # Leaderboard, copy-trading modal, community feed
 │   ├── hooks/                       # GSAP safe-area scroll triggers
 │   ├── state.ts                     # Video-game style Preact Signals reactive engine
+│   ├── public/                      # PWA: manifest.webmanifest, sw.js, icons/
 │   └── App.tsx                      # Root screen router
-├── capacitor/                       # Capacitor 8 Native Mobile Container
-│   ├── android/                     # Native Android Studio project
-│   ├── capacitor.config.json        # Capacitor configuration
-│   └── package.json                 # Capacitor CLI & native plugins
 └── deno.json                        # Root Deno workspace & tasks
 ```
 
@@ -70,96 +67,14 @@ TekkiTrade requires Deno (v2.0+ recommended):
   deno --version
   ```
 
-### 2. Node.js & npm (Required for Capacitor CLI)
-
-Capacitor CLI relies on Node.js and npm:
-
-- **Linux / Ubuntu / Debian**:
-  ```bash
-  curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-  sudo apt-get install -y nodejs
-  ```
-- **macOS via Homebrew**:
-  ```bash
-  brew install node
-  ```
-- **Windows**: Download the LTS installer from [nodejs.org](https://nodejs.org/).
-- **Verify installation**:
-  ```bash
-  node -v
-  npm -v
-  npx -v
-  ```
-
-### 3. Java Development Kit (JDK 17 or 21 for Android)
-
-Android builds require OpenJDK 17 or 21:
-
-- **Linux**:
-  ```bash
-  sudo apt update && sudo apt install -y openjdk-17-jdk
-  ```
-- **macOS via Homebrew**:
-  ```bash
-  brew install openjdk@17
-  sudo ln -sfn /opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-17.jdk
-  ```
-- **Verify and set JAVA_HOME**:
-  ```bash
-  java -version
-  # Add to your ~/.bashrc or ~/.zshrc:
-  export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which javac))))
-  ```
-
-### 4. Android Studio & Android SDK (For Android)
-
-1. Download and install **Android Studio** from [developer.android.com/studio](https://developer.android.com/studio).
-2. During setup, install:
-   - **Android SDK Platform-Tools** (`adb`)
-   - **Android SDK Build-Tools** (version 34+)
-   - **Android SDK Command-line Tools**
-   - **Android SDK Platform** (API 34 / Android 14)
-3. Set your Android environment variables in `~/.bashrc` or `~/.zshrc`:
-   ```bash
-   export ANDROID_HOME=$HOME/Android/Sdk
-   export PATH=$PATH:$ANDROID_HOME/platform-tools
-   export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
-   ```
-4. Verify `adb`:
-   ```bash
-   adb version
-   ```
-
-### 5. Xcode & Xcode Command Line Tools (For iOS on macOS only)
-
-1. Install **Xcode** from the Mac App Store.
-2. Install Xcode Command Line Tools:
-   ```bash
-   xcode-select --install
-   ```
-3. Accept the Xcode license:
-   ```bash
-   sudo xcodebuild -license accept
-   ```
-4. Install CocoaPods (if using legacy pods):
-   ```bash
-   sudo gem install cocoapods
-   ```
-
 ---
 
 ## Project Setup & Quick Start
 
 ### 1. Install Dependencies
 
-Install the project dependencies for both the root workspace and Capacitor:
-
 ```bash
-# In project root:
 deno install
-
-# In capacitor directory:
-cd capacitor && npm install && cd ..
 ```
 
 ### 2. Environment Configuration
@@ -217,166 +132,26 @@ The web app is accessible at `http://localhost:5173`.
 
 ---
 
-## Running on Mobile with Capacitor
+## Installer TekkiTrade (PWA)
 
-Capacitor bridges the Preact web frontend into a high-performance native Android and iOS mobile app.
-
-### Setting up the Host URL for Mobile
-
-When running on an emulator or physical mobile phone, the mobile device cannot access `localhost` directly. Update `capacitor/capacitor.config.json` with your development computer's local Wi-Fi IP address:
-
-```json
-{
-  "appId": "com.Lolo.app",
-  "appName": "TekkiTrade",
-  "webDir": "dist",
-  "server": {
-    "url": "http://192.168.1.137:5173",
-    "cleartext": true
-  }
-}
-```
-
-> Replace `192.168.1.137` with your computer's local IP (obtain via `ip a` on Linux or `ifconfig` on macOS).
-
----
-
-### Android Workflow (Emulators & Paired Physical Devices)
-
-#### Option A: Running on an Android Emulator
-1. Open **Android Studio** -> **Virtual Device Manager** (Device Manager in right sidebar).
-2. Click **Create Device** (e.g. Pixel 8, System Image: API 34).
-3. Start the virtual device.
-4. Verify `adb` detects the emulator:
-   ```bash
-   adb devices
-   ```
-   *(Example output: `emulator-5554 device`)*
-
-#### Option B: Pairing a Physical Android Device
-1. On your Android phone, enable **Developer Options**:
-   - Go to **Settings** -> **About Phone** -> Tap **Build Number** 7 times until you see *"You are now a developer!"*.
-2. In **Settings** -> **System** -> **Developer Options**:
-   - Enable **USB Debugging**.
-   - (Optional) Enable **Wireless Debugging** if connecting over Wi-Fi without cables.
-3. Connect your device via USB cable. When prompted on the phone screen, check **Always allow from this computer** and tap **Allow**.
-4. If using **Wireless Debugging**:
-   - Tap **Wireless Debugging** -> **Pair device with pairing code**.
-   - In terminal:
-     ```bash
-     adb pair <ip-address>:<port> <pairing-code>
-     adb connect <ip-address>:<connect-port>
-     ```
-5. Check connected devices:
-   ```bash
-   adb devices
-   ```
-
-#### Listing Targets and Launching the App
-Navigate to the `capacitor/` folder:
+TekkiTrade est une Progressive Web App : pas de store, pas d'Android Studio ni de Xcode.
 
 ```bash
-cd capacitor
-
-# 1. List all available devices and emulators
-npx cap run android --list
+# Build de l'app (app/dist) puis API + PWA sur le même port
+deno task start
 ```
 
-Example output:
-```
-Available Android targets:
-  emulator-5554 (Pixel 8 API 34)
-  R58M345XYZW   (Samsung Galaxy S22)
-```
+Ouvrez `http://localhost:8000` (ou l'URL HTTPS de déploiement) :
 
-```bash
-# 2. Sync web assets and plugins to native Android project
-npx cap sync android
+- **Android / Chrome** : menu ⋮ → *Installer l'application*.
+- **iPhone / Safari** : Partager → *Sur l'écran d'accueil*.
+- **Desktop / Chrome, Edge** : icône d'installation dans la barre d'adresse.
 
-# 3. Build and launch on your specific target
-npx cap run android --target <device id>
-```
+Notes :
 
-*Example running on emulator:*
-```bash
-npx cap sync android && npx cap run android --target emulator-5554
-```
-
-*Example running on physical phone:*
-```bash
-npx cap sync android && npx cap run android --target R58M345XYZW
-```
-
-#### Opening Android Studio Directly
-If you prefer building and inspecting directly inside Android Studio:
-```bash
-cd capacitor
-npx cap open android
-```
-In Android Studio:
-1. Wait for Gradle sync to finish.
-2. Select your device from the target dropdown in the top toolbar.
-3. Click the green **Run** (Play) button or press `Shift + F10`.
-
----
-
-### iOS Workflow with Xcode (Step-by-Step)
-
-> **Requirement**: macOS with Xcode 15+ installed.
-
-#### Step 1: Add iOS Platform (First time only)
-```bash
-cd capacitor
-npx cap add ios
-```
-
-#### Step 2: Sync Web Assets to Xcode Project
-```bash
-npx cap sync ios
-```
-
-#### Step 3: List Available iOS Simulators and Devices
-```bash
-npx cap run ios --list
-```
-Example output:
-```
-Available iOS targets:
-  iPhone 15 Pro (Simulator - 785A1B8E-...)
-  iPhone 15 (Simulator - 90EFB23C-...)
-  Mohamed's iPhone (Device - 00008101-...)
-```
-
-#### Step 4: Run via Command Line
-```bash
-npx cap run ios --target <device id>
-```
-*Example:*
-```bash
-npx cap run ios --target "iPhone 15 Pro"
-```
-
-#### Step 5: Opening and Configuring in Xcode
-Open the iOS project in Xcode:
-```bash
-cd capacitor
-npx cap open ios
-```
-
-Configure signing in Xcode:
-1. In Xcode's left **Project Navigator**, click the top-level **App** project item.
-2. Select the **App** target and open the **Signing & Capabilities** tab.
-3. Check the box **Automatically manage signing**.
-4. In the **Team** dropdown, select your Apple Developer Account (or personal Apple ID).
-5. In the top toolbar device selector, pick your desired **Simulator** (e.g., *iPhone 15 Pro*) or your connected physical iPhone.
-6. Press the **Play** button (or press `Cmd + R`) to compile and run.
-
-#### Running on a Physical iPhone:
-1. When running on a physical iPhone for the first time with a free personal developer account, iOS blocks execution until the certificate is trusted.
-2. On your iPhone, open **Settings** -> **General** -> **VPN & Device Management**.
-3. Under **Developer App**, select your Apple ID email.
-4. Tap **Trust [Your Name/Email]** and confirm.
-5. Tap the TekkiTrade app icon on your home screen to launch.
+- Un service worker n'est actif qu'en **HTTPS** ou sur `localhost`. Pour tester sur un téléphone du réseau local, passez par un tunnel HTTPS (ex. `cloudflared tunnel --url http://localhost:8000`).
+- Le service worker (`app/public/sw.js`) met en cache le shell et les assets ; `/api` n'est jamais mis en cache (soldes, cours et statuts Bitnob restent en direct). Incrémentez `VERSION` dans `sw.js` pour forcer un nettoyage des caches.
+- En développement (`deno task dev`), le service worker n'est pas enregistré, pour ne pas interférer avec le HMR de Vite.
 
 ---
 

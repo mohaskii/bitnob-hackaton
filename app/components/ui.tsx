@@ -124,12 +124,12 @@ export const Sheet = ({
   open
     ? (
       <div
-        class='fixed inset-0 z-[60] flex items-end justify-center bg-black/45 backdrop-blur-[2px] tk-fade-in'
+        class='fixed inset-0 z-[60] flex items-end md:items-center justify-center md:p-6 bg-black/45 backdrop-blur-[2px] tk-fade-in'
         onClick={(e) => e.target === e.currentTarget && onClose()}
       >
-        <div class='w-full max-w-[480px] max-h-[92dvh] overflow-y-auto bg-base-200 rounded-t-[2rem] pb-[max(1.25rem,env(safe-area-inset-bottom,0px))] tk-slide-up'>
-          <div class='sticky top-0 z-10 bg-base-200/95 backdrop-blur px-5 pt-3 pb-2'>
-            <div class='mx-auto w-10 h-1.5 rounded-full bg-base-300 mb-3' />
+        <div class='w-full max-w-[480px] md:max-w-[520px] max-h-[92dvh] md:max-h-[85dvh] overflow-y-auto bg-base-200 rounded-t-[2rem] md:rounded-[2rem] pb-[max(1.25rem,env(safe-area-inset-bottom,0px))] tk-slide-up'>
+          <div class='sticky top-0 z-10 bg-base-200/95 backdrop-blur px-5 pt-3 md:pt-5 pb-2'>
+            <div class='md:hidden mx-auto w-10 h-1.5 rounded-full bg-base-300 mb-3' />
             <div class='flex items-center justify-between gap-3'>
               <div class='min-w-0 flex-1'>{title}</div>
               <button

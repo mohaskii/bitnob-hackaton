@@ -27,7 +27,7 @@ export const MarketScreen = ({
   const stocksList = filteredStocks.value
 
   return (
-    <div class='flex-1 flex flex-col w-full pt-[calc(env(safe-area-inset-top,0px)+0.75rem)] px-4 pb-6 select-none gap-4'>
+    <div class='flex-1 flex flex-col w-full pt-[calc(env(safe-area-inset-top,0px)+0.75rem)] px-4 pb-6 select-none gap-4 lg:max-w-6xl lg:mx-auto lg:px-8 lg:pt-8 lg:pb-0'>
       {/* 1. Search Bar + Sort Action */}
       <MarketSearchBar />
 
@@ -44,7 +44,7 @@ export const MarketScreen = ({
         </div>
 
         {/* Stocks List with Increased Card Volume */}
-        <div class='flex flex-col gap-3.5'>
+        <div class='flex flex-col gap-3.5 lg:grid lg:grid-cols-2 lg:gap-4'>
           {stocksList.map((stock) => (
             <StockCard
               key={stock.symbol}
@@ -54,7 +54,7 @@ export const MarketScreen = ({
           ))}
 
           {stocksList.length === 0 && (
-            <div class='text-center py-12 text-base-content/40 text-xs'>
+            <div class='text-center py-12 text-base-content/40 text-xs lg:col-span-2'>
               Aucune action BRVM ne correspond à votre recherche.
             </div>
           )}
