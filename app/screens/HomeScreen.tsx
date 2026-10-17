@@ -5,9 +5,11 @@ import { CommunityActivityFeed } from '../features/home/components/CommunityActi
 import { DepositModal } from '../features/home/components/DepositModal.tsx'
 import { WithdrawModal } from '../features/home/components/WithdrawModal.tsx'
 import { CardModal } from '../features/home/components/CardModal.tsx'
+import { HomeSidebar } from '../features/home/components/HomeSidebar.tsx'
 import {
   openCardModal,
   openDepositModal,
+  openSidebar,
   openWithdrawModal,
 } from '../features/home/home-state.ts'
 import { goToRegister } from '../features/session/session-state.ts'
@@ -16,7 +18,7 @@ type HomeScreenProps = {
   onDeposit?: () => void
   onWithdraw?: () => void
   onCard?: () => void
-  onAvatarClick?: () => void
+  onMenuClick?: () => void
   onSeeMoreNews?: () => void
 }
 
@@ -31,19 +33,17 @@ export const HomeScreen = ({
   onDeposit = openDepositModal,
   onWithdraw = openWithdrawModal,
   onCard = openCardModal,
-  onAvatarClick = goToRegister,
+  onMenuClick = openSidebar,
   onSeeMoreNews,
 }: HomeScreenProps = {}) => {
-
   return (
     <div class='flex-1 flex flex-col w-full pt-0 pb-6 select-none lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-6 lg:max-w-6xl lg:mx-auto lg:px-8 lg:pt-8 lg:pb-0'>
-      {/* 1. Grande Carte Noire starting directly at Y: 0 (rounded card on desktop) */}
+      {/* 1. Grande Carte Noire starting directly at Y: 0 with menu button */}
       <BalanceCard
-        avatarUrl='https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop'
         onDeposit={onDeposit}
         onWithdraw={onWithdraw}
         onCard={onCard}
-        onAvatarClick={onAvatarClick}
+        onMenuClick={onMenuClick}
       />
 
       {/* 2. Overlapping Mini Feed Sheet (flat column under the card on desktop) */}
@@ -60,10 +60,11 @@ export const HomeScreen = ({
         <CommunityActivityFeed />
       </section>
 
-      {/* Bitnob Modals */}
+      {/* Bitnob Modals & Sidebar Drawer */}
       <DepositModal />
       <WithdrawModal />
       <CardModal />
+      <HomeSidebar />
     </div>
   )
 }

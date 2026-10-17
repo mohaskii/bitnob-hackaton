@@ -244,6 +244,12 @@ const defs = {
     description: 'Verify credentials and return a signed session token',
   }),
 
+  'POST/api/auth/logout': route({
+    authorize: withUserSession,
+    fn: () => respond.OK({ ok: true, message: 'Déconnexion réussie.' }),
+    description: 'Terminate user session and acknowledge logout',
+  }),
+
   /* --------------------------- Home summary ---------------------------- */
 
   'GET/api/me': route({

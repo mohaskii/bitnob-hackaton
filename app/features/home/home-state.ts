@@ -1,6 +1,7 @@
 import { computed, signal } from '@preact/signals'
 import { api } from '../../lib/api.ts'
 import { showToast } from '../../state.ts'
+import { logout } from '../session/session-state.ts'
 
 /* -------------------------------------------------------------------------- */
 /* State Types (Zero interface discipline)                                   */
@@ -103,6 +104,7 @@ export const communityActivities = signal<CommunityTradeActivity[]>([
 export const isDepositModalOpen = signal<boolean>(false)
 export const isWithdrawModalOpen = signal<boolean>(false)
 export const isCardModalOpen = signal<boolean>(false)
+export const isSidebarOpen = signal<boolean>(false)
 
 /* -------------------------------------------------------------------------- */
 /* Derived Computeds (Rule 2: Derived state lives in computed)                */
@@ -152,6 +154,19 @@ export const openCardModal = () => {
 
 export const closeCardModal = () => {
   isCardModalOpen.value = false
+}
+
+export const openSidebar = () => {
+  isSidebarOpen.value = true
+}
+
+export const closeSidebar = () => {
+  isSidebarOpen.value = false
+}
+
+export const handleLogoutFromSidebar = () => {
+  closeSidebar()
+  void logout()
 }
 
 export const loadHome = async () => {

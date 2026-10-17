@@ -209,3 +209,15 @@ Deno.test('auth: password hashing and verification with salt', async () => {
   assert(!timingSafeEqual(hash, candidateWrong))
 })
 
+Deno.test('auth: logout endpoint responds OK for authenticated session', async () => {
+  const token = await createSessionToken(42)
+  const req = new Request('http://localhost:8000/api/auth/logout', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  const server = (await import('../server.ts')).default
+  const res = await server.fetch(req)
+  assertEquals(res.status, 200)
+  const json = await res.json()
+  assertEquals(json.ok, true)
+})
