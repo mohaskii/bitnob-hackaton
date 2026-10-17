@@ -399,8 +399,7 @@ selectedArticles: (count) => `${count} item${count > 1 ? 's' : ''} selected`,
       re-render the components that read it
 - [ ] Large components/dialogs decomposed into isolated, fine-grained
       subcomponents (~20-50 lines each)
-- [ ] No cryptic component names (`Sec1`, `Sec2`); use semantic names
-- [ ] **No gradients**: Never use gradients (`bg-gradient-*`, `radial-gradient`, etc.). Use flat background colors.
+- [ ] **No gradients**: Never use gradients (`bg-gradient-*`, `radial-gradient`, etc.). Use flat background colors (exception: market item charts in `StockSparkline.tsx` intentionally use an SVG gradient area fill).
 - [ ] **No borders**: Never add borders or rings (`border`, `ring-*`) unless explicitly requested by the user.
 - [ ] **Contrast via `bg-base` shades**: Use `bg-base-100`, `bg-base-200`, `bg-base-300` hierarchy for depth and separation (e.g. `bg-base-200` inputs inside a `bg-base-100` card).
 - [ ] **No shadows**: Never use box shadows (`shadow-*`, `box-shadow`, etc.).

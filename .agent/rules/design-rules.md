@@ -9,6 +9,7 @@ These styling rules apply to the entire frontend codebase and MUST be strictly r
 - Do NOT use Tailwind classes like `bg-gradient-to-*`, `from-*`, `via-*`, `to-*`.
 - Do NOT use CSS `radial-gradient()`, `linear-gradient()`, or `conic-gradient()`.
 - Always use solid, flat background colors (e.g. `bg-neutral`, `bg-base-100`, `bg-base-200`, `bg-base-300`, `bg-primary`, etc.).
+- **Exception**: Market item charts (`StockSparkline.tsx`) are intentional and must keep their SVG gradient fill and current price glowing dot. Do NOT touch or remove the market item chart implementation.
 
 ---
 

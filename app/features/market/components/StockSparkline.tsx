@@ -9,7 +9,7 @@ type StockSparklineProps = {
 /**
  * Realistic stock sparkline:
  * - Catmull-Rom cubic bezier smooth interpolation
- * - Flat semi-transparent area fill underneath the curve
+ * - Semi-transparent gradient area fill underneath the curve
  * - Glowing current price dot at the right end
  */
 export const StockSparkline = ({
@@ -65,11 +65,39 @@ export const StockSparkline = ({
       fill='none'
       aria-hidden='true'
     >
-      {/* Flat area fill - zero gradients */}
-      <path d={areaPath} fill={strokeColor} fillOpacity='0.08' />
+      <defs>
+        <linearGradient id={gradId} x1='0' y1='0' x2='0' y2='1'>
+          <stop
+            offset='0%'
+            stop-color={strokeColor}
+            stop-opacity='0.30'
+            style={{ stopColor: strokeColor, stopOpacity: 0.30 }}
+          />
+          <stop
+            offset='40%'
+            stop-color={strokeColor}
+            stop-opacity='0.18'
+            style={{ stopColor: strokeColor, stopOpacity: 0.18 }}
+          />
+          <stop
+            offset='75%'
+            stop-color={strokeColor}
+            stop-opacity='0.08'
+            style={{ stopColor: strokeColor, stopOpacity: 0.08 }}
+          />
+          <stop
+            offset='100%'
+            stop-color={strokeColor}
+            stop-opacity='0.02'
+            style={{ stopColor: strokeColor, stopOpacity: 0.02 }}
+          />
+        </linearGradient>
+      </defs>
+
+      {/* Area fill with soft vertical gradient */}
+      <path d={areaPath} fill={`url(#${gradId})`} />
 
       {/* Primary trend line with smooth bezier curve */}
-
       <path
         d={strokePath}
         fill='none'
