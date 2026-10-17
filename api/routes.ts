@@ -62,6 +62,12 @@ import {
   SENDER_COUNTRIES,
   simulateDeposit,
 } from './domain/funding.ts'
+import {
+  addComment,
+  createPostWithTrade,
+  getTrendingAssets,
+  listComments,
+} from './domain/social.ts'
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                    */
@@ -592,37 +598,11 @@ const defs = {
     description: 'Verified, idempotent Bitnob webhook',
   }),
 
-  /* ------------------- Community (illustrative only) ------------------- */
+  /* ------------------- Community & Social Trading ------------------- */
 
   'GET/api/community': route({
     authorize: withUserSession,
-    fn: (ctx) => {
-      const followed = new Set(
-        sqlQuery<{ traderId: number }>`
-          SELECT traderId FROM virtualFollow WHERE userId = ${ctx.session.userId}
-        `.all().map((row) => row.traderId),
-      )
-      const traders = sqlQuery<{
-        traderId: number
-        name: string
-        handle: string
-        avatarUrl: string
-        returnPercent: number
-        timeframe: string
-        followersCount: number
-        winRate: number
-        riskLevel: string
-        badge: string | null
-      }>`
-        SELECT traderId, name, handle, avatarUrl, returnPercent, timeframe,
-          followersCount, winRate, riskLevel, badge
-        FROM trader ORDER BY returnPercent DESC
-      `.all().map((t) => ({
-        ...t,
-        id: String(t.traderId),
-        isFollowed: followed.has(t.traderId),
-        isExample: true,
-      }))
+    fn: () => {
       const posts = sqlQuery<{
         postId: number
         authorName: string
@@ -632,69 +612,62 @@ const defs = {
         content: string
         symbol: string | null
         sentiment: string | null
+        tradeAction: string | null
+        tradePriceFcfa: number | null
+        tradeChangePercent: number | null
         likesCount: number
         commentsCount: number
         createdAt: number
       }>`SELECT postId, authorName, authorHandle, avatarUrl, isExample, content,
-          symbol, sentiment, likesCount, commentsCount, createdAt
+          symbol, sentiment, tradeAction, tradePriceFcfa, tradeChangePercent,
+          likesCount, commentsCount, createdAt
         FROM socialPost ORDER BY createdAt DESC LIMIT 50`.all().map((p) => ({
         ...p,
         id: String(p.postId),
         isExample: p.isExample === 1,
+        trade: p.symbol
+          ? {
+            symbol: p.symbol,
+            action: p.tradeAction ??
+              (p.sentiment === 'bearish' ? 'VENTE' : 'ACHAT'),
+            priceFcfa: p.tradePriceFcfa ?? 18500,
+            changePercent: p.tradeChangePercent ??
+              (p.sentiment === 'bearish' ? -1.5 : 2.1),
+          }
+          : undefined,
       }))
-      return respond.OK({ traders, posts })
+
+      const trending = getTrendingAssets()
+
+      return respond.OK({ posts, trending })
     },
-    description:
-      'Example community profiles and posts (illustrative, not real)',
+    description: 'Community post feed and dynamic trending assets',
   }),
 
-  'POST/api/community/follow': route({
-    authorize: withUserSession,
-    fn: (ctx, { traderId, follow }) => {
-      if (follow) {
-        sql`
-          INSERT OR IGNORE INTO virtualFollow (userId, traderId, createdAt)
-          VALUES (${ctx.session.userId}, ${Number(traderId)}, ${Date.now()})
-        `.run()
-      } else {
-        sql`
-          DELETE FROM virtualFollow
-          WHERE userId = ${ctx.session.userId} AND traderId = ${
-          Number(traderId)
-        }
-        `.run()
-      }
-      return respond.OK({ traderId, follow })
-    },
-    input: OBJ({ traderId: STR(), follow: BOOL() }),
-    description: 'Follow an example strategy virtually (no order is copied)',
+  'GET/api/community/trending': route({
+    fn: () => respond.OK({ trending: getTrendingAssets() }),
+    description:
+      'Dynamic trending assets aggregated from community discussions and live BRVM quotes',
   }),
 
   'POST/api/community/posts': route({
     authorize: withUserSession,
-    fn: (ctx, { content, symbol, sentiment }) => {
-      const text = content.trim()
-      if (!text || text.length > 500) {
-        throw new respond.BadRequestError({
-          message: 'Message vide ou trop long (500 max).',
-        })
-      }
+    fn: (ctx, { content, symbol, sentiment, tradeAction }) => {
       const user = readUser(ctx.session.userId)
-      const post = sql`
-        INSERT INTO socialPost (userId, authorName, authorHandle, avatarUrl, isExample,
-          content, symbol, sentiment, likesCount, commentsCount, createdAt)
-        VALUES (${user.userId}, ${user.login}, ${user.login}, '', 0, ${text},
-          ${symbol || null}, ${sentiment || null}, 0, 0, ${Date.now()})
-        RETURNING postId
-      `.get() as { postId: number }
-      return respond.OK({ id: String(post.postId) })
+      const res = createPostWithTrade(
+        ctx.session.userId,
+        { name: user.login, handle: user.login },
+        { content, symbol, sentiment, tradeAction },
+      )
+      return respond.OK(res)
     },
     input: OBJ({
       content: STR(),
       symbol: optional(STR()),
       sentiment: optional(LIST(['bullish', 'bearish'] as const)),
+      tradeAction: optional(LIST(['ACHAT', 'VENTE'] as const)),
     }),
-    description: 'Publish a community note',
+    description: 'Publish a community note with optional live trade attachment',
   }),
 
   'POST/api/community/posts/like': route({
@@ -708,6 +681,31 @@ const defs = {
     },
     input: OBJ({ postId: STR() }),
     description: 'Like a community post',
+  }),
+
+  'GET/api/community/posts/comments': route({
+    fn: (_ctx, { postId }) => {
+      return respond.OK({ comments: listComments(Number(postId)) })
+    },
+    input: OBJ({ postId: STR() }),
+    description: 'List comments for a post',
+  }),
+
+  'POST/api/community/posts/comments': route({
+    authorize: withUserSession,
+    fn: (ctx, { postId, content }) => {
+      const user = readUser(ctx.session.userId)
+      return respond.OK(
+        addComment(
+          Number(postId),
+          ctx.session.userId,
+          { name: user.login, handle: user.login },
+          content,
+        ),
+      )
+    },
+    input: OBJ({ postId: STR(), content: STR() }),
+    description: 'Add a comment to a community post',
   }),
 } as const
 

@@ -4,20 +4,6 @@ import { signal } from '@preact/signals'
 /* State Types (Zero interface discipline)                                   */
 /* -------------------------------------------------------------------------- */
 
-export type Trader = {
-  id: string
-  name: string
-  handle: string
-  avatarUrl: string
-  verified: boolean
-  returnPercent: number
-  timeframe: string
-  copiersCount: number
-  winRate: number
-  riskLevel: 'Faible' | 'Modéré' | 'Élevé'
-  isCopied: boolean
-  badge?: string
-}
 
 export type TrendingAsset = {
   id: string

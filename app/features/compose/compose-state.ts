@@ -160,6 +160,9 @@ export const submitComposePost = async () => {
       content: text,
       symbol: symbol ?? undefined,
       sentiment: sent ?? undefined,
+      tradeAction: symbol
+        ? (sent === 'bearish' ? 'VENTE' : 'ACHAT')
+        : undefined,
     })
     if (res?.id) {
       newPost.id = String(res.id)

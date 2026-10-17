@@ -178,28 +178,6 @@ export const JourneyEvent = createTable('journeyEvent', {
   createdAt: { type: 'REAL' },
 })
 
-/** Example community profiles: illustrative, not real investors. */
-export const Trader = createTable('trader', {
-  traderId: { type: 'INTEGER', primary: true },
-  name: { type: 'TEXT' },
-  handle: { type: 'TEXT' },
-  avatarUrl: { type: 'TEXT' },
-  returnPercent: { type: 'REAL' },
-  timeframe: { type: 'TEXT' },
-  followersCount: { type: 'INTEGER' },
-  winRate: { type: 'REAL' },
-  riskLevel: { type: 'TEXT' }, // 'Faible' | 'Modéré' | 'Élevé'
-  badge: { type: 'TEXT', optional: true },
-})
-
-/** A user observing an example strategy. Never mirrors real orders. */
-export const VirtualFollow = createTable('virtualFollow', {
-  followId: { type: 'INTEGER', primary: true },
-  userId: { type: 'INTEGER' },
-  traderId: { type: 'INTEGER' },
-  createdAt: { type: 'REAL' },
-})
-
 export const SocialPost = createTable('socialPost', {
   postId: { type: 'INTEGER', primary: true },
   userId: { type: 'INTEGER' },
@@ -210,8 +188,22 @@ export const SocialPost = createTable('socialPost', {
   content: { type: 'TEXT' },
   symbol: { type: 'TEXT', optional: true },
   sentiment: { type: 'TEXT', optional: true },
+  tradeAction: { type: 'TEXT', optional: true }, // 'ACHAT' | 'VENTE'
+  tradePriceFcfa: { type: 'REAL', optional: true },
+  tradeChangePercent: { type: 'REAL', optional: true },
   likesCount: { type: 'INTEGER' },
   commentsCount: { type: 'INTEGER' },
+  createdAt: { type: 'REAL' },
+})
+
+export const SocialComment = createTable('socialComment', {
+  commentId: { type: 'INTEGER', primary: true },
+  postId: { type: 'INTEGER' },
+  userId: { type: 'INTEGER' },
+  authorName: { type: 'TEXT' },
+  authorHandle: { type: 'TEXT' },
+  avatarUrl: { type: 'TEXT' },
+  content: { type: 'TEXT' },
   createdAt: { type: 'REAL' },
 })
 
@@ -239,9 +231,9 @@ sql`CREATE INDEX IF NOT EXISTS idx_funding_sgi ON fundingRequest(sgiId, createdA
 sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_journey_user ON journey(userId)`.run()
 sql`CREATE INDEX IF NOT EXISTS idx_event_type ON journeyEvent(type, sgiId)`
   .run()
-sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_follow_user_trader ON virtualFollow(userId, traderId)`
-  .run()
 sql`CREATE INDEX IF NOT EXISTS idx_post_created ON socialPost(createdAt DESC)`
+  .run()
+sql`CREATE INDEX IF NOT EXISTS idx_comments_post ON socialComment(postId, createdAt ASC)`
   .run()
 
 /* -------------------------------------------------------------------------- */
