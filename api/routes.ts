@@ -12,6 +12,7 @@ import {
   withUserSession,
 } from './lib/auth.ts'
 import { bitnob } from './bitnob/client.ts'
+import { tekkiRoutes } from './tekki/routes.ts'
 import { handleBitnobWebhook } from './bitnob/webhook.ts'
 import {
   getLatestBulletin,
@@ -709,6 +710,7 @@ const defs = {
     input: OBJ({ postId: STR() }),
     description: 'Like a community post',
   }),
+  ...tekkiRoutes,
 } as const
 
 export type RouteDefinitions = typeof defs
