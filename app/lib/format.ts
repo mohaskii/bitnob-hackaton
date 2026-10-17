@@ -18,6 +18,9 @@ export const pct = (value: number) =>
     decimal.format(Math.abs(value))
   } %`
 
+/** Unsigned share of a whole (0..1), e.g. 0.504 → "50 %". */
+export const share = (ratio: number) => `${Math.round(ratio * 100)} %`
+
 export const dateTime = (value: string | number | null | undefined) =>
   value
     ? new Intl.DateTimeFormat('fr-FR', {

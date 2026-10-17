@@ -1,6 +1,8 @@
 import { navigateUrl, pathSignal } from './router.tsx'
 import { BottomNav } from './components/BottomNav.tsx'
 import { SideNav } from './components/SideNav.tsx'
+import { LandingScreen } from './screens/LandingScreen.tsx'
+import { shouldShowLanding } from './features/landing/landing-state.ts'
 import { HomeScreen } from './screens/HomeScreen.tsx'
 import { MarketScreen } from './screens/MarketScreen.tsx'
 import { SocialScreen } from './screens/SocialScreen.tsx'
@@ -28,6 +30,16 @@ export const App = () => {
 
   // Coordinate safe area scroll pinning with GSAP ScrollTrigger
   useScrollHeader({ currentPath })
+
+  // Story landing for web visitors (document scroll, no app chrome)
+  if (shouldShowLanding(currentPath, isAuthenticated.value)) {
+    return (
+      <div class='w-full bg-base-200 text-base-content relative font-sans'>
+        <LandingScreen />
+        <ToastStack />
+      </div>
+    )
+  }
 
   // If unauthenticated and not on the dedicated register route, show the welcome onboarding screen
   if (!isAuthenticated.value && currentPath !== '/register' && currentPath !== '/login') {

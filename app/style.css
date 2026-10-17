@@ -33,6 +33,32 @@ a, img, svg {
   left: 0;
 }
 
+/* Landing: the document itself scrolls (native momentum, sticky pinning,
+   Lenis smoothing) instead of the fixed-height app shell. */
+html.tk-landing #app {
+  position: relative;
+  height: auto;
+  min-height: 100dvh;
+}
+
+/* Lenis (from lenis/dist/lenis.css), active on the landing only */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+
+.lenis [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
 @plugin 'daisyui/theme' {
   name: 'light';
   default: false;

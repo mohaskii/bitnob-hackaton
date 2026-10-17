@@ -16,7 +16,7 @@ export const CopyTradingModal = () => {
 
   return (
     <div
-      class='fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-xs select-none'
+      class='fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-xs select-none'
       onClick={(e) => {
         if (e.target === e.currentTarget) closeCopyModal()
       }}

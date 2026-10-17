@@ -2,7 +2,7 @@ import { useEffect } from 'preact/hooks'
 import { RotateCcw } from 'lucide-preact'
 import { navigateUrl } from '../router.tsx'
 import { PrimaryButton, SectionTitle, SimulatedTag } from '../components/ui.tsx'
-import { dateTime, fcfa, pct, signedFcfa } from '../lib/format.ts'
+import { dateTime, fcfa, pct, share, signedFcfa } from '../lib/format.ts'
 import {
   allocation,
   askReset,
@@ -14,14 +14,30 @@ import {
 } from '../features/portfolio/portfolio-state.ts'
 import { loadMarket, openStock } from '../features/market/market-state.ts'
 
-const ALLOCATION_COLORS = [
-  '#f7e01c',
-  '#1a1a1a',
-  '#4caf50',
-  '#60a5fa',
-  '#f97316',
-  '#a855f7',
-]
+/** Invested (yellow) vs cash (muted) with its legend, on the dark hero. */
+const AllocationBar = () => {
+  const { invested, cash } = allocation.value
+  return (
+    <div class='flex flex-col gap-2'>
+      <div class='flex h-1.5 rounded-full overflow-hidden bg-white/15'>
+        <span
+          class='h-full rounded-full bg-primary transition-[width] duration-500'
+          style={{ width: `${invested * 100}%` }}
+        />
+      </div>
+      <div class='flex items-center justify-between text-[11px] font-semibold'>
+        <span class='flex items-center gap-1.5 text-white/70'>
+          <span class='w-2 h-2 rounded-full bg-primary' />
+          Investi {share(invested)}
+        </span>
+        <span class='flex items-center gap-1.5 text-white/50'>
+          <span class='w-2 h-2 rounded-full bg-white/30' />
+          Espèces {share(cash)}
+        </span>
+      </div>
+    </div>
+  )
+}
 
 const startPortfolio = () => {
   void loadPortfolio()
@@ -52,19 +68,7 @@ const PortfolioHero = () => {
             : ''}
         </p>
       </div>
-      <div class='flex h-2 rounded-full overflow-hidden bg-white/10'>
-        {allocation.value.map((slice, i) => (
-          <span
-            key={slice.label}
-            style={{
-              width: `${slice.share * 100}%`,
-              background: slice.label === 'Espèces'
-                ? 'rgba(255,255,255,0.25)'
-                : ALLOCATION_COLORS[i % ALLOCATION_COLORS.length],
-            }}
-          />
-        ))}
-      </div>
+      <AllocationBar />
       <div class='grid grid-cols-3 gap-2 text-[11px]'>
         <div>
           <p class='text-white/50 font-semibold'>Espèces</p>

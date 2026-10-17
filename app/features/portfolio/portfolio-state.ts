@@ -61,16 +61,12 @@ export const heldQuantity = computed(() =>
   )
 )
 
+/** Invested vs cash split of the practice portfolio (0..1 each). */
 export const allocation = computed(() => {
   const p = portfolio.value
-  if (!p || p.totalValueFcfa <= 0) return []
-  return [
-    ...p.positions.map((pos) => ({
-      label: pos.symbol,
-      share: pos.marketValueFcfa / p.totalValueFcfa,
-    })),
-    { label: 'Espèces', share: p.cashFcfa / p.totalValueFcfa },
-  ]
+  if (!p || p.totalValueFcfa <= 0) return { invested: 0, cash: 1 }
+  const cash = Math.min(1, Math.max(0, p.cashFcfa / p.totalValueFcfa))
+  return { invested: 1 - cash, cash }
 })
 
 export const loadPortfolio = async () => {

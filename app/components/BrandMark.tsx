@@ -1,6 +1,15 @@
 type BrandMarkProps = {
-  /** Text color of the wordmark: light on dark heroes, base content elsewhere. */
-  tone?: 'light' | 'base'
+  /**
+   * Text color of the wordmark: light on dark heroes, base content elsewhere,
+   * auto follows a parent `group` carrying `data-solid` (landing nav).
+   */
+  tone?: 'light' | 'base' | 'auto'
+}
+
+const TONE_CLASS = {
+  light: 'text-white',
+  base: 'text-base-content',
+  auto: 'text-white group-data-[solid=true]:text-base-content',
 }
 
 /** BrandMark: yellow "T" tile + TekkiTrade wordmark. */
@@ -10,8 +19,8 @@ export const BrandMark = ({ tone = 'light' }: BrandMarkProps) => (
       T
     </span>
     <span
-      class={`font-extrabold tracking-tight text-lg ${
-        tone === 'light' ? 'text-white' : 'text-base-content'
+      class={`font-extrabold tracking-tight text-lg transition-colors duration-300 ${
+        TONE_CLASS[tone]
       }`}
     >
       TekkiTrade
