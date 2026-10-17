@@ -20,3 +20,8 @@ pnpm-lock.yaml
 .pnp.js
 .pnp.cjs
 .pnp.loader.mjs
+# Local secrets and data
+.env
+tekkitrade.db
+tekkitrade.db-*
+.claude/
