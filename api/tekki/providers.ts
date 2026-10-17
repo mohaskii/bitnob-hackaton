@@ -13,6 +13,7 @@ import {
   OLLAMA_API_KEY,
   OLLAMA_BASE_URL,
   OLLAMA_MODEL,
+  OOLEL_LANGUAGES,
   OOLEL_TTS_URL,
 } from '../lib/env.ts'
 
@@ -409,16 +410,22 @@ export const oolelTextToSpeech: TextToSpeechProvider = {
 let oolelDownUntil = 0
 const OOLEL_RETRY_MS = 30_000
 
+/** Languages Oolel reads when its sidecar is configured. */
+const oolelLanguages = oolelTextToSpeech.available
+  ? OOLEL_LANGUAGES.split(',').map((l) => l.trim()).filter(Boolean)
+  : []
+
 /**
- * Wolof (and mixed) answers are read by Oolel-Voices when its sidecar is
- * configured, French by Gemini. Gemini takes over whenever Oolel fails.
+ * Answers in `OOLEL_LANGUAGES` are read by Oolel-Voices (Wolof by default,
+ * French too: one voice for the whole app), the others by Gemini. Gemini
+ * takes over whenever Oolel fails.
  */
 export const textToSpeech: TextToSpeechProvider = {
   name: 'tekki-voice',
   available: geminiTextToSpeech.available || oolelTextToSpeech.available,
   async synthesize(text, options) {
     if (
-      options.language !== 'fr' && oolelTextToSpeech.available &&
+      oolelLanguages.includes(options.language) &&
       Date.now() >= oolelDownUntil
     ) {
       try {
@@ -445,6 +452,7 @@ export const providerStatus = () => ({
   textToSpeech: {
     provider: textToSpeech.name,
     available: textToSpeech.available,
-    wolof: oolelTextToSpeech.available ? 'oolel-voices' : 'gemini-tts',
+    /** Languages read by the local voice: the app splits them by sentence. */
+    local: oolelLanguages,
   },
 })

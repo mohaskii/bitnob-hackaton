@@ -483,13 +483,14 @@ GEMINI_MODEL=gemini-3-flash-preview
 GEMINI_TTS_MODEL=gemini-3.8-flash-lite-tts
 GEMINI_THINKING_LEVEL=minimal
 OOLEL_TTS_URL=http://127.0.0.1:8010
+OOLEL_LANGUAGES=wo,mixed,fr
 ```
 
 Le quota gratuit de Gemini est compté par modèle et par jour (20 requêtes sur les plus récents). Tekki passe au modèle suivant de `GEMINI_FALLBACK_MODELS` dès qu'un modèle est saturé ou à court de quota, et met en cache les réponses et l'audio déjà produits.
 
 ### Voix wolof : Oolel-Voices (Soynade Research)
 
-Les réponses en wolof sont lues par [Oolel-Voices](https://huggingface.co/soynade-research/Oolel-Voices), un modèle de synthèse vocale conçu pour le wolof par Soynade Research (licence AGPL-3.0). Il tourne en local (`tools/oolel/server.py`), sur GPU NVIDIA de préférence. Le français reste lu par Gemini, et Gemini prend le relais si Oolel est arrêté.
+Les réponses en wolof sont lues par [Oolel-Voices](https://huggingface.co/soynade-research/Oolel-Voices), un modèle de synthèse vocale conçu pour le wolof par Soynade Research (licence AGPL-3.0). Il tourne en local (`tools/oolel/server.py`), sur GPU NVIDIA de préférence. Par défaut il lit aussi le français (`OOLEL_LANGUAGES=wo,mixed,fr`) ; retirer `fr` pour que le français soit lu par Gemini. Gemini prend le relais si Oolel est arrêté.
 
 Installation (une fois, environ 5 Go) :
 
@@ -504,6 +505,8 @@ Lancement (le modèle est téléchargé au premier démarrage) :
 ```bash
 tools/oolel/.venv/Scripts/python.exe tools/oolel/server.py
 ```
+
+Vitesse : sur une RTX 3060 portable, une phrase prend environ 1,3 fois sa durée à générer ; la boucle de génération (~75 % du temps) ne dépend d'aucun réglage du modèle. L'app lit donc la première phrase dès qu'elle est prête. `OOLEL_S3GEN_STEPS=5` (variable d'environnement au lancement du serveur Oolel) fait gagner ~0,7 s par phrase sur le décodage audio. Fermer les applications qui utilisent le GPU et passer Windows en mode « Meilleures performances » aide aussi.
 
 Sous macOS/Linux, remplacer `.venv/Scripts/python.exe` par `.venv/bin/python` et installer `torch` sans l'index CUDA.
 

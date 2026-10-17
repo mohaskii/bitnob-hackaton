@@ -55,6 +55,32 @@ const encodeWav = (samples: Float32Array, sampleRate: number) => {
   return new Uint8Array(buffer)
 }
 
+/** Loudness of `count` equal slices of the signal, normalised to 0–1. */
+export const peaksOf = (samples: Float32Array, count: number) => {
+  const size = Math.max(1, Math.floor(samples.length / count))
+  const peaks = Array.from({ length: count }, (_, i) => {
+    let sum = 0
+    for (let j = i * size; j < (i + 1) * size && j < samples.length; j++) {
+      sum += samples[j] * samples[j]
+    }
+    return Math.sqrt(sum / size)
+  })
+  const max = Math.max(...peaks, 1e-6)
+  return peaks.map((p) => p / max)
+}
+
+const PEAKS_PER_CLIP = 48
+
+/** Duration and waveform of an audio file (any format the browser plays). */
+export const analyzeAudio = async (bytes: ArrayBuffer) => {
+  const decoded = await new OfflineAudioContext(1, 1, 16_000)
+    .decodeAudioData(bytes)
+  return {
+    duration: decoded.duration,
+    peaks: peaksOf(decoded.getChannelData(0), PEAKS_PER_CLIP),
+  }
+}
+
 /** Decodes any recorded blob and returns 16 kHz mono WAV bytes + duration. */
 export const toWav16k = async (blob: Blob) => {
   const decoder = new AudioContext()
@@ -71,11 +97,16 @@ export const toWav16k = async (blob: Blob) => {
   source.connect(offline.destination)
   source.start()
   const rendered = await offline.startRendering()
+  const samples = rendered.getChannelData(0)
   return {
-    wav: encodeWav(rendered.getChannelData(0), rate),
+    wav: encodeWav(samples, rate),
     seconds: decoded.duration,
+    peaks: peaksOf(samples, PEAKS_PER_CLIP),
   }
 }
+
+export const base64ToBytes = (base64: string) =>
+  Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))
 
 export const bytesToBase64 = (bytes: Uint8Array) => {
   let binary = ''

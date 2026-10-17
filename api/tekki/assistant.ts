@@ -558,6 +558,7 @@ export const askTekki = async (input: {
         text: c.text,
       })),
       sources: template ? [] : toSources(fallbackChunks),
+      language: 'fr', // documents and templates are written in French
       mode: 'knowledge-only',
       provider: template ? 'tekki-analytics' : 'tekki-knowledge',
       guardrailTriggered: false,
@@ -614,6 +615,7 @@ export const askTekki = async (input: {
       answer: fallbackChunks[0].text,
       points: fallbackChunks.map((c) => ({ type: 'FACT', text: c.text })),
       sources: toSources(fallbackChunks),
+      language: 'fr', // documents are written in French
       mode: 'knowledge-only',
       provider: 'tekki-knowledge',
       guardrailTriggered: false,

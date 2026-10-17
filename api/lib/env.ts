@@ -84,6 +84,8 @@ export const GEMINI_TTS_VOICE = ENV('GEMINI_TTS_VOICE', 'Kore')
  * Empty (default) disables it; Gemini then reads Wolof answers too.
  */
 export const OOLEL_TTS_URL = ENV('OOLEL_TTS_URL', '')
+/** Answer languages read by Oolel (comma-separated); the others use Gemini. */
+export const OOLEL_LANGUAGES = ENV('OOLEL_LANGUAGES', 'wo,mixed,fr')
 
 export const OLLAMA_API_KEY = ENV('OLLAMA_API_KEY', '')
 export const OLLAMA_BASE_URL = ENV(

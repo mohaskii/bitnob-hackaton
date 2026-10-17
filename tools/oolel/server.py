@@ -42,6 +42,13 @@ VOICE_PATH = Path(os.environ.get("OOLEL_VOICE", HERE / ".cache" / "voice.wav"))
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 # Settings of Soynade's demo: calm delivery, stable pronunciation.
 GENERATE = {"exaggeration": 0.3, "temperature": 0.2, "cfg_weight": 0.5}
+# Audio decoder steps (model default 10). 5 saves ~0.7 s per sentence on an
+# RTX 3060; the token loop (~75 % of the time) is unaffected by any setting.
+S3GEN_STEPS = int(os.environ.get("OOLEL_S3GEN_STEPS", "10"))
+
+# TF32 matmuls on Ampere+ GPUs: faster audio decoding, same voice.
+torch.backends.cuda.matmul.allow_tf32 = True
+torch.backends.cudnn.allow_tf32 = True
 
 MODEL = None
 LOCK = threading.Lock()  # one generation at a time on the GPU
@@ -62,6 +69,9 @@ def load() -> None:
     model = AutoModel.from_pretrained(path, trust_remote_code=True).to(DEVICE)
     # Analyse the reference voice once, not on every sentence.
     model.prepare_conditionals(str(VOICE_PATH), exaggeration=GENERATE["exaggeration"])
+    if S3GEN_STEPS != 10:
+        decode = model.s3gen.inference
+        model.s3gen.inference = lambda *a, **k: decode(*a, **k, n_cfm_timesteps=S3GEN_STEPS)
     log(f"model loaded on {DEVICE} in {time.time() - started:.0f}s")
     synthesize(model, "Na nga def.")  # warm-up: first CUDA call is slow
     MODEL = model  # /health reports ready only once warmed up
@@ -84,10 +94,17 @@ def speakable(text: str) -> str:
     return re.sub(r"\d+(?:[.,]\d+)?", words, text)
 
 
+def max_tokens(text: str) -> int:
+    """~25 speech tokens per second, ~12 characters per second of speech:
+    a generous cap that stops a run that never emits its end token."""
+    return min(1024, 80 + len(text) * 3)
+
+
 def synthesize(model, text: str) -> bytes:
     """Tekki sends a sentence or two at a time (the app splits answers)."""
+    spoken = speakable(text)[:500]
     with LOCK, torch.inference_mode():
-        wav = model.generate(speakable(text)[:500], **GENERATE)
+        wav = model.generate(spoken, max_new_tokens=max_tokens(spoken), **GENERATE)
     buffer = io.BytesIO()
     sf.write(buffer, wav.squeeze(0).float().cpu().numpy(), model.sr, format="WAV", subtype="PCM_16")
     return buffer.getvalue()

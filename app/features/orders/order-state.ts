@@ -1,5 +1,6 @@
 import { computed, effect, signal } from '@preact/signals'
 import { isBottomNavHidden } from '../../state.ts'
+import { stocks } from '../market/market-state.ts'
 import {
   isFinal,
   orderApi,
@@ -34,6 +35,8 @@ export const confirmed = signal(false)
 export const submitting = signal(false)
 export const submitError = signal<string | null>(null)
 export const trackedOrder = signal<SgiOrder | null>(null)
+/** Fee breakdown unfolded in the summary. */
+export const feesOpen = signal(false)
 
 export const portfolio = signal<SgiPortfolio | null>(null)
 export const portfolioError = signal<string | null>(null)
@@ -59,6 +62,80 @@ export const progress = computed(() => {
   if (!order || !order.quantity) return 0
   return Math.round((order.filledQuantity / order.quantity) * 100)
 })
+
+export const sheetTitle = computed(() =>
+  step.value === 'tracking'
+    ? 'Suivi de l’ordre'
+    : step.value === 'review'
+    ? 'Vérifie ton ordre'
+    : 'Passer un ordre'
+)
+
+export const trackedFeesFcfa = computed(() =>
+  trackedOrder.value?.fees.reduce((sum, f) => sum + f.amountFcfa, 0) ?? 0
+)
+
+/** Tracking is over: the order is filled, rejected or cancelled. */
+export const trackingDone = computed(() =>
+  trackedOrder.value ? isFinal(trackedOrder.value.status) : false
+)
+
+/** Visible on the dark account card and on the white list alike. */
+const ALLOCATION_COLORS = [
+  'bg-primary',
+  'bg-success',
+  'bg-clay-400',
+  'bg-warning',
+  'bg-earth-300',
+]
+
+/** Value, cost and gain of the SGI positions, plus the cash. */
+export const portfolioTotals = computed(() => {
+  const p = portfolio.value
+  const invested = p?.positions.reduce((s, x) => s + x.valueFcfa, 0) ?? 0
+  const cost = p?.positions.reduce(
+    (s, x) => s + x.quantity * x.averageCostFcfa,
+    0,
+  ) ?? 0
+  const gain = invested - cost
+  return {
+    total: (p?.account.cashFcfa ?? 0) + invested,
+    invested,
+    gain,
+    gainPercent: cost ? (gain / cost) * 100 : 0,
+  }
+})
+
+/** Positions with their monogram and gain, largest first. */
+export const positionRows = computed(() =>
+  [...(portfolio.value?.positions ?? [])]
+    .sort((a, b) => b.valueFcfa - a.valueFcfa)
+    .map((pos, i) => {
+      const item = stocks.value.find((s) => s.symbol === pos.symbol)
+      const gain = pos.valueFcfa - pos.quantity * pos.averageCostFcfa
+      return {
+        ...pos,
+        gain,
+        logoText: item?.logoText ?? pos.symbol.slice(0, 2),
+        logoColor: item?.logoColor ?? 'bg-base-200 text-base-content',
+        dot: ALLOCATION_COLORS[i % ALLOCATION_COLORS.length],
+      }
+    })
+)
+
+/** Share of each position in the invested amount (allocation bar). */
+export const allocation = computed(() => {
+  const invested = portfolioTotals.value.invested
+  return invested
+    ? positionRows.value.map((row) => ({
+      symbol: row.symbol,
+      share: (row.valueFcfa / invested) * 100,
+      color: row.dot,
+    }))
+    : []
+})
+
+export const QUICK_AMOUNTS = [5_000, 10_000, 25_000, 50_000]
 
 export const canCancel = computed(() => {
   const order = trackedOrder.value
@@ -123,6 +200,13 @@ export const setOrderType = (value: 'MARKET' | 'LIMIT') => {
     limitPrice.value = preview.value.lastPriceFcfa
   }
 }
+export const stepQuantity = (delta: number) =>
+  setQuantity(quantity.value + delta)
+
+export const toggleFees = () => {
+  feesOpen.value = !feesOpen.value
+}
+
 export const setLimitPrice = (value: number) => {
   limitPrice.value = Math.max(0, Math.round(value || 0))
 }
