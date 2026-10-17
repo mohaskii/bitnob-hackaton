@@ -2,7 +2,10 @@
   "tasks": {
     "dev": "deno run -A app/build-config.ts",
     "server": "deno run --env-file -A --unstable-worker-options --unstable-ffi api/server.ts",
-    "db:seed": "deno run --env-file -A --unstable-ffi api/task-seed.ts"
+    "db:seed": "deno run --env-file -A --unstable-ffi api/task-seed.ts",
+    "db:reset": "deno run -A --env-file --unstable-ffi api/task-reset.ts",
+    "test": "DATABASE_PATH=:memory: APP_ENV=test deno test -A --unstable-ffi api/",
+    "bitnob:check": "deno run -A --env-file --unstable-ffi api/task-bitnob-check.ts"
   },
   "fmt": {
     "useTabs": false,
@@ -10,7 +13,9 @@
     "indentWidth": 2,
     "semiColons": false,
     "singleQuote": true,
-    "exclude": ["metafile.json"]
+    "exclude": [
+      "metafile.json"
+    ]
   },
   "lock": false,
   "nodeModulesDir": "auto",
@@ -51,6 +56,7 @@
     "gsap": "npm:gsap@^3.15.0",
     "lucide-preact": "npm:lucide-preact@^1.16.0",
     "preact": "npm:preact@^10.29.2",
+    "qrcode-generator": "npm:qrcode-generator@1.4.4",
     "tailwindcss": "npm:tailwindcss@^4.3.0",
     "vite": "npm:vite@^8.0.14"
   }

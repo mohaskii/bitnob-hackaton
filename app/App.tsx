@@ -6,6 +6,8 @@ import { HomeScreen } from './screens/HomeScreen.tsx'
 import { MarketScreen } from './screens/MarketScreen.tsx'
 import { SocialScreen } from './screens/SocialScreen.tsx'
 import { ComposeScreen } from './screens/ComposeScreen.tsx'
+import { PortfolioScreen } from './screens/PortfolioScreen.tsx'
+import { ToastStack } from './components/ui.tsx'
 import { useScrollHeader } from './hooks/useScrollHeader.ts'
 import { isBottomNavHidden } from './state.ts'
 
@@ -49,10 +51,12 @@ export const App = () => {
           ? <SocialScreen />
           : currentPath === '/compose'
           ? <ComposeScreen onClose={() => history.back()} />
+          : currentPath === '/portfolio'
+          ? <PortfolioScreen />
           : (
-            /* Placeholder Container for other tabs (Market, Social, Portfolio) */
+            /* Fallback screen */
             <div class='flex-1 flex flex-col items-center justify-center p-4 pt-[calc(env(safe-area-inset-top,0px)+1.5rem)] text-center select-none'>
-              <div class='w-14 h-14 rounded-2xl bg-base-100 flex items-center justify-center mb-3 text-primary  '>
+              <div class='w-14 h-14 rounded-2xl bg-base-100 flex items-center justify-center mb-3 text-primary'>
                 <span class='text-xs font-mono font-bold text-primary'>
                   {currentPath.slice(1)}
                 </span>
@@ -60,24 +64,19 @@ export const App = () => {
               <h1 class='text-base font-semibold text-base-content capitalize tracking-tight'>
                 {`${currentPath.slice(1)} Screen`}
               </h1>
-              <p class='text-xs text-base-content/40 mt-1.5 max-w-xs leading-relaxed'>
-                {currentPath === '/market' &&
-                  'Exploration et cours des 48 actions de la BRVM en direct.'}
-                {currentPath === '/social' &&
-                  'Social Trading : Suivez et copiez les meilleurs investisseurs.'}
-                {currentPath === '/portfolio' &&
-                  'Suivi de vos parts réelles, dividendes et calendrier financier.'}
-              </p>
             </div>
           )}
       </main>
 
-      {/* Floating Bottom Navigation Tab Bar (from Image 3 / Pill Navigation) */}
+      {/* Floating Bottom Navigation Tab Bar */}
       <BottomNav
         activeTab={currentPath}
         hidden={isBottomNavHidden.value || currentPath === '/compose'}
         onTabChange={(tab) => navigateUrl(tab.path)}
       />
+
+      {/* Toast notifications */}
+      <ToastStack />
     </div>
   )
 }

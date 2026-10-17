@@ -1,9 +1,16 @@
-import { filteredStocks, StockItem } from '../features/market/market-state.ts'
+import {
+  filteredStocks,
+  openStock,
+  StockItem,
+} from '../features/market/market-state.ts'
 import { MarketSearchBar } from '../features/market/components/MarketSearchBar.tsx'
 import { SectorFilterChips } from '../features/market/components/SectorFilterChips.tsx'
 import { StockCard } from '../features/market/components/StockCard.tsx'
 import { MarketSortMenu } from '../features/market/components/MarketSortMenu.tsx'
 import { StockTimeframeDropdown } from '../features/market/components/StockTimeframeDropdown.tsx'
+import { StockSheet } from '../features/market/components/StockSheet.tsx'
+import { OrderTicket } from '../features/trade/OrderTicket.tsx'
+import { ContractNote } from '../features/trade/ContractNote.tsx'
 
 type MarketScreenProps = {
   onStockSelect?: (stock: StockItem) => void
@@ -14,7 +21,9 @@ type MarketScreenProps = {
  * - Thin layout orchestrator (Rule 5: Decomposition Discipline)
  * - State engine lives in app/features/market/market-state.ts
  */
-export const MarketScreen = ({ onStockSelect }: MarketScreenProps) => {
+export const MarketScreen = ({
+  onStockSelect = (stock) => openStock(stock.symbol),
+}: MarketScreenProps = {}) => {
   const stocksList = filteredStocks.value
 
   return (
@@ -54,6 +63,11 @@ export const MarketScreen = ({ onStockSelect }: MarketScreenProps) => {
 
       {/* 4. Sort Options Modal Dropdown */}
       <MarketSortMenu />
+
+      {/* 5. Stock Details & Trading Sheet */}
+      <StockSheet />
+      <OrderTicket />
+      <ContractNote />
     </div>
   )
 }

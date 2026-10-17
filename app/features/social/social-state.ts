@@ -2,15 +2,18 @@ import { computed, effect, signal } from '@preact/signals'
 import {
   isBottomNavHidden,
   isComposeOpen,
+  showToast,
   SocialPost,
   socialPosts,
   toggleLikeSocialPost,
   Trader,
   TrendingAsset,
 } from '../../state.ts'
+import { api } from '../../lib/api.ts'
+import { relativeTime } from '../../lib/format.ts'
 
 /* -------------------------------------------------------------------------- */
-/* Static Mock Data (Pure constants)                                          */
+/* Static Initial / Fallback Data                                             */
 /* -------------------------------------------------------------------------- */
 
 export const INITIAL_TRADERS: Trader[] = [
@@ -159,6 +162,86 @@ export const filteredPosts = computed<SocialPost[]>(() => {
 /* Actions (Rule 4: Hoisted functions at module scope)                        */
 /* -------------------------------------------------------------------------- */
 
+export const loadCommunity = async () => {
+  try {
+    const data = await api.get<{
+      traders?: Array<{
+        id?: string
+        traderId?: number
+        name: string
+        handle: string
+        avatarUrl: string
+        returnPercent: number
+        timeframe: string
+        followersCount: number
+        winRate: number
+        riskLevel: string
+        badge: string | null
+        isFollowed?: boolean
+      }>
+      posts?: Array<{
+        id?: string
+        postId?: number
+        authorName: string
+        authorHandle: string
+        avatarUrl: string
+        content: string
+        symbol: string | null
+        sentiment: string | null
+        likesCount: number
+        commentsCount: number
+        createdAt: number
+      }>
+    }>('/community')
+
+    if (data?.traders?.length) {
+      traders.value = data.traders.map((t) => ({
+        id: String(t.id || t.traderId),
+        name: t.name,
+        handle: t.handle,
+        avatarUrl: t.avatarUrl ||
+          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop',
+        verified: true,
+        returnPercent: t.returnPercent,
+        timeframe: t.timeframe || '30 derniers jours',
+        copiersCount: t.followersCount || 42,
+        winRate: t.winRate || 75,
+        riskLevel: (t.riskLevel as 'Faible' | 'Modéré' | 'Élevé') || 'Faible',
+        isCopied: Boolean(t.isFollowed),
+        badge: t.badge || 'Trader BRVM',
+      }))
+    }
+
+    if (data?.posts?.length) {
+      socialPosts.value = data.posts.map((p) => ({
+        id: String(p.id || p.postId),
+        authorName: p.authorName,
+        authorHandle: p.authorHandle,
+        avatarUrl: p.avatarUrl ||
+          'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=256&auto=format&fit=crop',
+        verified: true,
+        timeAgo: relativeTime(p.createdAt),
+        content: p.content,
+        trade: p.symbol
+          ? {
+            symbol: p.symbol,
+            action: p.sentiment === 'bearish' ? 'VENTE' : 'ACHAT',
+            priceFcfa: 18500,
+            changePercent: p.sentiment === 'bearish' ? -1.5 : 2.1,
+          }
+          : undefined,
+        sentiment: (p.sentiment as 'bullish' | 'bearish') || undefined,
+        likesCount: p.likesCount || 0,
+        isLiked: false,
+        commentsCount: p.commentsCount || 0,
+        copiersCount: 14,
+      }))
+    }
+  } catch (err) {
+    console.warn('[Community] Failed to load from backend, using fallback:', err)
+  }
+}
+
 export const setActiveFilterSymbol = (symbol: string | null) => {
   activeFilterSymbol.value = symbol
 }
@@ -187,7 +270,7 @@ export const toggleCopyOpenTrades = (val: boolean) => {
   copyOpenTrades.value = val
 }
 
-export const confirmCopy = () => {
+export const confirmCopy = async () => {
   const target = copyingTrader.value
   if (target) {
     traders.value = traders.value.map((t) =>
@@ -199,11 +282,14 @@ export const confirmCopy = () => {
         }
         : t
     )
+    showToast(`Copie de ${target.name} activée avec succès`, 'success')
+    void api.post('/community/follow', { traderId: target.id, follow: true })
+      .catch(() => {})
   }
   closeCopyModal()
 }
 
-export const toggleCopyTrader = (trader: Trader) => {
+export const toggleCopyTrader = async (trader: Trader) => {
   if (trader.isCopied) {
     traders.value = traders.value.map((t) =>
       t.id === trader.id
@@ -214,6 +300,9 @@ export const toggleCopyTrader = (trader: Trader) => {
         }
         : t
     )
+    showToast(`Copie de ${trader.name} révoquée`, 'info')
+    void api.post('/community/follow', { traderId: trader.id, follow: false })
+      .catch(() => {})
   } else {
     openCopyModal(trader)
   }
@@ -244,6 +333,7 @@ export const handleCopyPostTrade = (post: SocialPost) => {
 
 export const toggleLikePost = (postId: string) => {
   toggleLikeSocialPost(postId)
+  void api.post('/community/posts/like', { postId }).catch(() => {})
 }
 
 export const openCompose = () => {
@@ -272,3 +362,6 @@ effect(() => {
   const isModalOpen = copyingTrader.value !== null || isComposeOpen.value
   isBottomNavHidden.value = isModalOpen
 })
+
+// Initial load from backend
+void loadCommunity()

@@ -1,4 +1,5 @@
 import { computed, signal } from '@preact/signals'
+import { api, errorMessage } from '../../lib/api.ts'
 
 /* -------------------------------------------------------------------------- */
 /* State Types (Zero interface discipline)                                   */
@@ -8,8 +9,14 @@ export type StockItem = {
   symbol: string
   name: string
   sector: string
+  country?: string
+  activity?: string
   priceFcfa: number
   changePercent: number
+  volume?: number
+  previousPriceFcfa?: number
+  openingPriceFcfa?: number
+  closingPriceFcfa?: number
   sparkline: 'up' | 'down'
   history: number[]
   logoColor?: string
@@ -24,7 +31,17 @@ export type SortOption =
   | 'price-asc'
   | 'name-asc'
 
-export const SECTORS = ['Tous', 'Télécoms', 'Finance', 'Énergie', 'Agriculture']
+export const SECTORS = [
+  'Tous',
+  'Télécoms',
+  'Finance',
+  'Énergie',
+  'Agriculture',
+  'Consommation',
+  'Industrie',
+  'Services publics',
+]
+
 export const TIMEFRAMES = ['This month', 'Today', 'This week', 'This year']
 
 export const SORT_OPTIONS: { id: SortOption; label: string }[] = [
@@ -35,6 +52,37 @@ export const SORT_OPTIONS: { id: SortOption; label: string }[] = [
   { id: 'price-asc', label: 'Prix le plus bas' },
   { id: 'name-asc', label: 'Nom (A - Z)' },
 ]
+
+const SECTOR_COLORS: Record<string, string> = {
+  Télécoms: 'bg-primary/20 text-primary-content',
+  Finance: 'bg-info/20 text-info',
+  Énergie: 'bg-error/20 text-error',
+  Agriculture: 'bg-warning/20 text-warning-content',
+  Consommation: 'bg-success/20 text-success',
+  Industrie: 'bg-secondary/20 text-secondary-content',
+  'Services publics': 'bg-accent/20 text-accent-content',
+}
+
+export const getSectorColor = (sector?: string) =>
+  (sector && SECTOR_COLORS[sector]) || 'bg-base-200 text-base-content'
+
+export const generateSparkline = (
+  prev: number,
+  curr: number,
+  _changePercent: number,
+): number[] => {
+  const steps = 8
+  const base = prev > 0 ? prev : curr
+  const diff = curr - base
+  const result: number[] = [base]
+  for (let i = 1; i < steps - 1; i++) {
+    const progress = i / (steps - 1)
+    const noise = Math.sin(i * 1.5) * (Math.abs(diff) * 0.15 || base * 0.005)
+    result.push(Number((base + diff * progress + noise).toFixed(1)))
+  }
+  result.push(curr)
+  return result
+}
 
 export const BRVM_STOCKS: StockItem[] = [
   {
@@ -126,10 +174,17 @@ export const selectedSector = signal('Tous')
 export const selectedTimeframe = signal('This month')
 export const sortBy = signal<SortOption>('default')
 export const isSortMenuOpen = signal(false)
+export const selectedSymbol = signal<string | null>(null)
+export const marketLoading = signal(false)
+export const marketError = signal<string | null>(null)
 
 /* -------------------------------------------------------------------------- */
 /* Computeds (Rule 2: Derived state lives in computed)                        */
 /* -------------------------------------------------------------------------- */
+
+export const selectedStock = computed(() =>
+  stocks.value.find((stock) => stock.symbol === selectedSymbol.value) ?? null
+)
 
 export const filteredStocks = computed<StockItem[]>(() => {
   const query = searchQuery.value.toLowerCase().trim()
@@ -150,13 +205,93 @@ export const filteredStocks = computed<StockItem[]>(() => {
       if (sort === 'change-desc') return b.changePercent - a.changePercent
       if (sort === 'change-asc') return a.changePercent - b.changePercent
       if (sort === 'name-asc') return a.name.localeCompare(b.name)
-      return 0
+      return a.symbol.localeCompare(b.symbol)
     })
+})
+
+export const marketRaw = signal<{
+  sessionStatus?: string
+  sourcePageTime?: string
+  fetchedAt?: string
+  stale?: boolean
+  staleReason?: string
+} | null>(null)
+
+export const marketFreshness = computed(() => {
+  const snapshot = marketRaw.value
+  if (!snapshot) {
+    return {
+      session: 'Ouverte',
+      publishedAt: 'Cours BRVM différés (15 min)',
+      stale: false,
+      staleReason: '',
+    }
+  }
+  return {
+    session: snapshot.sessionStatus || 'Ouverte',
+    publishedAt: snapshot.sourcePageTime || snapshot.fetchedAt || 'Aujourd’hui',
+    stale: Boolean(snapshot.stale),
+    staleReason: snapshot.staleReason || '',
+  }
 })
 
 /* -------------------------------------------------------------------------- */
 /* Actions (Rule 4: Hoisted functions at module scope)                        */
 /* -------------------------------------------------------------------------- */
+
+export const loadMarket = async () => {
+  if (marketLoading.value) return
+  marketLoading.value = true
+  marketError.value = null
+  try {
+    const data = await api.get<{
+      stocks: Array<{
+        symbol: string
+        name: string
+        sector: string
+        country?: string
+        activity?: string
+        priceFcfa: number
+        changePercent: number
+        volume?: number
+        previousPriceFcfa?: number
+        openingPriceFcfa?: number
+        closingPriceFcfa?: number
+        history?: number[]
+      }>
+    }>('/market/stocks')
+
+    marketRaw.value = data as any
+    if (data?.stocks?.length) {
+      stocks.value = data.stocks.map((s) => ({
+        ...s,
+        sparkline: s.changePercent >= 0 ? 'up' : 'down',
+        history: s.history && s.history.length >= 2
+          ? s.history
+          : generateSparkline(
+            s.previousPriceFcfa || s.priceFcfa,
+            s.priceFcfa,
+            s.changePercent,
+          ),
+        logoColor: getSectorColor(s.sector),
+        logoText: s.symbol.slice(0, 2),
+      }))
+    }
+  } catch (error) {
+    marketError.value = errorMessage(error)
+  } finally {
+    marketLoading.value = false
+  }
+}
+
+export const openStock = (symbol: string) => {
+  selectedSymbol.value = symbol
+  void api.post('/events', { type: 'viewed_stock', symbol }).catch(() => {})
+}
+
+export const closeStock = () => {
+  selectedSymbol.value = null
+}
 
 export const setSearchQuery = (query: string) => {
   searchQuery.value = query
@@ -182,3 +317,6 @@ export const toggleSortMenu = () => {
 export const closeSortMenu = () => {
   isSortMenuOpen.value = false
 }
+
+// Initial fetch in background
+void loadMarket()

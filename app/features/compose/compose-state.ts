@@ -113,7 +113,10 @@ export const closeComposeScreen = () => {
   }
 }
 
-export const submitComposePost = () => {
+import { api } from '../../lib/api.ts'
+import { showToast } from '../../state.ts'
+
+export const submitComposePost = async () => {
   const text = composeContent.value.trim()
   if (!text || composeIsOverLimit.value) return
 
@@ -150,6 +153,20 @@ export const submitComposePost = () => {
   composeSentiment.value = null
   composeShowAssetPicker.value = false
   closeComposeScreen()
+  showToast('Publication partagée avec la communauté', 'success')
+
+  try {
+    const res = await api.post<{ id: string }>('/community/posts', {
+      content: text,
+      symbol: symbol ?? undefined,
+      sentiment: sent ?? undefined,
+    })
+    if (res?.id) {
+      newPost.id = String(res.id)
+    }
+  } catch (err) {
+    console.warn('[Compose] Offline post created locally:', err)
+  }
 }
 
 /* -------------------------------------------------------------------------- */

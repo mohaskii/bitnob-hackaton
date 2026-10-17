@@ -158,3 +158,17 @@ export const toggleLikeSocialPost = (postId: string) => {
       : p
   )
 }
+
+export const toasts = signal<{ id: number; tone: 'success' | 'error' | 'info'; message: string }[]>([])
+
+let toastId = 0
+
+export const showToast = (message: string, tone: 'success' | 'error' | 'info' = 'info') => {
+  const id = ++toastId
+  toasts.value = [...toasts.value, { id, tone, message }]
+  setTimeout(() => dismissToast(id), 4200)
+}
+
+export const dismissToast = (id: number) => {
+  toasts.value = toasts.value.filter((t) => t.id !== id)
+}
