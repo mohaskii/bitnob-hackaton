@@ -1,5 +1,6 @@
 import { respond } from '@01edu/api/response'
 import { sql, sqlQuery, withTransaction } from '../schema.ts'
+import { ensureLiveAccount } from './live_trading.ts'
 import {
   bitnob,
   BitnobError,
@@ -466,6 +467,26 @@ export const listSgiFundings = (sgiId: string) =>
   }))
 
 /** The SGI confirms it credited the investor's cash account. */
+/**
+ * The SGI confirmed the credit: the FCFA brought by Bitnob become investable
+ * cash on the client's SGI account (Portefeuille Réel). Counted as capital
+ * contributed, so a deposit never shows up as a gain.
+ */
+const creditLiveAccount = (
+  userId: number,
+  sgiId: string,
+  amountFcfa: number,
+) => {
+  ensureLiveAccount(userId, sgiId)
+  sql`
+    UPDATE liveTradingAccount
+    SET cashFcfa = cashFcfa + ${amountFcfa},
+      startingCashFcfa = startingCashFcfa + ${amountFcfa},
+      updatedAt = ${Date.now()}
+    WHERE userId = ${userId}
+  `.run()
+}
+
 export const confirmCredited = (sgiId: string, fundingId: number) => {
   const row = readFunding({ fundingId })
   if (!row || row.sgiId !== sgiId) {
@@ -479,6 +500,7 @@ export const confirmCredited = (sgiId: string, fundingId: number) => {
     })
   }
   setStatus(fundingId, 'CREDITED', 'Confirmé par la SGI')
+  creditLiveAccount(row.userId, row.sgiId, row.amountFcfa)
   const journey = getJourney(row.userId)
   if (journey.status !== 'FUNDED') {
     applyPartnerStatus(

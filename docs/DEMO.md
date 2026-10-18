@@ -98,6 +98,15 @@ Ce qui est simulé, et qu'on le dit :
 - Retour sur `/partner` : « Fonds reçus via Bitnob » → la SGI **confirme le
   crédit**.
 
+### 5 bis. Investir l'argent arrivé via Bitnob (Portefeuille Réel SGI)
+
+- Le crédit confirmé par la SGI s'ajoute au solde du **Portefeuille Réel SGI**
+  (onglet « Réel » du portefeuille).
+- Les ordres réels exigent un **compte inscrit** (pas le mode invité) : pour
+  cette partie, faire la démo avec un compte « Awa » créé au début.
+- Avec 5 000 FCFA, acheter un titre peu cher (ex. ETIT) plutôt que Sonatel (43
+  500 FCFA l'action).
+
 ### 6. Conclusion (30 s)
 
 - TekkiTrade ne détient jamais les fonds : Bitnob reçoit, convertit, verse ; la
