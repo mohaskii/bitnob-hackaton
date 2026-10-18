@@ -41,8 +41,8 @@ export type CommunityTradeActivity = {
 /* State Signals (Rule 1: Signal for every piece of mutable data)              */
 /* -------------------------------------------------------------------------- */
 
-export const balanceFcfa = signal<number>(1000000)
-export const balanceUsdt = signal<number>(1666.67)
+export const balanceFcfa = signal<number>(0)
+export const balanceUsdt = signal<number>(0)
 
 export const marketSentiments = signal<MarketSentimentItem[]>([
   {
@@ -178,13 +178,12 @@ export const loadHome = async () => {
     }>('/me').catch(() => null)
 
     if (me?.live) {
+      // Real SGI account: show its value even at 0 (a new account is empty).
       const val = me.live.totalValueFcfa > 0
         ? me.live.totalValueFcfa
         : me.live.cashFcfa
-      if (val > 0) {
-        balanceFcfa.value = val
-        balanceUsdt.value = Number((val / 600).toFixed(2))
-      }
+      balanceFcfa.value = val
+      balanceUsdt.value = Number((val / 600).toFixed(2))
     } else if (me?.paper) {
       const val = me.paper.totalValueFcfa > 0
         ? me.paper.totalValueFcfa
