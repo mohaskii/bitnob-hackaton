@@ -3,6 +3,7 @@ import { BrandMark } from '../../../components/BrandMark.tsx'
 import { lang, setLang, t } from '../../../i18n/index.ts'
 import { InstallButton } from '../../pwa/InstallButton.tsx'
 import {
+  landingFailed,
   landingPending,
   loginFromLanding,
   scrollToSection,
@@ -17,14 +18,19 @@ const previewScreen = (key: keyof typeof t.value.screenAlt) => ({
 })
 
 const ExploreButton = () => (
-  <button
-    class='editorial-button editorial-button-yellow'
-    onClick={startFromLanding}
-    disabled={landingPending.value}
-  >
-    {landingPending.value ? t.value.pending : t.value.explore}
-    <ArrowUpRight size={18} />
-  </button>
+  <>
+    <button
+      class='editorial-button editorial-button-yellow'
+      onClick={startFromLanding}
+      disabled={landingPending.value}
+    >
+      {landingPending.value ? t.value.pending : t.value.explore}
+      <ArrowUpRight size={18} />
+    </button>
+    {landingFailed.value && (
+      <p role='alert' class='editorial-explore-error'>{t.value.exploreError}</p>
+    )}
+  </>
 )
 export const EditorialNav = () => (
   <header class='editorial-nav' data-landing-nav>

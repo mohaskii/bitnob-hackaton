@@ -1,4 +1,5 @@
 import { navigateUrl } from '../../router.tsx'
+import { signal } from '@preact/signals'
 import {
   authPending,
   goToLogin,
@@ -9,11 +10,15 @@ import {
 /** Landing actions. The page reuses the session engine, it owns no state. */
 
 export const landingPending = authPending
+export const landingFailed = signal(false)
 
 /** Primary CTA: straight into the app (guest session if needed). */
 export const startFromLanding = async () => {
+  if (authPending.value) return
+  landingFailed.value = false
   if (!isAuthenticated.value) await startAsGuest()
   if (isAuthenticated.value) navigateUrl('/')
+  else landingFailed.value = true
 }
 
 export const loginFromLanding = () =>

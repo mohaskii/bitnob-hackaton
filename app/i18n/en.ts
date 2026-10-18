@@ -1,11 +1,16 @@
 import type { TranslationSchema } from './fr.ts'
 export const en: TranslationSchema = {
+  exploreError:
+    'The app could not open right now. Check your connection and try again. If the problem persists, the server may be unavailable.',
   screenAlt: {
     home: 'TekkiTrade home and practice balance preview, in French',
     market: 'BRVM market: companies, prices and trends, in French',
     stock: 'Company profile and stock information, in French',
     portfolio: 'Practice portfolio and position allocation, in French',
     deposit: 'Bitcoin funding journey preview, in French',
+    register: 'Online account creation: email, username, password, in French',
+    fractional: 'Fractional Sonatel purchase by amount, fees included, in French',
+    transfer: 'Instant, free transfer to another investor, in French',
   },
   nav: ['The experience', 'Bitcoin', 'Get the app'],
   skip: 'Skip to content',
@@ -40,21 +45,48 @@ export const en: TranslationSchema = {
     },
     {
       number: '02',
-      label: 'PRACTISE',
-      title: 'Your first choices. At your pace.',
+      label: 'OPEN AN ACCOUNT',
+      title: 'One minute online. Zero paperwork.',
       body:
-        'Explore buying shares with a practice portfolio. See the fees, your positions and how they evolve, all in one clear experience.',
-      detail: 'Practice uses virtual money. No real orders are placed.',
-      screen: 'portfolio',
+        'An email, a username, a password: your account is ready. Your securities account with the partner SGI opens right after, with no paper forms and no branch visit.',
+      detail: 'Prototype: account opening with the partner SGI is simulated.',
+      screen: 'register',
     },
     {
       number: '03',
-      label: 'CONNECT',
+      label: 'PRACTISE',
+      title: 'Your first choices. At your pace.',
+      body:
+        'Place your first orders with 1,000,000 virtual FCFA. Track your positions, gains and losses before risking a single franc.',
+      detail: 'Practice mode only uses virtual money.',
+      screen: 'portfolio',
+    },
+    {
+      number: '04',
+      label: 'INVEST',
+      title: 'A slice of Sonatel. From 1,000 FCFA.',
+      body:
+        'Enter an amount, not a number of shares: TekkiTrade works out your fraction. SGI brokerage, tax, BRVM, DC/BR: every fee is shown before you confirm. One tap, and the order goes to the SGI.',
+      detail: 'Prototype: orders sent to the SGI are simulated.',
+      screen: 'fractional',
+    },
+    {
+      number: '05',
+      label: 'FUND',
       title: 'Your roots travel with you.',
       body:
-        'Explore a funding journey with Bitcoin Lightning and Bitnob. A new way to connect your money with your plans for the region.',
+        'Bitcoin Lightning, USDT or USDC: Bitnob converts your crypto into FCFA to fund your investment, wherever you are.',
       detail: 'Prototype: Mobile Money payouts remain simulated.',
       screen: 'deposit',
+    },
+    {
+      number: '06',
+      label: 'SHARE',
+      title: 'Between friends, money moves freely.',
+      body:
+        'Send FCFA to another investor using their username. Instant, with no bank fees: to pay someone back, chip in, or help someone get started.',
+      detail: 'Free transfers between TekkiTrade accounts.',
+      screen: 'transfer',
     },
   ],
   bitcoinLabel: 'BITCOIN, WITH A PURPOSE',

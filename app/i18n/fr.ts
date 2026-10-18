@@ -1,10 +1,15 @@
 export const fr = {
+  exploreError:
+    'Impossible d’ouvrir l’application pour le moment. Vérifiez votre connexion puis réessayez. Si le problème persiste, le serveur est peut-être indisponible.',
   screenAlt: {
     home: 'Accueil TekkiTrade et aperçu du patrimoine fictif',
     market: 'Marché BRVM : entreprises, cours et tendances',
     stock: 'Fiche entreprise et informations sur une action',
     portfolio: 'Portefeuille d’entraînement et répartition des positions',
     deposit: 'Aperçu du parcours de financement Bitcoin',
+    register: 'Création de compte en ligne : email, pseudo, mot de passe',
+    fractional: 'Achat fractionné de Sonatel par montant, frais inclus',
+    transfer: 'Transfert instantané et gratuit vers un autre investisseur',
   },
   nav: ['L’expérience', 'Bitcoin', 'L’application'],
   skip: 'Aller au contenu',
@@ -39,21 +44,48 @@ export const fr = {
     },
     {
       number: '02',
-      label: 'S’ENTRAÎNER',
-      title: 'Vos premiers choix. À votre rythme.',
+      label: 'OUVRIR SON COMPTE',
+      title: 'Une minute en ligne. Zéro paperasse.',
       body:
-        'Explorez l’achat d’actions avec un portefeuille fictif. Retrouvez les frais, vos positions et leur évolution dans une expérience claire.',
-      detail: 'L’entraînement utilise de l’argent fictif. Aucun ordre réel.',
-      screen: 'portfolio',
+        'Un email, un pseudo, un mot de passe : votre compte est prêt. Votre compte-titres chez la SGI partenaire est ouvert dans la foulée, sans formulaire papier ni passage en agence.',
+      detail: 'Prototype : l’ouverture chez la SGI partenaire est simulée.',
+      screen: 'register',
     },
     {
       number: '03',
-      label: 'SE CONNECTER',
+      label: 'S’ENTRAÎNER',
+      title: 'Vos premiers choix. À votre rythme.',
+      body:
+        'Faites vos premiers ordres avec 1 000 000 FCFA fictifs. Suivez vos positions, vos gains et vos pertes avant de risquer un franc.',
+      detail: 'Le mode entraînement utilise uniquement de l’argent fictif.',
+      screen: 'portfolio',
+    },
+    {
+      number: '04',
+      label: 'INVESTIR',
+      title: 'Une part de Sonatel. Dès 1 000 FCFA.',
+      body:
+        'Saisissez un montant, pas un nombre d’actions : TekkiTrade calcule votre fraction. Courtage SGI, taxe, BRVM, DC/BR : chaque frais est affiché avant de confirmer. Un bouton, et l’ordre part vers la SGI.',
+      detail: 'Prototype : les ordres transmis à la SGI sont simulés.',
+      screen: 'fractional',
+    },
+    {
+      number: '05',
+      label: 'FINANCER',
       title: 'Vos racines voyagent avec vous.',
       body:
-        'Découvrez un parcours de financement avec Bitcoin Lightning et Bitnob. Une nouvelle façon de penser le lien entre votre argent et vos projets dans la région.',
+        'Bitcoin Lightning, USDT ou USDC : Bitnob convertit vos cryptos en FCFA pour financer votre investissement, d’où que vous soyez.',
       detail: 'Prototype : le versement Mobile Money reste simulé.',
       screen: 'deposit',
+    },
+    {
+      number: '06',
+      label: 'PARTAGER',
+      title: 'Entre proches, l’argent circule librement.',
+      body:
+        'Envoyez des FCFA à un autre investisseur avec son pseudo. Instantané, sans frais bancaires : pour rembourser, cotiser ou aider quelqu’un à se lancer.',
+      detail: 'Transferts gratuits entre comptes TekkiTrade.',
+      screen: 'transfer',
     },
   ],
   bitcoinLabel: 'BITCOIN, AU SERVICE DU PARCOURS',

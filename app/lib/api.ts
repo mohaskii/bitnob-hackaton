@@ -27,6 +27,7 @@ const request = async <T>(
 ) => {
   const token = getToken()
   const response = await fetch(`/api${path}`, {
+    signal: AbortSignal.timeout(20_000),
     method,
     headers: {
       ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),

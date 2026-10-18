@@ -41,6 +41,21 @@ export const SCREENS = {
     alt: 'Approvisionnement via Bitnob en Lightning, USDT ou USDC',
     statusTone: 'dark',
   },
+  register: {
+    src: '/landing/register.webp',
+    alt: 'Création de compte en ligne : email, pseudo, mot de passe',
+    statusTone: 'dark',
+  },
+  fractional: {
+    src: '/landing/fractional.webp',
+    alt: 'Achat fractionné de Sonatel par montant, frais inclus',
+    statusTone: 'light',
+  },
+  transfer: {
+    src: '/landing/transfer.webp',
+    alt: 'Transfert instantané et gratuit vers un autre investisseur',
+    statusTone: 'light',
+  },
   social: {
     src: '/landing/social.webp',
     alt: 'Communauté : meilleurs investisseurs et fil d’analyses',

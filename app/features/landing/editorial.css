@@ -45,14 +45,14 @@
 .editorial-chapters { padding: 0 24px; }
 .editorial-chapter { position: sticky; top: 88px; border-radius: 40px; min-height: 710px; height: calc(100svh - 112px); max-height: 900px; overflow: clip; }
 .editorial-chapter + .editorial-chapter { margin-top: 70px; }
-.editorial-chapter-0 { background: #f5f5f3; }
-.editorial-chapter-1 { background: #e7e7e4; }
-.editorial-chapter-2 { background: #1a1a1a; color: #fff; }
+.editorial-chapter-0, .editorial-chapter-3 { background: #f5f5f3; }
+.editorial-chapter-1, .editorial-chapter-4 { background: #e7e7e4; }
+.editorial-chapter-2, .editorial-chapter-5 { background: #1a1a1a; color: #fff; }
 .editorial-chapter-inner { height: 100%; max-width: 1120px; margin: auto; padding: 60px 48px; display: grid; grid-template-columns: 1.15fr 1fr; align-items: center; gap: 60px; transform-origin: center top; }
 .editorial-chapter h3 { font-size: clamp(38px, 4.6vw, 64px); letter-spacing: -.05em; line-height: 1.08; font-weight: 650; margin-bottom: 28px; text-wrap: balance; }
 .editorial-chapter .editorial-eyebrow span { margin-right: 16px; opacity: .5; }
 .editorial-detail { font-size: 12px; line-height: 1.7; color: var(--muted); margin-top: 28px; }
-.editorial-chapter-2 .editorial-body, .editorial-chapter-2 .editorial-detail { color: #bcbcb6; }
+.editorial-chapter-2 .editorial-body, .editorial-chapter-2 .editorial-detail, .editorial-chapter-5 .editorial-body, .editorial-chapter-5 .editorial-detail { color: #bcbcb6; }
 .editorial-chapter-phone { width: min(270px, 100%); justify-self: center; }
 .editorial-bitcoin { background: #1a1a1a; color: white; display: grid; grid-template-columns: 1fr 1fr; gap: 90px; margin-top: 90px; border-radius: 48px 48px 0 0; }
 .editorial-bitcoin .editorial-body { color: #bcbcb6; }
@@ -142,3 +142,4 @@
   .editorial-chapter { position: relative; top: auto; }
   .editorial *, .install-dialog[open] { animation: none !important; transition: none !important; }
 }
+.editorial-explore-error { flex-basis: 100%; order: 3; max-width: 520px; margin-top: 8px; padding: 14px 18px; border-radius: 18px; background: #e7e7e4; color: #1a1a1a; font-size: 13px; line-height: 1.6; }
