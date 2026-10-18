@@ -561,7 +561,12 @@ export const getQuote = async (symbol: string) => {
 /** Latest known prices for valuation (DB copy of the last snapshot). */
 export const getStoredPrices = () =>
   new Map(
-    sqlQuery<{ symbol: string; name: string; priceFcfa: number }>`
-      SELECT symbol, name, priceFcfa FROM stock
+    sqlQuery<{
+      symbol: string
+      name: string
+      priceFcfa: number
+      changePercent: number
+    }>`
+      SELECT symbol, name, priceFcfa, changePercent FROM stock
     `.all().map((row) => [row.symbol, row]),
   )

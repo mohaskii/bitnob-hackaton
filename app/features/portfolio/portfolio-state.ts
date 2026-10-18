@@ -15,43 +15,51 @@ export type Position = {
   symbol: string
   name: string
   quantity: number
+  isFractional?: boolean
   averageCostFcfa: number
-  lastPriceFcfa: number
+  lastPriceFcfa?: number
+  currentPriceFcfa?: number
   marketValueFcfa: number
   unrealizedPnlFcfa: number
   unrealizedPnlPercent: number
 }
 
-export type PaperOrder = {
+export type OrderItem = {
   orderId: number
+  sgiOrderReference?: string
   symbol: string
   side: 'BUY' | 'SELL'
   quantity: number
   priceFcfa: number
   grossFcfa: number
   fees: FeeBreakdown
-  totalFeesFcfa: number
+  totalFeesFcfa?: number
   netFcfa: number
   realizedPnlFcfa: number | null
   sgiName: string
-  quoteTime: string
+  isFractional?: boolean
+  settlementDate?: string
+  status?: string
   createdAt: number
 }
 
 export type Portfolio = {
+  accountNumber?: string
+  sgiId?: string
   cashFcfa: number
   startingCashFcfa: number
-  investedValueFcfa: number
+  investedValueFcfa?: number
   totalValueFcfa: number
   totalPnlFcfa: number
   totalPnlPercent: number
   realizedPnlFcfa: number
   feesPaidFcfa: number
   positions: Position[]
-  orders: PaperOrder[]
+  orders: OrderItem[]
 }
 
 export const portfolio = signal<Portfolio | null>(null)
+export const portfolioMode = signal<'live' | 'paper'>('live')
 export const portfolioError = signal<string | null>(null)
 export const confirmingReset = signal(false)
 
@@ -71,11 +79,24 @@ export const allocation = computed(() => {
 
 export const loadPortfolio = async () => {
   try {
-    portfolio.value = await api.get<Portfolio>('/paper/portfolio')
+    const endpoint = portfolioMode.value === 'live'
+      ? '/trade/live/portfolio'
+      : '/paper/portfolio'
+    portfolio.value = await api.get<Portfolio>(endpoint)
     portfolioError.value = null
   } catch (error) {
-    portfolioError.value = errorMessage(error)
+    if (portfolioMode.value === 'live') {
+      portfolioMode.value = 'paper'
+      portfolio.value = await api.get<Portfolio>('/paper/portfolio').catch(() => null)
+    } else {
+      portfolioError.value = errorMessage(error)
+    }
   }
+}
+
+export const setPortfolioMode = (mode: 'live' | 'paper') => {
+  portfolioMode.value = mode
+  void loadPortfolio()
 }
 
 export const askReset = () => {

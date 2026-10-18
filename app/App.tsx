@@ -11,6 +11,8 @@ import { PortfolioScreen } from './screens/PortfolioScreen.tsx'
 import { RegisterScreen } from './screens/RegisterScreen.tsx'
 import { WelcomeScreen } from './features/session/WelcomeScreen.tsx'
 import { isAuthenticated } from './features/session/session-state.ts'
+import { TransferScreen } from './screens/TransferScreen.tsx'
+import { TransferHistoryScreen } from './screens/TransferHistoryScreen.tsx'
 import { ToastStack } from './components/ui.tsx'
 import { useScrollHeader } from './hooks/useScrollHeader.ts'
 import { isBottomNavHidden } from './state.ts'
@@ -81,6 +83,10 @@ export const App = () => {
           ? <ComposeScreen onClose={() => history.back()} />
           : currentPath === '/portfolio'
           ? <PortfolioScreen />
+          : currentPath === '/transfer'
+          ? <TransferScreen />
+          : currentPath === '/history'
+          ? <TransferHistoryScreen />
           : currentPath === '/register' || currentPath === '/login'
           ? <RegisterScreen />
           : currentPath === '/welcome'
@@ -103,7 +109,10 @@ export const App = () => {
       {/* Floating Bottom Navigation Tab Bar */}
       <BottomNav
         activeTab={currentPath}
-        hidden={isBottomNavHidden.value || currentPath === '/compose' ||
+        hidden={isBottomNavHidden.value ||
+          currentPath === '/compose' ||
+          currentPath === '/transfer' ||
+          currentPath === '/history' ||
           isAuthFlow}
         onTabChange={(tab) => navigateUrl(tab.path)}
       />

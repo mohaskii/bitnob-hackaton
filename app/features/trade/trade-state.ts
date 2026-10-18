@@ -24,12 +24,14 @@ export type Estimate = {
   quoteTime: string
   stale: boolean
   sgi: { id: string; name: string; isDemo: boolean }
+  isFractional?: boolean
   leftoverFcfa: number
   minimumDepositFcfa: number
 }
 
 export type Fill = {
   orderId: number
+  sgiOrderReference?: string
   symbol: string
   name: string
   side: 'BUY' | 'SELL'
@@ -42,10 +44,13 @@ export type Fill = {
   cashAfterFcfa: number
   quoteTime: string
   sgiName: string
+  isFractional?: boolean
+  settlementDate?: string
+  status: string
   createdAt: number
 }
 
-export const BUDGET_PRESETS = [25_000, 50_000, 100_000, 250_000]
+export const BUDGET_PRESETS = [5_000, 10_000, 25_000, 50_000]
 
 /* -------------------------------------------------------------------------- */
 /* Signals                                                                    */
@@ -54,13 +59,14 @@ export const BUDGET_PRESETS = [25_000, 50_000, 100_000, 250_000]
 export const ticketOpen = signal(false)
 export const side = signal<'BUY' | 'SELL'>('BUY')
 export const inputMode = signal<'budget' | 'quantity'>('budget')
-export const budgetFcfa = signal(50_000)
-export const quantity = signal(1)
+export const budgetFcfa = signal(10_000)
+export const quantity = signal(0.5)
 export const estimate = signal<Estimate | null>(null)
 export const estimating = signal(false)
 export const estimateError = signal<string | null>(null)
 export const submitting = signal(false)
 export const lastFill = signal<Fill | null>(null)
+export const showFeeDetails = signal(false)
 
 /* -------------------------------------------------------------------------- */
 /* Computeds                                                                  */
@@ -72,20 +78,20 @@ export const ownedQuantity = computed(() =>
 
 export const canSubmit = computed(() => {
   const e = estimate.value
-  if (!e || estimating.value || submitting.value || e.quantity < 1) return false
+  if (!e || estimating.value || submitting.value || e.quantity <= 0) return false
   return side.value === 'BUY' || e.quantity <= ownedQuantity.value
 })
 
 export const submitHint = computed(() => {
   const e = estimate.value
   if (!e) return null
-  if (e.quantity < 1 && side.value === 'BUY') {
-    return 'Ce budget ne permet pas d’acheter un titre entier, frais compris.'
+  if (e.quantity <= 0 && side.value === 'BUY') {
+    return 'Veuillez saisir un montant valide.'
   }
   if (side.value === 'SELL' && e.quantity > ownedQuantity.value) {
     return ownedQuantity.value
-      ? `Vous détenez ${ownedQuantity.value} titre(s) dans votre portefeuille d’entraînement.`
-      : 'Vous ne détenez pas ce titre dans votre portefeuille d’entraînement.'
+      ? `Vous détenez ${ownedQuantity.value} part(s) de ce titre.`
+      : 'Vous ne détenez pas ce titre en portefeuille.'
   }
   return null
 })
@@ -97,8 +103,9 @@ export const submitHint = computed(() => {
 export const openTicket = (initialSide: 'BUY' | 'SELL' = 'BUY') => {
   side.value = initialSide
   inputMode.value = initialSide === 'BUY' ? 'budget' : 'quantity'
-  quantity.value = initialSide === 'SELL' ? Math.max(1, ownedQuantity.value) : 1
+  quantity.value = initialSide === 'SELL' ? Math.max(0.1, ownedQuantity.value || 1) : 0.5
   estimate.value = null
+  showFeeDetails.value = false
   ticketOpen.value = true
   isBottomNavHidden.value = true
 }
@@ -122,11 +129,18 @@ export const setBudget = (value: number) => {
 }
 
 export const setQuantity = (value: number) => {
-  quantity.value = Math.max(1, Math.floor(value || 1))
+  quantity.value = Math.max(0.0001, Number(value || 0.1))
 }
 
-export const stepQuantity = (delta: number) =>
-  setQuantity(quantity.value + delta)
+export const stepQuantity = (delta: number) => {
+  const current = quantity.value || 0.5
+  const next = Math.max(0.1, Number((current + delta).toFixed(2)))
+  setQuantity(next)
+}
+
+export const toggleFeeDetails = () => {
+  showFeeDetails.value = !showFeeDetails.value
+}
 
 let estimateTimer: ReturnType<typeof setTimeout> | undefined
 let estimateSeq = 0
@@ -146,13 +160,14 @@ const fetchEstimate = async (payload: Record<string, unknown>) => {
   }
 }
 
-// Re-estimate (debounced) whenever the ticket inputs change.
+// Re-estimate (debounced) whenever inputs change
 effect(() => {
   const stock = selectedStock.value
   if (!ticketOpen.value || !stock) return
   const payload = {
     symbol: stock.symbol,
     side: side.value,
+    fractional: true,
     ...(inputMode.value === 'budget' && side.value === 'BUY'
       ? { budgetFcfa: budgetFcfa.value }
       : { quantity: quantity.value }),
@@ -167,10 +182,12 @@ export const submitOrder = async () => {
   if (!stock || !e || !canSubmit.value) return
   submitting.value = true
   try {
-    lastFill.value = await api.post<Fill>('/paper/orders', {
+    lastFill.value = await api.post<Fill>('/trade/live/orders', {
       symbol: stock.symbol,
       side: side.value,
-      quantity: e.quantity,
+      ...(inputMode.value === 'budget' && side.value === 'BUY'
+        ? { budgetFcfa: budgetFcfa.value }
+        : { quantity: e.quantity }),
     })
     closeTicket()
     void loadPortfolio()

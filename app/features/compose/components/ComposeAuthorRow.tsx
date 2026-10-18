@@ -1,20 +1,20 @@
 import { ChevronDown } from 'lucide-preact'
-import { CURRENT_USER } from '../../../state.ts'
+import { user } from '../../session/session-state.ts'
 import { composeAudience, toggleComposeAudience } from '../compose-state.ts'
 
 export const ComposeAuthorRow = () => {
   const audience = composeAudience.value
+  const currentUser = user.value
+  const displayName = currentUser?.login || 'Investisseur'
 
   return (
-    <div class='flex items-center gap-3'>
-      <img
-        src={CURRENT_USER.avatarUrl}
-        alt={CURRENT_USER.name}
-        class='w-10 h-10 rounded-full object-cover flex-shrink-0'
-      />
+    <div class='flex items-center gap-3 select-none'>
+      <div class='w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm flex-shrink-0'>
+        {displayName.slice(0, 1).toUpperCase()}
+      </div>
       <div class='flex items-center gap-2'>
         <span class='font-bold text-sm text-base-content'>
-          {CURRENT_USER.name}
+          {displayName}
         </span>
         <button
           type='button'

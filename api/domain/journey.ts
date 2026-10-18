@@ -24,6 +24,7 @@ export const EVENT_TYPES = [
 export type EventType =
   | typeof EVENT_TYPES[number]
   | 'paper_order'
+  | 'live_order'
   | 'selected_sgi'
   | 'submitted_application'
   | 'account_opened'

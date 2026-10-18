@@ -1,6 +1,5 @@
-import { Copy } from 'lucide-preact'
+import { TrendingDown, TrendingUp } from 'lucide-preact'
 import { SocialPost } from '../../../state.ts'
-import { handleCopyPostTrade } from '../social-state.ts'
 
 type PostTradeSnippetProps = {
   post: SocialPost
@@ -11,6 +10,7 @@ export const PostTradeSnippet = ({ post }: PostTradeSnippetProps) => {
   if (!trade) return null
 
   const isBuy = trade.action === 'ACHAT'
+  const isUp = (trade.changePercent ?? 0) >= 0
   const formattedPrice = new Intl.NumberFormat('fr-FR').format(trade.priceFcfa)
 
   return (
@@ -33,14 +33,17 @@ export const PostTradeSnippet = ({ post }: PostTradeSnippetProps) => {
         </span>
       </div>
 
-      <button
-        type='button'
-        onClick={() => handleCopyPostTrade(post)}
-        class='h-7 px-3 rounded-full bg-primary text-primary-content text-xs font-bold flex items-center gap-1 cursor-pointer active:scale-95 transition-transform flex-shrink-0'
+      <div
+        class={`flex items-center gap-1 text-xs font-bold ${
+          isUp ? 'text-success' : 'text-error'
+        }`}
       >
-        <Copy size={11} strokeWidth={2.5} />
-        <span>Copier</span>
-      </button>
+        {isUp ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
+        <span>
+          {isUp ? '+' : ''}
+          {trade.changePercent}%
+        </span>
+      </div>
     </div>
   )
 }

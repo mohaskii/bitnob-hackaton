@@ -1,6 +1,7 @@
 import { computed, signal } from '@preact/signals'
 import { api } from '../../lib/api.ts'
 import { showToast } from '../../state.ts'
+import { logout } from '../session/session-state.ts'
 
 /* -------------------------------------------------------------------------- */
 /* State Types (Zero interface discipline)                                   */
@@ -103,6 +104,7 @@ export const communityActivities = signal<CommunityTradeActivity[]>([
 export const isDepositModalOpen = signal<boolean>(false)
 export const isWithdrawModalOpen = signal<boolean>(false)
 export const isCardModalOpen = signal<boolean>(false)
+export const isSidebarOpen = signal<boolean>(false)
 
 /* -------------------------------------------------------------------------- */
 /* Derived Computeds (Rule 2: Derived state lives in computed)                */
@@ -154,14 +156,36 @@ export const closeCardModal = () => {
   isCardModalOpen.value = false
 }
 
+export const openSidebar = () => {
+  isSidebarOpen.value = true
+}
+
+export const closeSidebar = () => {
+  isSidebarOpen.value = false
+}
+
+export const handleLogoutFromSidebar = () => {
+  closeSidebar()
+  void logout()
+}
+
 export const loadHome = async () => {
   try {
     const me = await api.get<{
       paper?: { totalValueFcfa: number; cashFcfa: number }
+      live?: { totalValueFcfa: number; cashFcfa: number; accountNumber: string }
       funding?: { creditedFcfa: number }
     }>('/me').catch(() => null)
 
-    if (me?.paper) {
+    if (me?.live) {
+      const val = me.live.totalValueFcfa > 0
+        ? me.live.totalValueFcfa
+        : me.live.cashFcfa
+      if (val > 0) {
+        balanceFcfa.value = val
+        balanceUsdt.value = Number((val / 600).toFixed(2))
+      }
+    } else if (me?.paper) {
       const val = me.paper.totalValueFcfa > 0
         ? me.paper.totalValueFcfa
         : me.paper.cashFcfa
