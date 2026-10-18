@@ -1,14 +1,23 @@
-import { goToLogin, isAuthenticated, isGuest, startAsGuest } from '../session-state.ts'
+import {
+  goToLogin,
+  goToRegister,
+  isAuthenticated,
+  isGuest,
+  isLoginScreen,
+  startAsGuest,
+} from '../session-state.ts'
 
 export const RegisterFooter = () => (
   <footer class='flex flex-col gap-3 pt-2 text-center'>
     <button
       type='button'
-      onClick={goToLogin}
+      onClick={isLoginScreen.value ? goToRegister : goToLogin}
       class='text-[13px] font-semibold text-base-content/70 hover:text-base-content cursor-pointer py-1'
     >
-      Vous avez déjà un compte ?{' '}
-      <span class='font-bold text-primary-content underline'>Se connecter</span>
+      {isLoginScreen.value ? 'Pas encore de compte ?' : 'Vous avez déjà un compte ?'}{' '}
+      <span class='font-bold text-primary-content underline'>
+        {isLoginScreen.value ? 'Créer un compte' : 'Se connecter'}
+      </span>
     </button>
 
     {!isAuthenticated.value && !isGuest.value && (

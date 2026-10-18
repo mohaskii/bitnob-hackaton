@@ -1,8 +1,12 @@
 import { ArrowLeft } from 'lucide-preact'
 import { RegisterHero } from '../features/session/components/RegisterHero.tsx'
 import { RegisterForm } from '../features/session/components/RegisterForm.tsx'
+import { AuthForm } from '../features/session/components/AuthForm.tsx'
 import { RegisterFooter } from '../features/session/components/RegisterFooter.tsx'
-import { isAuthenticated } from '../features/session/session-state.ts'
+import {
+  isAuthenticated,
+  isLoginScreen,
+} from '../features/session/session-state.ts'
 
 /** Stacked on mobile; split screen (hero left, form right) on desktop. */
 export const RegisterScreen = () => (
@@ -24,7 +28,7 @@ export const RegisterScreen = () => (
     <main class='flex-1 px-5 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))] lg:px-12 lg:py-12 lg:overflow-y-auto flex flex-col lg:justify-center'>
       <div class='flex flex-col gap-4 max-w-[480px] w-full mx-auto'>
         <div class='bg-base-100 rounded-3xl p-5 flex flex-col gap-4'>
-          <RegisterForm />
+          {isLoginScreen.value ? <AuthForm /> : <RegisterForm />}
         </div>
         <RegisterFooter />
       </div>

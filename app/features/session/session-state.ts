@@ -1,7 +1,7 @@
 import { computed, signal } from '@preact/signals'
 import { api, configureApi, errorMessage } from '../../lib/api.ts'
 import { showToast } from '../../state.ts'
-import { navigateUrl } from '../../router.tsx'
+import { navigateUrl, pathSignal } from '../../router.tsx'
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
@@ -160,6 +160,11 @@ export const submitLogin = async () => {
   }
   return session
 }
+
+/** /login shows the sign-in form; /register (or a switch to it) the sign-up. */
+export const isLoginScreen = computed(() =>
+  pathSignal.value === '/login' && authMode.value !== 'register'
+)
 
 export const submitAuth = () =>
   authMode.value === 'register' ? submitRegister() : submitLogin()
