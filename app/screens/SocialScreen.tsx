@@ -3,6 +3,7 @@ import { TrendingCarousel } from '../features/social/components/TrendingCarousel
 import { CommunityFeed } from '../features/social/components/CommunityFeed.tsx'
 import { FloatingPostButton } from '../features/social/components/FloatingPostButton.tsx'
 import { CommentsModal } from '../features/social/components/CommentsModal.tsx'
+import { AccountRequiredModal } from '../features/social/components/AccountRequiredModal.tsx'
 import { ComposeScreen } from './ComposeScreen.tsx'
 
 /**
@@ -31,6 +32,9 @@ export const SocialScreen = () => {
 
       {/* 5. Comments Bottom Sheet Modal */}
       <CommentsModal />
+
+      {/* 6. Account Required Modal for Guests */}
+      <AccountRequiredModal />
     </div>
   )
 }

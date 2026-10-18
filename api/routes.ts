@@ -26,6 +26,7 @@ import {
   BRVM_FEE_SOURCE,
   DCBR_COMMISSION_RATE,
   estimateTrade,
+  fractionalSharesForBudget,
   maxSharesForBudget,
 } from './domain/fees.ts'
 import {
@@ -41,6 +42,16 @@ import {
   listPaperOrders,
   resetPaperAccount,
 } from './domain/paper.ts'
+import {
+  executeLiveOrder,
+  getLivePortfolio,
+  listLiveOrders,
+} from './domain/live_trading.ts'
+import {
+  executeTransfer,
+  listUserTransfers,
+  searchRecipients,
+} from './domain/transfers.ts'
 import {
   applyPartnerStatus,
   EVENT_TYPES,
@@ -67,6 +78,7 @@ import {
   createPostWithTrade,
   getTrendingAssets,
   listComments,
+  togglePostLike,
 } from './domain/social.ts'
 
 /* -------------------------------------------------------------------------- */
@@ -256,11 +268,13 @@ const defs = {
     authorize: withUserSession,
     fn: (ctx) => {
       const { userId } = ctx.session
+      const user = readUser(userId)
       const portfolio = getPaperPortfolio(userId, getStoredPrices())
+      const livePortfolio = user.isGuest === 0 ? getLivePortfolio(userId, getStoredPrices()) : null
       const journey = getJourney(userId)
       const fundings = listFundings(userId)
       return respond.OK({
-        user: readUser(userId),
+        user,
         paper: {
           totalValueFcfa: portfolio.totalValueFcfa,
           totalPnlFcfa: portfolio.totalPnlFcfa,
@@ -268,6 +282,17 @@ const defs = {
           cashFcfa: portfolio.cashFcfa,
           positionsCount: portfolio.positions.length,
         },
+        live: livePortfolio
+          ? {
+            accountNumber: livePortfolio.accountNumber,
+            sgiId: livePortfolio.sgiId,
+            totalValueFcfa: livePortfolio.totalValueFcfa,
+            cashFcfa: livePortfolio.cashFcfa,
+            totalPnlFcfa: livePortfolio.totalPnlFcfa,
+            totalPnlPercent: livePortfolio.totalPnlPercent,
+            positionsCount: livePortfolio.positions.length,
+          }
+          : null,
         funding: {
           mode: bitnob.mode,
           creditedFcfa: fundings
@@ -341,7 +366,7 @@ const defs = {
 
   'POST/api/estimate': route({
     authorize: withUserSession,
-    fn: async (ctx, { symbol, side, quantity, budgetFcfa, sgiId }) => {
+    fn: async (ctx, { symbol, side, quantity, budgetFcfa, sgiId, fractional }) => {
       const quote = await getQuote(symbol)
       if (!quote) {
         throw new respond.NotFoundError({
@@ -349,8 +374,21 @@ const defs = {
         })
       }
       const sgi = findSgi(sgiId) ?? findSgi(activeSgiId(ctx.session.userId))!
-      const qty = quantity ??
-        maxSharesForBudget(budgetFcfa ?? 0, quote.priceFcfa, sgi.schedule)
+      let qty = 0
+      let leftoverFcfa = 0
+
+      if (quantity != null) {
+        qty = quantity
+      } else if (budgetFcfa != null) {
+        if (fractional) {
+          const calc = fractionalSharesForBudget(budgetFcfa, quote.priceFcfa, sgi.schedule)
+          qty = calc.quantity
+          leftoverFcfa = calc.leftoverFcfa
+        } else {
+          qty = maxSharesForBudget(budgetFcfa, quote.priceFcfa, sgi.schedule)
+        }
+      }
+
       const estimate = estimateTrade(side, qty, quote.priceFcfa, sgi.schedule)
       trackEvent(ctx.session.userId, 'estimated_order', { symbol })
       return respond.OK({
@@ -359,8 +397,9 @@ const defs = {
         quoteTime: quote.quoteTime,
         stale: quote.stale,
         sgi: { id: sgi.id, name: sgi.name, isDemo: sgi.isDemo },
+        isFractional: !Number.isInteger(qty),
         leftoverFcfa: budgetFcfa != null && side === 'BUY'
-          ? Math.max(0, Math.round(budgetFcfa - estimate.netFcfa))
+          ? (leftoverFcfa > 0 ? leftoverFcfa : Math.max(0, Math.round(budgetFcfa - estimate.netFcfa)))
           : 0,
         minimumDepositFcfa: sgi.minimumDepositFcfa,
       })
@@ -368,14 +407,15 @@ const defs = {
     input: OBJ({
       symbol: STR('BRVM ticker'),
       side: LIST(['BUY', 'SELL'] as const),
-      quantity: optional(NUM('Whole shares')),
+      quantity: optional(NUM('Shares quantity (whole or fractional)')),
       budgetFcfa: optional(
-        NUM('Budget: returns the max whole shares, fees included'),
+        NUM('Budget: returns whole or fractional shares, fees included'),
       ),
       sgiId: optional(STR('SGI tariff to apply')),
+      fractional: optional(BOOL('Allow fractional shares')),
     }),
     description:
-      'Estimate a trade: gross, itemised fees, net, shares for a budget',
+      'Estimate a trade: gross, itemised fees, net, whole or fractional shares for a budget',
   }),
 
   /* ------------------------- Practice trading -------------------------- */
@@ -437,6 +477,124 @@ const defs = {
       )
     },
     description: 'Reset the practice account to its starting fictitious cash',
+  }),
+
+  /* --------------------------- Live SGI trading ------------------------ */
+
+  'GET/api/trade/live/portfolio': route({
+    authorize: withUserSession,
+    fn: (ctx) =>
+      respond.OK({
+        ...getLivePortfolio(ctx.session.userId, getStoredPrices()),
+        orders: listLiveOrders(ctx.session.userId),
+      }),
+    description:
+      'Live institutional portfolio with fractional holdings and SGI order routing history',
+  }),
+
+  'POST/api/trade/live/orders': route({
+    authorize: withUserSession,
+    fn: async (ctx, { symbol, side, quantity, budgetFcfa }) => {
+      const { userId } = ctx.session
+      const quote = await getQuote(symbol)
+      if (!quote) {
+        throw new respond.NotFoundError({
+          message: `Titre ${symbol} introuvable.`,
+        })
+      }
+      const sgi = findSgi(activeSgiId(userId))!
+      let finalQuantity = quantity
+      if (finalQuantity == null && budgetFcfa != null) {
+        const calc = fractionalSharesForBudget(budgetFcfa, quote.priceFcfa, sgi.schedule)
+        finalQuantity = calc.quantity
+      }
+      if (finalQuantity == null || finalQuantity <= 0) {
+        throw new respond.BadRequestError({
+          message: 'Veuillez spécifier une quantité ou un budget valide.',
+        })
+      }
+      const fill = executeLiveOrder({
+        userId,
+        symbol,
+        name: companyFor(symbol, quote.name).name,
+        side,
+        quantity: finalQuantity,
+        priceFcfa: quote.priceFcfa,
+        quoteTime: quote.quoteTime,
+        sgiId: sgi.id,
+      })
+      trackEvent(userId, 'live_order', { symbol })
+      log.info('[Live SGI] Order filled directly via SGI OMS', {
+        orderId: fill.orderId,
+        sgiRef: fill.sgiOrderReference,
+        symbol,
+        side,
+        quantity: fill.quantity,
+        isFractional: fill.isFractional,
+      })
+      return respond.OK(fill)
+    },
+    input: OBJ({
+      symbol: STR('BRVM ticker'),
+      side: LIST(['BUY', 'SELL'] as const),
+      quantity: optional(NUM('Shares quantity (whole or fractional)')),
+      budgetFcfa: optional(NUM('Budget amount to allocate to fractional shares')),
+    }),
+    description:
+      'Execute real stock purchase routed to SGI OMS with fractional share support',
+  }),
+
+  'GET/api/trade/live/orders': route({
+    authorize: withUserSession,
+    fn: (ctx) => respond.OK({ orders: listLiveOrders(ctx.session.userId) }),
+    description: 'List direct SGI executed orders for user',
+  }),
+
+  'POST/api/sgi/webhook': route({
+    fn: (_ctx, payload) => {
+      log.info('[SGI Webhook] Received execution callback from SGI OMS', payload)
+      return respond.OK({ received: true })
+    },
+    input: OBJ({
+      sgiOrderReference: STR('Order reference'),
+      status: STR('Status'),
+    }),
+    description: 'Webhook callback from partner SGI for asynchronous execution reports',
+  }),
+
+  /* --------------------------- P2P Transfers --------------------------- */
+
+  'POST/api/transfers': route({
+    authorize: withUserSession,
+    fn: (ctx, { recipient, amountFcfa, note }) => {
+      const receipt = executeTransfer({
+        senderUserId: ctx.session.userId,
+        recipientIdentifier: recipient,
+        amountFcfa,
+        note,
+      })
+      return respond.OK(receipt)
+    },
+    input: OBJ({
+      recipient: STR('Recipient handle, email or account number'),
+      amountFcfa: NUM('Amount to transfer in FCFA'),
+      note: optional(STR('Transfer note/memo')),
+    }),
+    description: 'Send instant P2P transfer to another TekkiTrade account',
+  }),
+
+  'GET/api/transfers': route({
+    authorize: withUserSession,
+    fn: (ctx) => respond.OK({ transfers: listUserTransfers(ctx.session.userId) }),
+    description: 'List user transfer history (sent and received)',
+  }),
+
+  'POST/api/users/lookup': route({
+    authorize: withUserSession,
+    fn: (ctx, { query }) =>
+      respond.OK({ users: searchRecipients(query, ctx.session.userId) }),
+    input: OBJ({ query: STR('Search query') }),
+    description: 'Search TekkiTrade users for transfer recipient',
   }),
 
   /* ------------------------------ Journey ------------------------------ */
@@ -608,7 +766,17 @@ const defs = {
 
   'GET/api/community': route({
     authorize: withUserSession,
-    fn: () => {
+    fn: (ctx) => {
+      const currentUserId = ctx.session.userId
+      const likedPostIds = new Set<number>()
+      if (currentUserId) {
+        const userLikes = sqlQuery<{ postId: number }>`
+          SELECT postId FROM socialLike WHERE userId = ${currentUserId}
+        `.all()
+        for (const l of userLikes) likedPostIds.add(l.postId)
+      }
+
+      const prices = getStoredPrices()
       const posts = sqlQuery<{
         postId: number
         authorName: string
@@ -627,21 +795,24 @@ const defs = {
       }>`SELECT postId, authorName, authorHandle, avatarUrl, isExample, content,
           symbol, sentiment, tradeAction, tradePriceFcfa, tradeChangePercent,
           likesCount, commentsCount, createdAt
-        FROM socialPost ORDER BY createdAt DESC LIMIT 50`.all().map((p) => ({
-        ...p,
-        id: String(p.postId),
-        isExample: p.isExample === 1,
-        trade: p.symbol
-          ? {
-            symbol: p.symbol,
-            action: p.tradeAction ??
-              (p.sentiment === 'bearish' ? 'VENTE' : 'ACHAT'),
-            priceFcfa: p.tradePriceFcfa ?? 18500,
-            changePercent: p.tradeChangePercent ??
-              (p.sentiment === 'bearish' ? -1.5 : 2.1),
-          }
-          : undefined,
-      }))
+        FROM socialPost ORDER BY createdAt DESC LIMIT 50`.all().map((p) => {
+        const quote = p.symbol ? prices.get(p.symbol) : undefined
+        return {
+          ...p,
+          id: String(p.postId),
+          isExample: p.isExample === 1,
+          isLiked: likedPostIds.has(p.postId),
+          trade: p.symbol
+            ? {
+              symbol: p.symbol,
+              action: p.tradeAction ??
+                (p.sentiment === 'bearish' ? 'VENTE' : 'ACHAT'),
+              priceFcfa: p.tradePriceFcfa ?? quote?.priceFcfa ?? 0,
+              changePercent: p.tradeChangePercent ?? quote?.changePercent ?? 0,
+            }
+            : undefined,
+        }
+      })
 
       const trending = getTrendingAssets()
 
@@ -660,6 +831,11 @@ const defs = {
     authorize: withUserSession,
     fn: (ctx, { content, symbol, sentiment, tradeAction }) => {
       const user = readUser(ctx.session.userId)
+      if (user.isGuest) {
+        throw new respond.ForbiddenError({
+          message: 'Vous devez créer un compte vérifié pour publier dans la communauté.',
+        })
+      }
       const res = createPostWithTrade(
         ctx.session.userId,
         { name: user.login, handle: user.login },
@@ -678,15 +854,17 @@ const defs = {
 
   'POST/api/community/posts/like': route({
     authorize: withUserSession,
-    fn: (_ctx, { postId }) => {
-      sql`UPDATE socialPost SET likesCount = likesCount + 1 WHERE postId = ${
-        Number(postId)
-      }`
-        .run()
-      return respond.OK({ postId })
+    fn: (ctx, { postId }) => {
+      const user = readUser(ctx.session.userId)
+      if (user.isGuest) {
+        throw new respond.ForbiddenError({
+          message: 'Vous devez créer un compte vérifié pour aimer une publication.',
+        })
+      }
+      return respond.OK(togglePostLike(ctx.session.userId, Number(postId)))
     },
     input: OBJ({ postId: STR() }),
-    description: 'Like a community post',
+    description: 'Toggle like on a community post',
   }),
 
   'GET/api/community/posts/comments': route({
@@ -701,6 +879,11 @@ const defs = {
     authorize: withUserSession,
     fn: (ctx, { postId, content }) => {
       const user = readUser(ctx.session.userId)
+      if (user.isGuest) {
+        throw new respond.ForbiddenError({
+          message: 'Vous devez créer un compte vérifié pour commenter.',
+        })
+      }
       return respond.OK(
         addComment(
           Number(postId),

@@ -1,12 +1,13 @@
 import { computed, effect, signal } from '@preact/signals'
 import {
-  addSocialPost,
-  CURRENT_USER,
   isBottomNavHidden,
   isComposeOpen,
-  type SocialPost,
+  showToast,
 } from '../../state.ts'
 import { navigate } from '../../router.tsx'
+import { api } from '../../lib/api.ts'
+import { user } from '../session/session-state.ts'
+import { loadCommunity, trendingAssets } from '../social/social-state.ts'
 
 /* -------------------------------------------------------------------------- */
 /* State Types (Zero interface discipline)                                   */
@@ -18,14 +19,6 @@ export type AssetOption = {
   price: number
   change: number
 }
-
-export const POPULAR_ASSETS: AssetOption[] = [
-  { symbol: 'SNTS', name: 'Sonatel', price: 18500, change: 1.85 },
-  { symbol: 'BTC', name: 'Bitcoin', price: 41250000, change: 2.40 },
-  { symbol: 'ORAC', name: 'Orange CI', price: 11200, change: 0.65 },
-  { symbol: 'SGBC', name: 'Société Générale', price: 21000, change: 2.44 },
-  { symbol: 'USDT', name: 'Tether USD', price: 615, change: 0.05 },
-]
 
 export const MAX_CHARS = 280
 const STROKE_CIRCUMFERENCE = 56.54 // 2 * PI * 9
@@ -40,10 +33,31 @@ export const composeReplyRestriction = signal('Tout le monde peut répondre')
 export const composeSelectedSymbol = signal<string | null>(null)
 export const composeSentiment = signal<'bullish' | 'bearish' | null>(null)
 export const composeShowAssetPicker = signal(false)
+export const composeIsSubmitting = signal(false)
 
 /* -------------------------------------------------------------------------- */
 /* Computeds (Rule 2: Derived state lives in computed)                        */
 /* -------------------------------------------------------------------------- */
+
+export const availableComposeAssets = computed<AssetOption[]>(() => {
+  const trending = trendingAssets.value
+  if (trending.length > 0) {
+    return trending.map((t) => ({
+      symbol: t.symbol,
+      name: t.name,
+      price: 0,
+      change: t.changePercent,
+    }))
+  }
+  return [
+    { symbol: 'SNTS', name: 'Sonatel', price: 0, change: 0 },
+    { symbol: 'ORAC', name: 'Orange CI', price: 0, change: 0 },
+    { symbol: 'SGBC', name: 'Société Générale CI', price: 0, change: 0 },
+    { symbol: 'ETIT', name: 'Ecobank', price: 0, change: 0 },
+    { symbol: 'BOAM', name: 'BOA Mali', price: 0, change: 0 },
+    { symbol: 'TTLS', name: 'Total Sénégal', price: 0, change: 0 },
+  ]
+})
 
 export const composeCharCount = computed(() => composeContent.value.length)
 
@@ -63,7 +77,10 @@ export const composeIsOverLimit = computed(() =>
 )
 
 export const composeCanSubmit = computed(
-  () => composeContent.value.trim().length > 0 && !composeIsOverLimit.value,
+  () =>
+    composeContent.value.trim().length > 0 &&
+    !composeIsOverLimit.value &&
+    !composeIsSubmitting.value,
 )
 
 /* -------------------------------------------------------------------------- */
@@ -113,50 +130,23 @@ export const closeComposeScreen = () => {
   }
 }
 
-import { api } from '../../lib/api.ts'
-import { showToast } from '../../state.ts'
-
 export const submitComposePost = async () => {
+  const currentUser = user.value
+  if (!currentUser || currentUser.isGuest !== 0) {
+    showToast('Vous devez créer un compte vérifié pour publier', 'error')
+    return
+  }
+
   const text = composeContent.value.trim()
   if (!text || composeIsOverLimit.value) return
 
   const symbol = composeSelectedSymbol.value
-  const matchedAsset = POPULAR_ASSETS.find((a) => a.symbol === symbol)
   const sent = composeSentiment.value
 
-  const newPost: SocialPost = {
-    id: `post-${Date.now()}`,
-    authorName: CURRENT_USER.name,
-    authorHandle: CURRENT_USER.handle,
-    avatarUrl: CURRENT_USER.avatarUrl,
-    verified: CURRENT_USER.verified,
-    timeAgo: "À l'instant",
-    content: text,
-    trade: symbol && matchedAsset
-      ? {
-        symbol: matchedAsset.symbol,
-        action: sent === 'bearish' ? 'VENTE' : 'ACHAT',
-        priceFcfa: matchedAsset.price,
-        changePercent: matchedAsset.change,
-      }
-      : undefined,
-    sentiment: sent || undefined,
-    likesCount: 0,
-    isLiked: false,
-    commentsCount: 0,
-    copiersCount: 0,
-  }
-
-  addSocialPost(newPost)
-  composeContent.value = ''
-  composeSelectedSymbol.value = null
-  composeSentiment.value = null
-  composeShowAssetPicker.value = false
-  closeComposeScreen()
-  showToast('Publication partagée avec la communauté', 'success')
+  composeIsSubmitting.value = true
 
   try {
-    const res = await api.post<{ id: string }>('/community/posts', {
+    await api.post<{ id: string }>('/community/posts', {
       content: text,
       symbol: symbol ?? undefined,
       sentiment: sent ?? undefined,
@@ -164,11 +154,21 @@ export const submitComposePost = async () => {
         ? (sent === 'bearish' ? 'VENTE' : 'ACHAT')
         : undefined,
     })
-    if (res?.id) {
-      newPost.id = String(res.id)
-    }
-  } catch (err) {
-    console.warn('[Compose] Offline post created locally:', err)
+
+    composeContent.value = ''
+    composeSelectedSymbol.value = null
+    composeSentiment.value = null
+    composeShowAssetPicker.value = false
+    closeComposeScreen()
+    showToast('Publication partagée avec la communauté', 'success')
+
+    // Refresh community data with authentic server database state
+    await loadCommunity()
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Erreur lors de la publication'
+    showToast(msg, 'error')
+  } finally {
+    composeIsSubmitting.value = false
   }
 }
 

@@ -12,11 +12,12 @@ import {
   openSidebar,
   openWithdrawModal,
 } from '../features/home/home-state.ts'
-import { goToRegister } from '../features/session/session-state.ts'
+import { navigateToTransfer } from '../features/transfers/transfer-state.ts'
 
 type HomeScreenProps = {
   onDeposit?: () => void
   onWithdraw?: () => void
+  onTransfer?: () => void
   onCard?: () => void
   onMenuClick?: () => void
   onSeeMoreNews?: () => void
@@ -32,6 +33,7 @@ type HomeScreenProps = {
 export const HomeScreen = ({
   onDeposit = openDepositModal,
   onWithdraw = openWithdrawModal,
+  onTransfer = navigateToTransfer,
   onCard = openCardModal,
   onMenuClick = openSidebar,
   onSeeMoreNews,
@@ -42,7 +44,7 @@ export const HomeScreen = ({
       <BalanceCard
         onDeposit={onDeposit}
         onWithdraw={onWithdraw}
-        onCard={onCard}
+        onTransfer={onTransfer}
         onMenuClick={onMenuClick}
       />
 

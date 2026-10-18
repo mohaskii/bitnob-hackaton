@@ -10,6 +10,7 @@ type PostCardProps = {
 /**
  * PostCard:
  * Thin orchestrator for community feed post (Rule 5: Decomposition Discipline).
+ * Pure flat design: zero borders, zero shadows, contrast via bg-base-100.
  */
 export const PostCard = ({ post }: PostCardProps) => {
   return (

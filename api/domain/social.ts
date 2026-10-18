@@ -33,48 +33,52 @@ const LOGO_PALETTES: Record<string, { bg: string; text: string }> = {
 }
 
 export const getTrendingAssets = (): TrendingAssetItem[] => {
-  const symbolCounts = sqlQuery<{ symbol: string; postCount: number }>`
-    SELECT symbol, COUNT(*) AS postCount
+  // 1. Exact count of community posts discussing each symbol
+  const postCounts = new Map<string, number>()
+  const postRows = sqlQuery<{ symbol: string; n: number }>`
+    SELECT symbol, COUNT(*) AS n
     FROM socialPost
-    WHERE symbol IS NOT NULL
+    WHERE symbol IS NOT NULL AND TRIM(symbol) != ''
     GROUP BY symbol
-    ORDER BY postCount DESC
-    LIMIT 6
   `.all()
-
-  const prices = getStoredPrices()
-  const result: TrendingAssetItem[] = []
-  const seen = new Set<string>()
-
-  for (const row of symbolCounts) {
-    if (!row.symbol) continue
-    seen.add(row.symbol)
-    const comp = companyFor(row.symbol)
-    const quote = prices.get(row.symbol)
-    const palette = LOGO_PALETTES[row.symbol] ?? {
-      bg: 'bg-base-300 text-base-content',
-      text: row.symbol.slice(0, 2),
-    }
-
-    result.push({
-      id: row.symbol.toLowerCase(),
-      symbol: row.symbol,
-      name: comp?.name ?? row.symbol,
-      postCount: row.postCount,
-      changePercent: quote?.changePercent ?? 0,
-      logoBg: palette.bg,
-      logoText: palette.text,
-    })
+  for (const r of postRows) {
+    if (r.symbol) postCounts.set(r.symbol, r.n)
   }
 
-  // Complement with primary liquid stocks if fewer than 4 items have posts
-  const FALLBACK_SYMBOLS = ['SNTS', 'ORAC', 'SGBC', 'ETIT', 'BTC', 'USDT']
-  for (const sym of FALLBACK_SYMBOLS) {
-    if (result.length >= 6) break
-    if (seen.has(sym)) continue
-    seen.add(sym)
+  // 2. Exact count of executed paper trading orders per symbol
+  const orderCounts = new Map<string, number>()
+  const orderRows = sqlQuery<{ symbol: string; n: number }>`
+    SELECT symbol, COUNT(*) AS n
+    FROM paperOrder
+    WHERE symbol IS NOT NULL AND TRIM(symbol) != ''
+    GROUP BY symbol
+  `.all()
+  for (const r of orderRows) {
+    if (r.symbol) orderCounts.set(r.symbol, r.n)
+  }
+
+  // 3. Stored live/delayed BRVM market quotes
+  const prices = getStoredPrices()
+
+  // Collect active symbols: symbols with posts, orders, or benchmark BRVM equities
+  const allSymbols = new Set<string>([
+    ...postCounts.keys(),
+    ...orderCounts.keys(),
+  ])
+
+  // Guarantee inclusion of major liquid equities from BRVM
+  const BENCHMARK_EQUITIES = ['SNTS', 'ORAC', 'SGBC', 'ETIT', 'BOAM', 'TTLS']
+  for (const sym of BENCHMARK_EQUITIES) {
+    allSymbols.add(sym)
+  }
+
+  const result: TrendingAssetItem[] = []
+
+  for (const sym of allSymbols) {
     const comp = companyFor(sym)
     const quote = prices.get(sym)
+    const pCount = postCounts.get(sym) ?? 0
+
     const palette = LOGO_PALETTES[sym] ?? {
       bg: 'bg-base-300 text-base-content',
       text: sym.slice(0, 2),
@@ -88,14 +92,25 @@ export const getTrendingAssets = (): TrendingAssetItem[] => {
         : sym === 'USDT'
         ? 'Tether USD'
         : (comp?.name ?? sym),
-      postCount: Math.floor(Math.random() * 40) + 30,
-      changePercent: quote?.changePercent ?? 1.25,
+      postCount: pCount,
+      changePercent: quote?.changePercent !== undefined
+        ? Number(quote.changePercent.toFixed(2))
+        : 0,
       logoBg: palette.bg,
       logoText: palette.text,
     })
   }
 
-  return result
+  // Rank by real business activity: post discussions (weight: 3) + platform orders (weight: 1)
+  // Tie-breaker: largest absolute percentage price change on the BRVM
+  result.sort((a, b) => {
+    const scoreA = ((postCounts.get(a.symbol) ?? 0) * 3) + (orderCounts.get(a.symbol) ?? 0)
+    const scoreB = ((postCounts.get(b.symbol) ?? 0) * 3) + (orderCounts.get(b.symbol) ?? 0)
+    if (scoreB !== scoreA) return scoreB - scoreA
+    return Math.abs(b.changePercent) - Math.abs(a.changePercent)
+  })
+
+  return result.slice(0, 8)
 }
 
 /* -------------------------------------------------------------------------- */
@@ -129,9 +144,6 @@ export const createPostWithTrade = (
     if (quote) {
       tradePrice = quote.priceFcfa
       tradeChange = quote.changePercent
-    } else {
-      tradePrice = 18_500
-      tradeChange = 1.5
     }
     tradeAction = input.tradeAction ??
       (input.sentiment === 'bearish' ? 'VENTE' : 'ACHAT')
@@ -152,6 +164,30 @@ export const createPostWithTrade = (
   `.get() as { postId: number }
 
   return { id: String(post.postId) }
+}
+
+export const togglePostLike = (userId: number, postId: number) => {
+  return withTransaction(() => {
+    const existing = sqlQuery<{ userId: number }>`
+      SELECT userId FROM socialLike WHERE userId = ${userId} AND postId = ${postId}
+    `.get()
+
+    if (existing) {
+      sql`DELETE FROM socialLike WHERE userId = ${userId} AND postId = ${postId}`.run()
+      sql`UPDATE socialPost SET likesCount = MAX(0, likesCount - 1) WHERE postId = ${postId}`.run()
+      const post = sqlQuery<{ likesCount: number }>`
+        SELECT likesCount FROM socialPost WHERE postId = ${postId}
+      `.get()
+      return { postId: String(postId), isLiked: false, likesCount: post?.likesCount ?? 0 }
+    } else {
+      sql`INSERT INTO socialLike (userId, postId, createdAt) VALUES (${userId}, ${postId}, ${Date.now()})`.run()
+      sql`UPDATE socialPost SET likesCount = likesCount + 1 WHERE postId = ${postId}`.run()
+      const post = sqlQuery<{ likesCount: number }>`
+        SELECT likesCount FROM socialPost WHERE postId = ${postId}
+      `.get()
+      return { postId: String(postId), isLiked: true, likesCount: post?.likesCount ?? 1 }
+    }
+  })
 }
 
 export const listComments = (postId: number) => {

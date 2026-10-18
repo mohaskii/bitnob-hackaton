@@ -13,7 +13,7 @@ type BalanceCardProps = {
   amountUsdt?: number
   onDeposit?: () => void
   onWithdraw?: () => void
-  onCard?: () => void
+  onTransfer?: () => void
   onMenuClick?: () => void
 }
 
@@ -27,7 +27,7 @@ export const BalanceCard = ({
   amountUsdt,
   onDeposit,
   onWithdraw,
-  onCard,
+  onTransfer,
   onMenuClick = openSidebar,
 }: BalanceCardProps) => {
   const displayFcfa = amountFcfa !== undefined
@@ -52,7 +52,7 @@ export const BalanceCard = ({
       <BalanceQuickActions
         onDeposit={onDeposit}
         onWithdraw={onWithdraw}
-        onCard={onCard}
+        onTransfer={onTransfer}
       />
     </div>
   )

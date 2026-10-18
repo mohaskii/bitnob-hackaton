@@ -124,34 +124,24 @@ const SessionFigures = () => {
   )
 }
 
-const SheetActions = () => (
-  <div class='flex flex-col gap-2.5'>
-    <PrimaryButton onClick={() => openTicket('BUY')}>
-      Estimer un achat et s’entraîner
-    </PrimaryButton>
-    {ownedQuantity.value > 0 && (
-      <PrimaryButton
-        tone='ghost'
-        onClick={() => openTicket('SELL')}
-      >
-        Vendre ({ownedQuantity.value} titre{ownedQuantity.value > 1 ? 's' : ''}
-        {' '}
-        fictif
-        {ownedQuantity.value > 1 ? 's' : ''})
+const SheetActions = () => {
+  const stock = selectedStock.value
+  return (
+    <div class='flex flex-col gap-2.5'>
+      <PrimaryButton onClick={() => openTicket('BUY')}>
+        Acheter {stock?.symbol}
       </PrimaryButton>
-    )}
-    <button
-      type='button'
-      onClick={() => {
-        closeStock()
-        navigateUrl('/journey')
-      }}
-      class='text-[13px] font-bold text-base-content/60 flex items-center justify-center gap-1 py-2 cursor-pointer'
-    >
-      Pour acheter pour de vrai : choisir une SGI <ArrowRight size={15} />
-    </button>
-  </div>
-)
+      {ownedQuantity.value > 0 && (
+        <PrimaryButton
+          tone='ghost'
+          onClick={() => openTicket('SELL')}
+        >
+          Vendre ({ownedQuantity.value} part{ownedQuantity.value > 1 ? 's' : ''})
+        </PrimaryButton>
+      )}
+    </div>
+  )
+}
 
 /** Fiche titre: company, dated price, source, explanations, next actions. */
 export const StockSheet = () => {

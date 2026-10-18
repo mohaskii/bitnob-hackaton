@@ -13,25 +13,25 @@ export const TrendingAssetCard = ({ asset }: TrendingAssetCardProps) => {
   return (
     <div
       onClick={() => setActiveFilterSymbol(isSelected ? null : asset.symbol)}
-      class={`flex-shrink-0 w-[185px] sm:w-[200px] rounded-2xl p-3 sm:p-3.5 flex items-center justify-between gap-2.5 cursor-pointer select-none transition-all ${
+      class={`flex-shrink-0 w-[185px] sm:w-[200px] rounded-2xl p-3 sm:p-3.5 flex items-center justify-between gap-2.5 cursor-pointer select-none transition-all active:scale-[0.98] ${
         isSelected
-          ? 'bg-base-300'
-          : 'bg-base-100 hover:bg-base-200'
+          ? 'bg-primary/15 text-primary'
+          : 'bg-base-100 hover:bg-base-300 text-base-content'
       }`}
 
     >
-      {/* Left: Bold Post Count + "POSTS" Label */}
+      {/* Left: Real Post Count + "POSTS" Label */}
       <div class='flex flex-col'>
-        <span class='text-xl sm:text-2xl font-black text-base-content tracking-tight leading-none'>
+        <span class='text-xl sm:text-2xl font-black tracking-tight leading-none'>
           {asset.postCount}
         </span>
-        <span class='text-[10px] sm:text-[11px] font-extrabold text-base-content/40 tracking-wider mt-1 block uppercase'>
-          POSTS
+        <span class='text-[10px] sm:text-[11px] font-extrabold opacity-50 tracking-wider mt-1 block uppercase'>
+          {asset.postCount > 1 ? 'POSTS' : 'POST'}
         </span>
       </div>
 
-      {/* Vertical Subtle Divider */}
-      <div class='w-px h-10 bg-base-200/90 self-center flex-shrink-0' />
+      {/* Vertical Subtle Pill Divider */}
+      <div class='w-0.5 h-8 rounded-full bg-base-content/10 self-center flex-shrink-0' />
 
       {/* Right: Asset Monogram Logo + Symbol + Change % */}
       <div class='flex flex-col items-end gap-1 min-w-0'>
@@ -41,7 +41,7 @@ export const TrendingAssetCard = ({ asset }: TrendingAssetCardProps) => {
           >
             {asset.logoText}
           </div>
-          <span class='font-extrabold text-xs sm:text-sm text-base-content tracking-tight truncate'>
+          <span class='font-extrabold text-xs sm:text-sm tracking-tight truncate'>
             {asset.symbol}
           </span>
         </div>

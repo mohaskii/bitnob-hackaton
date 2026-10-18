@@ -139,3 +139,38 @@ export const maxSharesForBudget = (
   ) quantity--
   return quantity
 }
+
+/**
+ * Computes fractional shares for a given budget, fees included.
+ * Supported by the Tech-Forward SGI Omnibus sub-ledger up to 4 decimals (e.g. 0.2702 part).
+ */
+export const fractionalSharesForBudget = (
+  budgetFcfa: number,
+  priceFcfa: number,
+  schedule: BrokerSchedule,
+): { quantity: number; leftoverFcfa: number } => {
+  if (priceFcfa <= 0 || budgetFcfa <= 0) {
+    return { quantity: 0, leftoverFcfa: budgetFcfa }
+  }
+
+  let low = 0
+  let high = budgetFcfa / priceFcfa
+  let bestQty = 0
+
+  for (let iter = 0; iter < 24; iter++) {
+    const mid = Number(((low + high) / 2).toFixed(4))
+    if (mid <= 0) break
+    const est = estimateTrade('BUY', mid, priceFcfa, schedule)
+    if (est.netFcfa <= budgetFcfa) {
+      bestQty = mid
+      low = mid + 0.0001
+    } else {
+      high = mid - 0.0001
+    }
+  }
+
+  const finalEst = estimateTrade('BUY', bestQty, priceFcfa, schedule)
+  const leftoverFcfa = Math.max(0, budgetFcfa - finalEst.netFcfa)
+
+  return { quantity: bestQty, leftoverFcfa }
+}

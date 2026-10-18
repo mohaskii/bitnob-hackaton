@@ -173,10 +173,19 @@ export const loadHome = async () => {
   try {
     const me = await api.get<{
       paper?: { totalValueFcfa: number; cashFcfa: number }
+      live?: { totalValueFcfa: number; cashFcfa: number; accountNumber: string }
       funding?: { creditedFcfa: number }
     }>('/me').catch(() => null)
 
-    if (me?.paper) {
+    if (me?.live) {
+      const val = me.live.totalValueFcfa > 0
+        ? me.live.totalValueFcfa
+        : me.live.cashFcfa
+      if (val > 0) {
+        balanceFcfa.value = val
+        balanceUsdt.value = Number((val / 600).toFixed(2))
+      }
+    } else if (me?.paper) {
       const val = me.paper.totalValueFcfa > 0
         ? me.paper.totalValueFcfa
         : me.paper.cashFcfa

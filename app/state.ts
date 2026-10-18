@@ -46,74 +46,7 @@ export const CURRENT_USER = {
   verified: true,
 }
 
-export const INITIAL_POSTS: SocialPost[] = [
-  {
-    id: 'post-1',
-    authorName: 'Fatou Sall',
-    authorHandle: 'Fatou_Invest',
-    avatarUrl:
-      'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=256&auto=format&fit=crop',
-    verified: true,
-    timeAgo: 'Il y a 14 min',
-    content:
-      "Dividende record confirmé pour Sonatel à 1 750 FCFA par part ! Je viens de renforcer ma position avec 25 parts via le solde Lightning Bitnob. Objectif 20 000 FCFA d'ici la clôture annuelle.",
-    trade: {
-      symbol: 'SNTS',
-      action: 'ACHAT',
-      priceFcfa: 18500,
-      changePercent: 1.85,
-    },
-    sentiment: 'bullish',
-    likesCount: 34,
-    isLiked: false,
-    commentsCount: 8,
-    copiersCount: 19,
-  },
-  {
-    id: 'post-2',
-    authorName: 'Amadou Koné',
-    authorHandle: 'Amadou_CI',
-    avatarUrl:
-      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=256&auto=format&fit=crop',
-    verified: true,
-    timeAgo: 'Il y a 45 min',
-    content:
-      'Prise de bénéfices partielle sur SGBC (+14% sur 2 semaines). Je bascule 50% des gains en USDT stables sur ma carte virtuelle Bitnob pour sécuriser la performance.',
-    trade: {
-      symbol: 'SGBC',
-      action: 'VENTE',
-      priceFcfa: 21000,
-      changePercent: 2.44,
-    },
-    sentiment: 'bullish',
-    likesCount: 22,
-    isLiked: true,
-    commentsCount: 5,
-    copiersCount: 12,
-  },
-  {
-    id: 'post-3',
-    authorName: 'Moussa Diop',
-    authorHandle: 'Moussa_Dkr',
-    avatarUrl:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&auto=format&fit=crop',
-    verified: true,
-    timeAgo: 'Il y a 2h',
-    content:
-      "Orange Côte d'Ivoire consolide sous les 11 300 FCFA. C'est une zone d'accumulation parfaite pour les investisseurs orientés dividendes de long terme.",
-    trade: {
-      symbol: 'ORAC',
-      action: 'ACHAT',
-      priceFcfa: 11200,
-      changePercent: 0.65,
-    },
-    sentiment: 'bullish',
-    likesCount: 18,
-    isLiked: false,
-    commentsCount: 3,
-    copiersCount: 7,
-  },
-]
+export const INITIAL_POSTS: SocialPost[] = []
 
 /* -------------------------------------------------------------------------- */
 /* Global UI & Data State Signals                                             */
@@ -133,16 +66,19 @@ export const addSocialPost = (post: SocialPost) => {
 /**
  * Toggle like status on a post
  */
-export const toggleLikeSocialPost = (postId: string) => {
-  socialPosts.value = socialPosts.value.map((p) =>
-    p.id === postId
-      ? {
-        ...p,
-        isLiked: !p.isLiked,
-        likesCount: p.isLiked ? p.likesCount - 1 : p.likesCount + 1,
-      }
-      : p
-  )
+export const toggleLikeSocialPost = (
+  postId: string,
+  forcedLiked?: boolean,
+  newCount?: number,
+) => {
+  socialPosts.value = socialPosts.value.map((p) => {
+    if (p.id !== postId) return p
+    const isLiked = forcedLiked !== undefined ? forcedLiked : !p.isLiked
+    const likesCount = newCount !== undefined
+      ? newCount
+      : (isLiked ? p.likesCount + 1 : Math.max(0, p.likesCount - 1))
+    return { ...p, isLiked, likesCount }
+  })
 }
 
 export const toasts = signal<{ id: number; tone: 'success' | 'error' | 'info'; message: string }[]>([])

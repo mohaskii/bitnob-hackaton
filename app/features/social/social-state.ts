@@ -10,74 +10,16 @@ import {
 } from '../../state.ts'
 import { api } from '../../lib/api.ts'
 import { relativeTime } from '../../lib/format.ts'
-
-/* -------------------------------------------------------------------------- */
-/* Static Fallback Data                                                       */
-/* -------------------------------------------------------------------------- */
-
-export const TRENDING_ASSETS: TrendingAsset[] = [
-  {
-    id: 'snts',
-    symbol: 'SNTS',
-    name: 'Sonatel',
-    postCount: 142,
-    changePercent: 1.85,
-    logoBg: 'bg-primary/20 text-primary-content',
-    logoText: 'SN',
-  },
-  {
-    id: 'btc',
-    symbol: 'BTC',
-    name: 'Bitcoin / Lightning',
-    postCount: 98,
-    changePercent: 2.40,
-    logoBg: 'bg-warning/20 text-warning-content',
-    logoText: '₿',
-  },
-  {
-    id: 'orac',
-    symbol: 'ORAC',
-    name: 'Orange CI',
-    postCount: 86,
-    changePercent: 0.65,
-    logoBg: 'bg-warning/20 text-warning-content',
-    logoText: 'OR',
-  },
-  {
-    id: 'sgbc',
-    symbol: 'SGBC',
-    name: 'Société Générale CI',
-    postCount: 72,
-    changePercent: 2.44,
-    logoBg: 'bg-error/20 text-error',
-    logoText: 'SG',
-  },
-  {
-    id: 'usdt',
-    symbol: 'USDT',
-    name: 'Tether USD',
-    postCount: 54,
-    changePercent: 0.05,
-    logoBg: 'bg-success/20 text-success',
-    logoText: '₮',
-  },
-  {
-    id: 'etit',
-    symbol: 'ETIT',
-    name: 'Ecobank Transnational',
-    postCount: 41,
-    changePercent: -1.20,
-    logoBg: 'bg-info/20 text-info',
-    logoText: 'ET',
-  },
-]
+import { navigate } from '../../router.tsx'
+import { setAuthMode, user } from '../session/session-state.ts'
 
 /* -------------------------------------------------------------------------- */
 /* Signals (Rule 1: A signal for every piece of mutable data)                 */
 /* -------------------------------------------------------------------------- */
 
-export const trendingAssets = signal<TrendingAsset[]>(TRENDING_ASSETS)
+export const trendingAssets = signal<TrendingAsset[]>([])
 export const activeFilterSymbol = signal<string | null>(null)
+export const isAccountRequiredModalOpen = signal(false)
 
 // Comments Drawer State
 export const activeCommentsPost = signal<SocialPost | null>(null)
@@ -124,19 +66,19 @@ export const loadCommunity = async () => {
           changePercent: number
         } | null
         likesCount: number
+        isLiked?: boolean
         commentsCount: number
         createdAt: number
       }>
       trending?: TrendingAsset[]
     }>('/community')
 
-    if (data?.posts?.length) {
+    if (data?.posts) {
       socialPosts.value = data.posts.map((p) => ({
         id: String(p.id || p.postId),
         authorName: p.authorName,
         authorHandle: p.authorHandle,
-        avatarUrl: p.avatarUrl ||
-          'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=256&auto=format&fit=crop',
+        avatarUrl: p.avatarUrl || '',
         verified: true,
         timeAgo: relativeTime(p.createdAt),
         content: p.content,
@@ -150,17 +92,17 @@ export const loadCommunity = async () => {
           : undefined,
         sentiment: (p.sentiment as 'bullish' | 'bearish') || undefined,
         likesCount: p.likesCount || 0,
-        isLiked: false,
+        isLiked: Boolean(p.isLiked),
         commentsCount: p.commentsCount || 0,
         copiersCount: 0,
       }))
     }
 
-    if (data?.trending?.length) {
+    if (data?.trending) {
       trendingAssets.value = data.trending
     }
   } catch (err) {
-    console.warn('[Community] Failed to load from backend, using fallback:', err)
+    console.warn('[Community] Failed to load from backend:', err)
   }
 }
 
@@ -168,14 +110,62 @@ export const setActiveFilterSymbol = (symbol: string | null) => {
   activeFilterSymbol.value = symbol
 }
 
-export const toggleLikePost = (postId: string) => {
+export const openAccountRequiredModal = () => {
+  isAccountRequiredModalOpen.value = true
+}
+
+export const closeAccountRequiredModal = () => {
+  isAccountRequiredModalOpen.value = false
+}
+
+export const redirectToRegisterFromSocial = () => {
+  closeAccountRequiredModal()
+  setAuthMode('register')
+  navigate({ href: '/' })
+}
+
+export const redirectToLoginFromSocial = () => {
+  closeAccountRequiredModal()
+  setAuthMode('login')
+  navigate({ href: '/' })
+}
+
+export const toggleLikePost = async (postId: string) => {
+  const currentUser = user.value
+  if (!currentUser || currentUser.isGuest !== 0) {
+    openAccountRequiredModal()
+    return
+  }
+
+  // Optimistic UI update
   toggleLikeSocialPost(postId)
-  void api.post('/community/posts/like', { postId }).catch(() => {})
+
+  try {
+    const res = await api.post<{
+      postId: string
+      isLiked: boolean
+      likesCount: number
+    }>('/community/posts/like', { postId })
+
+    if (res) {
+      toggleLikeSocialPost(postId, res.isLiked, res.likesCount)
+    }
+  } catch {
+    // Revert optimistic update
+    toggleLikeSocialPost(postId)
+    showToast('Action impossible', 'error')
+  }
 }
 
 export const openCompose = () => {
+  const currentUser = user.value
+  if (!currentUser || currentUser.isGuest !== 0) {
+    openAccountRequiredModal()
+    return
+  }
   isComposeOpen.value = true
   isBottomNavHidden.value = true
+  navigate({ href: '/compose' })
 }
 
 /* -------------------------------------------------------------------------- */
@@ -216,6 +206,12 @@ export const setCommentInputText = (text: string) => {
 }
 
 export const submitComment = async () => {
+  const currentUser = user.value
+  if (!currentUser || currentUser.isGuest !== 0) {
+    openAccountRequiredModal()
+    return
+  }
+
   const post = activeCommentsPost.value
   const text = commentInputText.value.trim()
   if (!post || !text) return
@@ -247,11 +243,9 @@ export const submitComment = async () => {
       commentInputText.value = ''
       showToast('Commentaire publié', 'success')
     }
-  } catch (err: any) {
-    showToast(
-      err?.message || 'Erreur lors de la publication du commentaire',
-      'error',
-    )
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Erreur lors de la publication'
+    showToast(msg, 'error')
   }
 }
 
