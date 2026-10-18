@@ -226,13 +226,13 @@ html.lenis body {
 }
 
 .tk-fade-in {
-  animation: tk-fade-in 180ms ease-out;
+  animation: tk-fade-in 300ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .tk-slide-up {
-  animation: tk-slide-up 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: tk-slide-up 420ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .tk-slide-down {
-  animation: tk-slide-down 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: tk-slide-down 360ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .tk-pulse {
   animation: tk-pulse-ring 1.8s ease-out infinite;
@@ -256,3 +256,10 @@ html.lenis body {
 }
 
 
+/* Shared interaction timing across app pages; never transition layout geometry. */
+button, a, input, select, textarea { touch-action: manipulation; }
+button.transition-all, a.transition-all { transition-property: color, background-color, opacity, transform; transition-duration: 240ms; transition-timing-function: cubic-bezier(.22,1,.36,1); }
+#main-viewport { overscroll-behavior-y: contain; scrollbar-gutter: stable; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

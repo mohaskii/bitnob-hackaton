@@ -16,12 +16,12 @@ import { TransferHistoryScreen } from './screens/TransferHistoryScreen.tsx'
 import { ToastStack } from './components/ui.tsx'
 import { useScrollHeader } from './hooks/useScrollHeader.ts'
 import { isBottomNavHidden } from './state.ts'
+import { useRouteMotion } from './hooks/useRouteMotion.ts'
 
 export const App = () => {
   const currentPath = pathSignal.value || '/'
   const isHome = currentPath === '/' || currentPath === '/home'
-  const isDarkTop =
-    isHome ||
+  const isDarkTop = isHome ||
     currentPath === '/portfolio' ||
     currentPath === '/register' ||
     currentPath === '/login' ||
@@ -32,6 +32,7 @@ export const App = () => {
 
   // Coordinate safe area scroll pinning with GSAP ScrollTrigger
   useScrollHeader({ currentPath })
+  useRouteMotion(currentPath)
 
   // Story landing for web visitors (document scroll, no app chrome)
   if (shouldShowLanding(currentPath, isAuthenticated.value)) {
@@ -44,7 +45,10 @@ export const App = () => {
   }
 
   // If unauthenticated and not on the dedicated register route, show the welcome onboarding screen
-  if (!isAuthenticated.value && currentPath !== '/register' && currentPath !== '/login') {
+  if (
+    !isAuthenticated.value && currentPath !== '/register' &&
+    currentPath !== '/login'
+  ) {
     return (
       <div class='h-full w-full flex flex-col bg-base-200 text-base-content overflow-hidden relative font-sans'>
         <WelcomeScreen />
@@ -122,4 +126,3 @@ export const App = () => {
     </div>
   )
 }
-

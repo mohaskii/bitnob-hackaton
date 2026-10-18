@@ -1,4 +1,9 @@
 import type { ComponentChildren } from 'preact'
+import { useLayoutEffect } from 'preact/hooks'
+import {
+  closeSheetFromControl,
+  mountSheet,
+} from '../features/landing/sheet-motion.ts'
 import { CheckCircle2, Info, Loader2, X, XCircle } from 'lucide-preact'
 import { dismissToast, toasts } from '../state.ts'
 
@@ -120,12 +125,18 @@ export const Sheet = ({
   onClose: () => void
   title?: ComponentChildren
   children: ComponentChildren
-}) =>
-  open
+}) => {
+  useLayoutEffect(() => open ? mountSheet(onClose) : undefined, [open])
+  return open
     ? (
       <div
+        data-sheet-layer
+        role='dialog'
+        aria-modal='true'
         class='fixed inset-0 z-[60] flex items-end md:items-center justify-center md:p-6 bg-black/45 backdrop-blur-[2px] tk-fade-in'
-        onClick={(e) => e.target === e.currentTarget && onClose()}
+        onClick={(e) =>
+          e.target === e.currentTarget &&
+          closeSheetFromControl(e.currentTarget, onClose)}
       >
         <div class='w-full max-w-[480px] md:max-w-[520px] max-h-[92dvh] md:max-h-[85dvh] overflow-y-auto bg-base-200 rounded-t-[2rem] md:rounded-[2rem] pb-[max(1.25rem,env(safe-area-inset-bottom,0px))] tk-slide-up'>
           <div class='sticky top-0 z-10 bg-base-200/95 backdrop-blur px-5 pt-3 md:pt-5 pb-2'>
@@ -134,7 +145,8 @@ export const Sheet = ({
               <div class='min-w-0 flex-1'>{title}</div>
               <button
                 type='button'
-                onClick={onClose}
+                onClick={(event) =>
+                  closeSheetFromControl(event.currentTarget, onClose)}
                 aria-label='Fermer'
                 class='w-9 h-9 rounded-full bg-base-100 flex items-center justify-center text-base-content/60 cursor-pointer'
               >
@@ -147,6 +159,7 @@ export const Sheet = ({
       </div>
     )
     : null
+}
 
 const TOAST_ICONS = { success: CheckCircle2, error: XCircle, info: Info }
 
@@ -160,7 +173,6 @@ export const ToastStack = () => (
           type='button'
           onClick={() => dismissToast(toast.id)}
           class='pointer-events-auto max-w-[440px] w-full flex items-start gap-2.5 bg-neutral text-neutral-content rounded-2xl px-4 py-3 text-left text-[13px] font-semibold tk-slide-down'
-
         >
           <Icon
             size={18}

@@ -3,7 +3,7 @@
 // - Static assets (hashed by Vite): cache first, filled on demand.
 // - /api is never cached: balances, quotes and funding statuses must be live.
 
-const VERSION = 'v1'
+const VERSION = 'v2'
 const SHELL = `tekki-shell-${VERSION}`
 const ASSETS = `tekki-assets-${VERSION}`
 const PRECACHE = ['/', '/manifest.webmanifest', '/icons/icon-192.png']
@@ -20,7 +20,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((key) => key !== SHELL && key !== ASSETS)
+          .filter((key) => key.startsWith('tekki-') && key !== SHELL && key !== ASSETS)
           .map((key) => caches.delete(key)),
       )
     ).then(() => self.clients.claim()),
