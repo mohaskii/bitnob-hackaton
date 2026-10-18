@@ -51,7 +51,8 @@ Ce qui est simulé, et qu'on le dit :
 ### 1. Le problème (30 s) — Landing
 
 - Ouvrir le lien (non connecté) : la landing explique le constat.
-- **Commencer sans compte**, puis **S'inscrire** : créer le compte « Awa ».
+- **Commencer sans compte**, puis **menu** → **Créer mon compte pour investir**
+  : créer le compte « Awa ».
 
 ### 2. Comprendre (1 min 30) — Marché + Tekki
 

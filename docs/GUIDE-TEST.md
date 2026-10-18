@@ -10,7 +10,7 @@ démonstration) et l'exécution des ordres par la SGI.
 ## 1. Créer un compte
 
 1. Ouvrir le lien → **Commencer sans compte** (session invitée).
-2. Sur l'accueil, en haut : **S'inscrire** (ou ouvrir `/register`).
+2. Accueil → **menu** (en haut à droite) → **Créer mon compte pour investir**.
 3. Email, pseudo, mot de passe (8 caractères min.) → **Créer mon compte**.
 
 > Le mode invité permet de visiter, mais les ordres réels exigent un compte.
