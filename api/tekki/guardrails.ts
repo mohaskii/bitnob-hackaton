@@ -51,7 +51,10 @@ Un point FACT reprend une donnée des FAITS ou des DOCUMENTS. Un point INTERPRET
  * (jënd = acheter, jaay = vendre, gañ = gagner).
  */
 const FORBIDDEN: RegExp[] = [
-  /\b(ach[eè]te|achetez|ach[eè]tes|vends|vendez|vend[sz]?)\b[^.!?]{0,40}\b(maintenant|vite|cette action|ce titre|sonatel|[A-Z]{4,5})\b/i,
+  // Imperative only: "achète SNTS" is advice, "tu achètes SNTS" describes.
+  /(?<!\b(?:tu|on|il|elle|je|j'|j’|nous|vous|ils|elles|qui)\s)\b(ach[eè]te|achetez|vends|vendez)\b[^.!?]{0,40}\b(maintenant|vite|cette action|ce titre|sonatel)\b/i,
+  // Same with a ticker, case-sensitive so that ordinary words are not tickers.
+  /(?<!\b(?:tu|on|il|elle|je|j'|j’|nous|vous|ils|elles|qui)\s)\b([Aa]ch[eè]te|[Aa]chetez|[Vv]ends|[Vv]endez)\b[^.!?]{0,40}\b(?!BRVM|FCFA|UEMOA|BCEAO|CREPMF)[A-Z]{4,5}\b/,
   /\b(tu devrais|vous devriez|je (te|vous) (conseille|recommande))\b[^.!?]{0,60}\b(achet|vend|copi|investi|r[ée]pliqu)/i,
   /\b(va|vont) (forc[ée]ment )?(monter|augmenter|grimper|baisser|chuter|exploser)\b/i,
   /\b(tu vas|vous allez) (gagner|doubler|faire)\b/i,

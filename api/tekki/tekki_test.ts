@@ -163,3 +163,20 @@ Deno.test('guardrails: advice is blocked, explanations pass', () => {
   assert(asksForAdvice('Est-ce que je dois acheter SNTS ?'))
   assert(!asksForAdvice('C’est quoi un dividende ?'))
 })
+
+Deno.test('guardrails: describing a purchase is not advice', () => {
+  for (
+    const text of [
+      'Quand tu achètes pour 50 000 FCFA, les frais de courtage sont de 1 %.',
+      'Si tu achètes 2 titres SNTS, tu paies aussi la commission BRVM.',
+      'Elle achète surtout des valeurs bancaires sur la BRVM.',
+    ]
+  ) assert(!violatesGuardrails(text), text)
+  for (
+    const text of [
+      'Achète SNTS maintenant.',
+      'Achetez ce titre avant la clôture.',
+      'Vends ORAC tout de suite.',
+    ]
+  ) assert(violatesGuardrails(text), text)
+})
