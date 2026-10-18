@@ -23,7 +23,7 @@ import {
 import { createSessionToken, verifySessionToken } from '../lib/auth.ts'
 import { sql } from '../schema.ts'
 
-const schedule = SGI_PARTNERS[0].schedule // 1 %, min 1 000, tax 18 %
+const schedule = SGI_PARTNERS[0].schedule // 1 %, no minimum, tax 18 %
 
 const newUser = (() => {
   let n = 0
@@ -44,8 +44,11 @@ Deno.test('fees: BRVM 0.20 % + DC/BR 0.10 % + brokerage with minimum + tax', () 
   const byId = Object.fromEntries(fees.lines.map((l) => [l.id, l.amountFcfa]))
   assertEquals(byId, { brokerage: 1000, tax: 180, brvm: 200, dcbr: 100 })
   assertEquals(fees.totalFcfa, 1480)
-  // Small order: brokerage minimum applies.
-  assertEquals(computeFees(10_000, schedule).lines[0].amountFcfa, 1000)
+  // Demo SGIs follow the published grids: no minimum per order.
+  assertEquals(computeFees(10_000, schedule).lines[0].amountFcfa, 100)
+  // The minimum mechanism still applies to a schedule that has one.
+  const withMinimum = { ...schedule, brokerageMinFcfa: 1000 }
+  assertEquals(computeFees(10_000, withMinimum).lines[0].amountFcfa, 1000)
 })
 
 Deno.test('fees: budget buys whole shares only, fees included', () => {

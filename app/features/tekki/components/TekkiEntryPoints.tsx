@@ -14,6 +14,7 @@ import {
   STOCK_QUESTIONS,
   understandTrade,
 } from '../tekki-state.ts'
+import { portfolioMode } from '../../portfolio/portfolio-state.ts'
 
 /**
  * Tekki's entry points in the existing screens. Each is a small, isolated
@@ -83,7 +84,13 @@ export const TekkiPortfolioCard = () => (
     type='button'
     onClick={() =>
       openTekki(
-        { page: 'portfolio', label: 'Mon portefeuille' },
+        {
+          page: 'portfolio',
+          portfolioMode: portfolioMode.value,
+          label: portfolioMode.value === 'live'
+            ? 'Mon compte réel SGI'
+            : 'Mon portefeuille d’entraînement',
+        },
         'Mon portefeuille est-il concentré ?',
       )}
     class='w-full flex items-center gap-3 rounded-3xl bg-base-100 px-4 py-3.5 text-left cursor-pointer active:scale-[0.99] transition-transform'

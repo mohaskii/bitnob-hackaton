@@ -78,7 +78,7 @@ export const FUNDING_PIPELINE = [
 
 export const AMOUNT_PRESETS = [25_000, 50_000, 100_000, 250_000]
 /** Sandbox: amounts the Bitnob test balance can actually pay out. */
-const SANDBOX_PRESETS = [5_000, 7_500, 10_000]
+const SANDBOX_PRESETS = [5_000, 10_000, 25_000]
 
 /* -------------------------------------------------------------------------- */
 /* Signals                                                                    */
@@ -173,7 +173,7 @@ export const loadFundings = async () => {
       '/funding',
     )
     if (result.mode === 'sandbox' && fundingMode.value !== 'sandbox') {
-      setAmount(SANDBOX_PRESETS[0])
+      setAmount(25_000)
     }
     fundingMode.value = result.mode
     fundings.value = result.fundings

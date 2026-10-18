@@ -17,6 +17,7 @@ export type TekkiContext = {
   traderId?: string
   tradeId?: number
   amountFcfa?: number
+  portfolioMode?: 'live' | 'paper'
   /** Human label shown in the context chip (never sent as data). */
   label?: string
 }

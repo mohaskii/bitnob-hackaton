@@ -84,7 +84,7 @@ export const SGI_PARTNERS: SgiPartner[] = [
     source: DEMO_SOURCE,
     schedule: {
       brokerageRate: 0.01,
-      brokerageMinFcfa: 1000,
+      brokerageMinFcfa: 0,
       taxOnBrokerageRate: 0.18,
     },
     minimumDepositFcfa: 25_000,
@@ -126,7 +126,7 @@ export const SGI_PARTNERS: SgiPartner[] = [
     source: DEMO_SOURCE,
     schedule: {
       brokerageRate: 0.008,
-      brokerageMinFcfa: 2500,
+      brokerageMinFcfa: 0,
       taxOnBrokerageRate: 0.18,
     },
     minimumDepositFcfa: 100_000,
@@ -171,7 +171,7 @@ export const SGI_PARTNERS: SgiPartner[] = [
     source: DEMO_SOURCE,
     schedule: {
       brokerageRate: 0.012,
-      brokerageMinFcfa: 500,
+      brokerageMinFcfa: 0,
       taxOnBrokerageRate: 0.18,
     },
     minimumDepositFcfa: 0,

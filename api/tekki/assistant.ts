@@ -50,6 +50,8 @@ export type TekkiContext = {
   traderId?: string
   tradeId?: number
   amountFcfa?: number
+  /** Portfolio tab on screen: real SGI account or practice. */
+  portfolioMode?: 'live' | 'paper'
 }
 
 export type Fact = { label: string; value: string }
@@ -256,10 +258,17 @@ const buildFacts = async (context: TekkiContext, userId: number) => {
   }
 
   if (context.page === 'portfolio') {
-    const portfolio = userPortfolio(userId)
+    const portfolio = userPortfolio(userId, context.portfolioMode)
     const total = portfolio.holdings.reduce((s, h) => s + h.valueFcfa, 0)
     facts.push(
+      {
+        label: 'Portefeuille',
+        value: portfolio.mode === 'live'
+          ? 'compte réel chez la SGI (approvisionné via Bitnob)'
+          : 'entraînement (argent fictif)',
+      },
       { label: 'Cash disponible', value: fcfa(portfolio.cashFcfa) },
+      { label: 'Frais payés', value: fcfa(portfolio.feesPaidFcfa) },
       {
         label: 'Positions',
         value: portfolio.holdings.map((h) =>

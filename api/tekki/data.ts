@@ -2,6 +2,7 @@ import './tables.ts'
 import { sql, sqlQuery, withTransaction } from '../schema.ts'
 import { getMarketView, getStoredPrices } from '../market-data.ts'
 import { getPaperPortfolio } from '../domain/paper.ts'
+import { getLivePortfolio } from '../domain/live_trading.ts'
 import { getJourney } from '../domain/journey.ts'
 import { sgiOrDefault } from '../domain/sgi.ts'
 import { companyFor } from '../domain/companies.ts'
@@ -77,10 +78,32 @@ export const describeTrade = (traderId: string, tradeId: number) =>
   tradeContext(traderTrades(traderId), tradeId, priceMap(), sectorOf)
 
 /** The user's practice portfolio (cash and positions at the last BRVM price). */
-export const userPortfolio = (userId: number) => {
+/**
+ * The portfolio the user is looking at: the real SGI account ('live') or the
+ * practice one ('paper', the default).
+ */
+export const userPortfolio = (
+  userId: number,
+  mode: 'live' | 'paper' = 'paper',
+) => {
+  if (mode === 'live') {
+    const live = getLivePortfolio(userId, getStoredPrices())
+    return {
+      mode,
+      cashFcfa: live.cashFcfa,
+      feesPaidFcfa: live.feesPaidFcfa,
+      holdings: live.positions.map((p) => ({
+        symbol: p.symbol,
+        quantity: p.quantity,
+        valueFcfa: p.marketValueFcfa,
+      })),
+    }
+  }
   const portfolio = getPaperPortfolio(userId, getStoredPrices())
   return {
+    mode,
     cashFcfa: portfolio.cashFcfa,
+    feesPaidFcfa: portfolio.feesPaidFcfa,
     holdings: portfolio.positions.map((p) => ({
       symbol: p.symbol,
       quantity: p.quantity,

@@ -135,6 +135,7 @@ export const tekkiRoutes = {
         traderId: input.traderId ?? undefined,
         tradeId: input.tradeId ?? undefined,
         amountFcfa: input.amountFcfa ?? undefined,
+        portfolioMode: input.portfolioMode ?? undefined,
       }
       return respond.OK(
         await askTekki({
@@ -157,6 +158,7 @@ export const tekkiRoutes = {
       traderId: optional(STR()),
       tradeId: optional(NUM()),
       amountFcfa: optional(NUM()),
+      portfolioMode: optional(LIST(['live', 'paper'] as const)),
       language: optional(LIST(['fr', 'wo', 'mixed'] as const)),
       level: optional(LIST(['beginner', 'investor', 'advanced'] as const)),
       retrievalQuery: optional(STR('French gloss of a Wolof question')),
@@ -175,6 +177,7 @@ export const tekkiRoutes = {
           traderId: input.traderId ?? undefined,
           tradeId: input.tradeId ?? undefined,
           amountFcfa: input.amountFcfa ?? undefined,
+          portfolioMode: input.portfolioMode ?? undefined,
         }, ctx.session.userId),
       }),
     input: OBJ({
@@ -183,6 +186,7 @@ export const tekkiRoutes = {
       traderId: optional(STR()),
       tradeId: optional(NUM()),
       amountFcfa: optional(NUM()),
+      portfolioMode: optional(LIST(['live', 'paper'] as const)),
     }),
     description:
       'Tekki Analytics facts for a context, without calling the model',
