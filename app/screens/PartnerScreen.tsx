@@ -202,6 +202,12 @@ const IncomingFunds = () => (
           <p>
             Envoyé en {f.asset} via Bitnob · {dateTime(f.createdAt)} · {f.mode}
           </p>
+          {f.payoutId && (
+            <p class='truncate'>
+              Transaction Bitnob{' '}
+              <span class='font-bold tk-mono'>{f.payoutId}</span>
+            </p>
+          )}
         </div>
         {f.status === 'DELIVERED_TO_SGI' && (
           <button

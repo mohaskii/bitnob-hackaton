@@ -177,14 +177,30 @@ export const startChangeSgi = () => {
   changingSgi.value = true
 }
 
+/** Only the response to the latest tick is applied (quick ticks overlap). */
+let checklistSeq = 0
+
 export const toggleChecklistItem = async (itemId: string, done: boolean) => {
+  const current = journey.value
+  if (current) {
+    // Tick on screen right away; the server's answer confirms it.
+    journey.value = {
+      ...current,
+      checklist: current.checklist.map((item) =>
+        item.id === itemId ? { ...item, done } : item
+      ),
+    }
+  }
+  const seq = ++checklistSeq
   try {
-    journey.value = await api.post<Journey>('/journey/checklist', {
+    const result = await api.post<Journey>('/journey/checklist', {
       itemId,
       done,
     })
+    if (seq === checklistSeq) journey.value = result
   } catch (error) {
     showToast(errorMessage(error), 'error')
+    if (seq === checklistSeq) void loadJourney()
   }
 }
 

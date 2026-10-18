@@ -160,6 +160,7 @@ const formatFunding = (row: {
   expiresAt: string | null
   createdAt: number
   updatedAt: number
+  payoutId?: string | null
 }) => ({
   fundingId: row.fundingId,
   reference: row.reference,
@@ -182,6 +183,8 @@ const formatFunding = (row: {
   updatedAt: row.updatedAt,
   sgiId: row.sgiId,
   sgiName: findSgi(row.sgiId)?.name ?? row.sgiId,
+  /** Bitnob payout id: the proof to look up in the Bitnob dashboard. */
+  payoutId: row.payoutId ?? null,
 })
 
 const readFunding = (

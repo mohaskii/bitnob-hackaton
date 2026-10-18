@@ -38,6 +38,11 @@ Ce qui est simulé, et qu'on le dit :
 5. Ouvrir dans Chrome : `http://localhost:5173` (micro autorisé) et, dans un 2ᵉ
    onglet, le tableau de bord Bitnob sandbox (Transactions).
 6. Vérifier le quota Gemini (une question test à Tekki).
+7. Repartir d'une base propre : arrêter le serveur, `deno task db:reset`,
+   relancer `deno task server` (efface les comptes et versements de test de la
+   répétition, réinstalle les profils d'exemple).
+8. Dans le navigateur de démo, se déconnecter (ou vider le stockage du site)
+   pour revoir la landing.
 
 ---
 

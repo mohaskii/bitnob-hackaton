@@ -29,6 +29,7 @@ export type Funding = {
   createdAt: number
   sgiId: string
   sgiName: string
+  payoutId: string | null
 }
 
 export type FundingQuote = {

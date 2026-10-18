@@ -16,6 +16,7 @@ import { WelcomeScreen } from './features/session/WelcomeScreen.tsx'
 import { isAuthenticated } from './features/session/session-state.ts'
 import { ToastStack } from './components/ui.tsx'
 import { TekkiSheet } from './features/tekki/components/TekkiSheet.tsx'
+import { ExplainerSheet } from './features/learn/Explainer.tsx'
 import { AskTekkiButton } from './features/tekki/components/TekkiEntryPoints.tsx'
 import { useScrollHeader } from './hooks/useScrollHeader.ts'
 import { isBottomNavHidden } from './state.ts'
@@ -126,6 +127,9 @@ export const App = () => {
       {currentPath !== '/compose' && currentPath !== '/partner' &&
         !isAuthFlow && <AskTekkiButton />}
       <TekkiSheet />
+
+      {/* Glossary sheet opened by the "?" chips */}
+      <ExplainerSheet />
 
       {/* Toast notifications */}
       <ToastStack />
