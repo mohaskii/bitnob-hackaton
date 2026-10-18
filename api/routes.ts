@@ -12,6 +12,7 @@ import {
   withUserSession,
 } from './lib/auth.ts'
 import { bitnob } from './bitnob/client.ts'
+import { tekkiRoutes } from './tekki/routes.ts'
 import { handleBitnobWebhook } from './bitnob/webhook.ts'
 import {
   getLatestBulletin,
@@ -43,6 +44,7 @@ import {
   resetPaperAccount,
 } from './domain/paper.ts'
 import {
+  ensureLiveAccount,
   executeLiveOrder,
   getLivePortfolio,
   listLiveOrders,
@@ -57,6 +59,7 @@ import {
   EVENT_TYPES,
   getJourney,
   getPartnerOverview,
+  openPrevalidatedAccount,
   selectSgi,
   setChecklistItem,
   submitApplication,
@@ -72,6 +75,7 @@ import {
   refreshFunding,
   SENDER_COUNTRIES,
   simulateDeposit,
+  useSandboxBalance,
 } from './domain/funding.ts'
 import {
   addComment,
@@ -120,6 +124,11 @@ const createAccount = async (input: {
     RETURNING userId
   `.get() as { userId: number }
   ensurePaperAccount(user.userId)
+  if (!input.isGuest) {
+    // Demo: account already validated by the SGI (see openPrevalidatedAccount)
+    openPrevalidatedAccount(user.userId)
+    ensureLiveAccount(user.userId, DEFAULT_SGI_ID)
+  }
   return user.userId
 }
 
@@ -725,6 +734,15 @@ const defs = {
     description: 'Poll Bitnob for deposit and payout status (sandbox/live)',
   }),
 
+  'POST/api/funding/sandbox-balance': route({
+    authorize: withUserSession,
+    fn: async (ctx, { fundingId }) =>
+      respond.OK(await useSandboxBalance(ctx.session.userId, fundingId)),
+    input: OBJ({ fundingId: NUM() }),
+    description:
+      'Sandbox only: fund from the Bitnob test balance, then the real payout runs',
+  }),
+
   'POST/api/funding/simulate-deposit': route({
     authorize: withUserSession,
     fn: async (ctx, { fundingId }) =>
@@ -896,6 +914,7 @@ const defs = {
     input: OBJ({ postId: STR(), content: STR() }),
     description: 'Add a comment to a community post',
   }),
+  ...tekkiRoutes,
 } as const
 
 export type RouteDefinitions = typeof defs

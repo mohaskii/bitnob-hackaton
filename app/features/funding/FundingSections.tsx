@@ -18,8 +18,8 @@ import {
 import {
   actionPending,
   activeFunding,
-  AMOUNT_PRESETS,
   amountFcfa,
+  amountPresets,
   asset,
   copied,
   copyInstruction,
@@ -42,6 +42,7 @@ import {
   setSenderCountry,
   setSenderName,
   simulateDeposit,
+  useSandboxBalance,
 } from './funding-state.ts'
 
 const ASSETS: { id: FundingAsset; label: string; sub: string }[] = [
@@ -170,7 +171,7 @@ const AmountInput = () => (
       </div>
     </div>
     <div class='flex gap-2 overflow-x-auto no-scrollbar'>
-      {AMOUNT_PRESETS.map((value) => (
+      {amountPresets.value.map((value) => (
         <button
           key={value}
           type='button'
@@ -357,17 +358,27 @@ const DepositInstruction = () => {
   )
 }
 
+/** The Bitnob payout id, to look up in the Bitnob dashboard. */
+const BitnobPayoutId = ({ id }: { id: string }) => (
+  <p class='text-[10.5px] text-base-content/50 break-all'>
+    Transaction Bitnob <span class='tk-mono font-bold'>{id}</span>
+  </p>
+)
+
 const ActiveControls = () => {
   const f = activeFunding.value!
   if (f.status !== 'AWAITING_DEPOSIT') {
     return (
-      <p class='text-[12.5px] font-semibold bg-base-100 rounded-2xl px-4 py-3'>
-        {f.status === 'DELIVERED_TO_SGI'
-          ? `${
-            fcfa(f.amountFcfa)
-          } versés à ${f.sgiName}. Elle confirme le crédit sur votre compte espèces.`
-          : f.statusLabel}
-      </p>
+      <div class='bg-base-100 rounded-2xl px-4 py-3 flex flex-col gap-1'>
+        <p class='text-[12.5px] font-semibold'>
+          {f.status === 'DELIVERED_TO_SGI'
+            ? `${
+              fcfa(f.amountFcfa)
+            } versés à ${f.sgiName}, qui crédite votre compte espèces.`
+            : f.statusLabel}
+        </p>
+        {f.payoutId && <BitnobPayoutId id={f.payoutId} />}
+      </div>
     )
   }
   return f.mode === 'simulation'
@@ -381,10 +392,21 @@ const ActiveControls = () => {
       </PrimaryButton>
     )
     : (
-      <p class='text-[12px] text-base-content/55 text-center flex items-center justify-center gap-2'>
-        <Spinner size={13} />{' '}
-        Vérification automatique auprès de Bitnob toutes les 10 s
-      </p>
+      <div class='flex flex-col gap-2'>
+        {f.mode === 'sandbox' && (
+          <PrimaryButton
+            tone='dark'
+            onClick={() => void useSandboxBalance(f.fundingId)}
+            pending={actionPending.value}
+          >
+            Utiliser le solde de test Bitnob
+          </PrimaryButton>
+        )}
+        <p class='text-[12px] text-base-content/55 text-center flex items-center justify-center gap-2'>
+          <Spinner size={13} />{' '}
+          Vérification automatique auprès de Bitnob toutes les 10 s
+        </p>
+      </div>
     )
 }
 
@@ -415,26 +437,27 @@ export const FundingHistory = () => {
         {items.map((f) => (
           <div
             key={f.fundingId}
-            class='flex items-center justify-between gap-3 px-2.5 py-2.5'
+            class='flex flex-col gap-1 px-2.5 py-2.5'
           >
-            <div class='min-w-0'>
+            <div class='flex items-center justify-between gap-3'>
               <p class='text-[13.5px] font-bold'>
                 {fcfa(f.amountFcfa)} → {f.sgiName}
               </p>
-              <p class='text-[11.5px] text-base-content/50 truncate'>
-                {f.cryptoAmount} {f.asset} · {f.reference} ·{' '}
-                {dateTime(f.createdAt)}
-              </p>
+              <Pill
+                tone={f.status === 'CREDITED'
+                  ? 'success'
+                  : f.status === 'FAILED'
+                  ? 'error'
+                  : 'neutral'}
+              >
+                {f.statusLabel}
+              </Pill>
             </div>
-            <Pill
-              tone={f.status === 'CREDITED'
-                ? 'success'
-                : f.status === 'FAILED'
-                ? 'error'
-                : 'neutral'}
-            >
-              {f.statusLabel}
-            </Pill>
+            <p class='text-[11.5px] text-base-content/50 truncate'>
+              {f.cryptoAmount} {f.asset} · {f.reference} ·{' '}
+              {dateTime(f.createdAt)}
+            </p>
+            {f.payoutId && <BitnobPayoutId id={f.payoutId} />}
           </div>
         ))}
       </div>

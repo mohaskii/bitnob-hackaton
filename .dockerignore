@@ -1,0 +1,13 @@
+.git
+.claude
+.env
+.env-prod
+*.db
+*.db-*
+node_modules
+app/dist
+deploy/public
+tools/oolel/.venv
+tools/oolel/.python
+tools/oolel/.cache
+tools/oolel/__pycache__

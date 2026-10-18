@@ -9,11 +9,17 @@ import { SocialScreen } from './screens/SocialScreen.tsx'
 import { ComposeScreen } from './screens/ComposeScreen.tsx'
 import { PortfolioScreen } from './screens/PortfolioScreen.tsx'
 import { RegisterScreen } from './screens/RegisterScreen.tsx'
+import { JourneyScreen } from './screens/JourneyScreen.tsx'
+import { FundScreen } from './screens/FundScreen.tsx'
+import { PartnerScreen } from './screens/PartnerScreen.tsx'
 import { WelcomeScreen } from './features/session/WelcomeScreen.tsx'
 import { isAuthenticated } from './features/session/session-state.ts'
 import { TransferScreen } from './screens/TransferScreen.tsx'
 import { TransferHistoryScreen } from './screens/TransferHistoryScreen.tsx'
 import { ToastStack } from './components/ui.tsx'
+import { TekkiSheet } from './features/tekki/components/TekkiSheet.tsx'
+import { ExplainerSheet } from './features/learn/Explainer.tsx'
+import { AskTekkiButton } from './features/tekki/components/TekkiEntryPoints.tsx'
 import { useScrollHeader } from './hooks/useScrollHeader.ts'
 import { isBottomNavHidden } from './state.ts'
 
@@ -23,6 +29,8 @@ export const App = () => {
   const isDarkTop =
     isHome ||
     currentPath === '/portfolio' ||
+    currentPath === '/fund' ||
+    currentPath === '/partner' ||
     currentPath === '/register' ||
     currentPath === '/login' ||
     currentPath === '/welcome'
@@ -83,6 +91,12 @@ export const App = () => {
           ? <ComposeScreen onClose={() => history.back()} />
           : currentPath === '/portfolio'
           ? <PortfolioScreen />
+          : currentPath === '/journey'
+          ? <JourneyScreen />
+          : currentPath === '/fund'
+          ? <FundScreen />
+          : currentPath === '/partner'
+          ? <PartnerScreen />
           : currentPath === '/transfer'
           ? <TransferScreen />
           : currentPath === '/history'
@@ -111,11 +125,20 @@ export const App = () => {
         activeTab={currentPath}
         hidden={isBottomNavHidden.value ||
           currentPath === '/compose' ||
+          currentPath === '/partner' ||
           currentPath === '/transfer' ||
           currentPath === '/history' ||
           isAuthFlow}
         onTabChange={(tab) => navigateUrl(tab.path)}
       />
+
+      {/* Tekki AI: global entry point and conversation */}
+      {currentPath !== '/compose' && currentPath !== '/partner' &&
+        !isAuthFlow && <AskTekkiButton />}
+      <TekkiSheet />
+
+      {/* Glossary sheet opened by the "?" chips */}
+      <ExplainerSheet />
 
       {/* Toast notifications */}
       <ToastStack />

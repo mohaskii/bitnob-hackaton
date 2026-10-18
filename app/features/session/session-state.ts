@@ -116,7 +116,7 @@ const runAuth = async (call: () => Promise<SessionResponse>) => {
 export const startAsGuest = async () => {
   const session = await runAuth(() => api.post<SessionResponse>('/auth/guest'))
   if (session) {
-    showToast('Mode invité activé. Entraînez-vous sans risque !', 'info')
+    showToast('Mode invité : explorez librement. Créez un compte (menu) pour investir.', 'info')
     navigateUrl('/')
   }
   return session

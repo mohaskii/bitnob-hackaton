@@ -236,3 +236,57 @@ deno check \
   app/screens/MarketScreen.tsx \
   app/screens/ComposeScreen.tsx
 ```
+
+---
+
+## Tekki AI & Tekki Voice
+
+Tekki explique ce que l'utilisateur regarde (fiche action, portefeuille d'entraînement, profil d'exemple, post de la communauté), à l'écrit ou en notes vocales, en français ou en wolof. Il ne conseille pas.
+
+Intégration : modules `api/tekki/` et `app/features/tekki/` ; dans les écrans existants, seulement des points d'entrée (bouton Tekki, carte sur la fiche action et le portefeuille, bouton sur les profils et les posts).
+
+- **Tekki Analytics** (`api/tekki/analytics.ts`) calcule toutes les métriques à partir des historiques d'opérations : performance, taux de trades gagnants, gain et perte moyens, drawdown, durée de détention, exposition sectorielle, concentration, impact d'une réplication. Ce sont des règles explicites, testées dans `api/tekki/tekki_test.ts`.
+- **RAG** (`api/tekki/knowledge.ts`) : une base de passages sourcés (BRVM, AMF-UMOA, Bitnob, fiches TekkiTrade). Chaque réponse affiche ses sources.
+- **Garde-fous** (`api/tekki/guardrails.ts`) : consignes du modèle, plus un filtre de sortie côté serveur qui bloque les formulations de conseil en français et en wolof.
+- **Fournisseurs interchangeables** (`api/tekki/providers.ts`) : Gemini (texte, transcription wolof et français, synthèse vocale) ou Ollama. Sans clé, Tekki répond à partir de ses calculs et de sa base documentaire.
+- **Profils d'exemple** : les historiques des profils de `task-seed.ts` (Aïcha, Koffi, Mariam) sont générés (déterministes, à partir des cours BRVM réels) pour que Tekki Analytics calcule sur de vraies opérations. Le portefeuille lu par Tekki est le portefeuille d'entraînement, et les frais ceux de la SGI choisie dans le parcours.
+
+Configuration, côté serveur uniquement :
+
+```env
+AI_PROVIDER=gemini
+GEMINI_API_KEY=...
+GEMINI_MODEL=gemini-3-flash-preview
+GEMINI_TTS_MODEL=gemini-3.8-flash-lite-tts
+GEMINI_THINKING_LEVEL=minimal
+OOLEL_TTS_URL=http://127.0.0.1:8010
+OOLEL_LANGUAGES=wo,mixed,fr
+```
+
+Le quota gratuit de Gemini est compté par modèle et par jour (20 requêtes sur les plus récents). Tekki passe au modèle suivant de `GEMINI_FALLBACK_MODELS` dès qu'un modèle est saturé ou à court de quota, et met en cache les réponses et l'audio déjà produits.
+
+### Voix wolof : Oolel-Voices (Soynade Research)
+
+Les réponses en wolof sont lues par [Oolel-Voices](https://huggingface.co/soynade-research/Oolel-Voices), un modèle de synthèse vocale conçu pour le wolof par Soynade Research (licence AGPL-3.0). Il tourne en local (`tools/oolel/server.py`), sur GPU NVIDIA de préférence. Par défaut il lit aussi le français (`OOLEL_LANGUAGES=wo,mixed,fr`) ; retirer `fr` pour que le français soit lu par Gemini. Gemini prend le relais si Oolel est arrêté.
+
+Installation (une fois, environ 5 Go) :
+
+```bash
+uv venv --python 3.12 tools/oolel/.venv
+uv pip install --python tools/oolel/.venv/Scripts/python.exe torch==2.8.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cu128
+uv pip install --python tools/oolel/.venv/Scripts/python.exe -r tools/oolel/requirements.txt
+```
+
+Lancement (le modèle est téléchargé au premier démarrage) :
+
+```bash
+tools/oolel/.venv/Scripts/python.exe tools/oolel/server.py
+```
+
+Vitesse : sur une RTX 3060 portable, une phrase prend environ 1,3 fois sa durée à générer ; la boucle de génération (~75 % du temps) ne dépend d'aucun réglage du modèle. L'app lit donc la première phrase dès qu'elle est prête. `OOLEL_S3GEN_STEPS=5` (variable d'environnement au lancement du serveur Oolel) fait gagner ~0,7 s par phrase sur le décodage audio. Fermer les applications qui utilisent le GPU et passer Windows en mode « Meilleures performances » aide aussi.
+
+Sous macOS/Linux, remplacer `.venv/Scripts/python.exe` par `.venv/bin/python` et installer `torch` sans l'index CUDA.
+
+Routes : `POST /api/tekki/ask`, `POST /api/tekki/facts`, `POST /api/tekki/transcribe`, `POST /api/tekki/speak`, `GET /api/tekki/traders`, `GET /api/tekki/market`, `GET /api/tekki/status`.
+
+---

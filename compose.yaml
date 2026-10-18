@@ -1,0 +1,42 @@
+# `docker compose up -d --build` on the GPU machine (NVIDIA Brev):
+# - app   : API + PWA on http://localhost:3000 (Brev Secure Link → public URL)
+# - oolel : Wolof voice on the GPU, reached by the app only
+# Keys (Bitnob, Gemini, session secret) live in .env-prod, written by
+# `deno task deploy:brev`. The database and the voice model are in volumes.
+services:
+  app:
+    build: .
+    image: tekkitrade
+    container_name: tekkitrade-app
+    restart: unless-stopped
+    ports:
+      - '3000:8000'
+    env_file:
+      - path: .env-prod
+        required: false
+    environment:
+      DATABASE_PATH: /app/data/tekkitrade.db
+      OOLEL_TTS_URL: http://oolel:8010
+    volumes:
+      - tekkitrade-data:/app/data
+    depends_on:
+      - oolel
+
+  oolel:
+    build: tools/oolel
+    image: tekkitrade-oolel
+    container_name: tekkitrade-oolel
+    restart: unless-stopped
+    volumes:
+      - oolel-cache:/cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  tekkitrade-data:
+  oolel-cache:

@@ -29,6 +29,7 @@ export type Funding = {
   createdAt: number
   sgiId: string
   sgiName: string
+  payoutId: string | null
 }
 
 export type FundingQuote = {
@@ -76,6 +77,8 @@ export const FUNDING_PIPELINE = [
 ]
 
 export const AMOUNT_PRESETS = [25_000, 50_000, 100_000, 250_000]
+/** Sandbox: amounts the Bitnob test balance can actually pay out. */
+const SANDBOX_PRESETS = [5_000, 10_000, 25_000]
 
 /* -------------------------------------------------------------------------- */
 /* Signals                                                                    */
@@ -123,6 +126,10 @@ export const quotesEnabled = signal(false)
 
 const FINAL = ['CREDITED', 'FAILED', 'EXPIRED']
 
+export const amountPresets = computed(() =>
+  fundingMode.value === 'sandbox' ? SANDBOX_PRESETS : AMOUNT_PRESETS
+)
+
 export const activeFunding = computed(() =>
   fundings.value.find((f) => !FINAL.includes(f.status)) ?? null
 )
@@ -165,6 +172,9 @@ export const loadFundings = async () => {
     >(
       '/funding',
     )
+    if (result.mode === 'sandbox' && fundingMode.value !== 'sandbox') {
+      setAmount(SANDBOX_PRESETS[0])
+    }
     fundingMode.value = result.mode
     fundings.value = result.fundings
   } catch (error) {
@@ -257,6 +267,20 @@ export const simulateDeposit = async (fundingId: number) => {
   try {
     afterStatusChange(
       await api.post<Funding>('/funding/simulate-deposit', { fundingId }),
+    )
+  } catch (error) {
+    showToast(errorMessage(error), 'error')
+  } finally {
+    actionPending.value = false
+  }
+}
+
+/** Sandbox: the test balance on Bitnob stands in for the crypto deposit. */
+export const useSandboxBalance = async (fundingId: number) => {
+  actionPending.value = true
+  try {
+    afterStatusChange(
+      await api.post<Funding>('/funding/sandbox-balance', { fundingId }),
     )
   } catch (error) {
     showToast(errorMessage(error), 'error')
