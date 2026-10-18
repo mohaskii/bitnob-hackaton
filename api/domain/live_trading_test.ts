@@ -63,11 +63,7 @@ Deno.test('live trading: registered user can buy fractional shares routed to SGI
 Deno.test('live trading: fractional shares for budget math works seamlessly', () => {
   const sgi = sgiOrDefault('atlantique')
   // Budget of 10 000 FCFA for a stock worth 18 500 FCFA
-  const { quantity, leftoverFcfa } = fractionalSharesForBudget(
-    10_000,
-    18_500,
-    sgi.schedule,
-  )
+  const { quantity, leftoverFcfa } = fractionalSharesForBudget(10_000, 18_500, sgi.schedule)
 
   assertEquals(quantity > 0.4, true)
   assertEquals(quantity < 0.6, true)
