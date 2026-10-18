@@ -104,11 +104,12 @@ Ce qui est simulé, et qu'on le dit :
   (onglet « Réel » du portefeuille).
 - Les ordres réels exigent un **compte inscrit** (pas le mode invité) : pour
   cette partie, faire la démo avec un compte « Awa » créé au début.
-- Approvisionner **25 000 FCFA** (≈ 42 USDC de test : recharger le solde avant).
-  Frais d'un achat : ~1,5 % (courtage 1 % + TVA, BRVM 0,2 %, DC/BR 0,1 %), sans
+- Approvisionner **5 000 FCFA** en **USDC** (≈ 8,5 USDC de test par versement ;
+  le portefeuille USDC sandbox en a ~102). Ne pas choisir USDT ni BTC : ces
+  portefeuilles de test sont vides.
+- Acheter un titre peu cher (ex. ETIT, ~65 FCFA) : Sonatel (43 500 FCFA) dépasse
+  le solde. Frais ~1,5 % (courtage 1 % + TVA, BRVM 0,2 %, DC/BR 0,1 %), sans
   minimum par ordre, comme les grilles publiées des SGI.
-- Sonatel (43 500 FCFA l'action) dépasse 25 000 FCFA : acheter un titre moins
-  cher (ex. ETIT), ou une fraction si on présente le mode fractionné.
 - « Comprendre mon portefeuille » sur l'onglet Réel : Tekki lit le compte SGI.
 
 ### 6. Conclusion (30 s)

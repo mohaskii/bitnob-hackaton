@@ -173,7 +173,7 @@ export const loadFundings = async () => {
       '/funding',
     )
     if (result.mode === 'sandbox' && fundingMode.value !== 'sandbox') {
-      setAmount(25_000)
+      setAmount(SANDBOX_PRESETS[0])
     }
     fundingMode.value = result.mode
     fundings.value = result.fundings
