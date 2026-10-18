@@ -49,5 +49,7 @@ Deno.test('funding: an SGI-confirmed Bitnob payment becomes investable cash', ()
   // Each confirmation adds its amount to cash and to contributed capital.
   assertEquals(second.cashFcfa - first.cashFcfa, 7_500)
   assertEquals(second.startingCashFcfa - first.startingCashFcfa, 7_500)
-  assertEquals(first.cashFcfa - first.startingCashFcfa, 0)
+  // The account opens empty: its cash is exactly what the SGI confirmed.
+  assertEquals(first.cashFcfa, 5_000)
+  assertEquals(second.cashFcfa, 12_500)
 })

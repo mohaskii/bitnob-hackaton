@@ -1,6 +1,7 @@
 import { assertEquals, assertRejects } from '@std/assert'
 import { sql } from '../schema.ts'
 import {
+  creditLiveAccount,
   ensureLiveAccount,
   executeLiveOrder,
   getLivePortfolio,
@@ -19,6 +20,8 @@ Deno.test('live trading: registered user can buy fractional shares routed to SGI
   `.get() as { userId: number }
 
   ensureLiveAccount(user.userId)
+  assertEquals(readLiveAccount(user.userId).cashFcfa, 0) // opens empty
+  creditLiveAccount(user.userId, 'atlantique', 500_000) // funding confirmed by the SGI
   const accountBefore = readLiveAccount(user.userId)
   assertEquals(accountBefore.cashFcfa, 500_000)
 
@@ -60,7 +63,11 @@ Deno.test('live trading: registered user can buy fractional shares routed to SGI
 Deno.test('live trading: fractional shares for budget math works seamlessly', () => {
   const sgi = sgiOrDefault('atlantique')
   // Budget of 10 000 FCFA for a stock worth 18 500 FCFA
-  const { quantity, leftoverFcfa } = fractionalSharesForBudget(10_000, 18_500, sgi.schedule)
+  const { quantity, leftoverFcfa } = fractionalSharesForBudget(
+    10_000,
+    18_500,
+    sgi.schedule,
+  )
 
   assertEquals(quantity > 0.4, true)
   assertEquals(quantity < 0.6, true)
@@ -74,6 +81,7 @@ Deno.test('live trading: selling fractional shares updates position and credits 
     VALUES ('seller@tekkitrade.ci', 'seller_ci', X'00', X'00', 0, ${Date.now()})
     RETURNING userId
   `.get() as { userId: number }
+  creditLiveAccount(user.userId, 'atlantique', 100_000) // funding confirmed by the SGI
 
   // Buy 1.5 shares
   executeLiveOrder({

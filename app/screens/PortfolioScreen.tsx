@@ -136,12 +136,22 @@ const Positions = () => {
         <p class='text-[14px] font-bold'>Aucune position pour l’instant</p>
         <p class='text-[13px] text-base-content/60'>
           {isLive
-            ? 'Achetez des fractions d’actions BRVM directement routées vers votre SGI partenaire.'
+            ? (portfolio.value?.cashFcfa ?? 0) <= 0
+              ? 'Votre compte SGI est vide. Envoyez des USDT, USDC ou du Bitcoin : Bitnob verse des FCFA à votre SGI, qui les crédite ici.'
+              : 'Achetez des fractions d’actions BRVM directement routées vers votre SGI partenaire.'
             : 'Choisissez une action, estimez les frais et passez un premier ordre d’entraînement.'}
         </p>
-        <PrimaryButton onClick={() => navigateUrl('/market')}>
-          Explorer le marché
-        </PrimaryButton>
+        {isLive && (portfolio.value?.cashFcfa ?? 0) <= 0
+          ? (
+            <PrimaryButton onClick={() => navigateUrl('/fund')}>
+              Approvisionner mon compte via Bitnob
+            </PrimaryButton>
+          )
+          : (
+            <PrimaryButton onClick={() => navigateUrl('/market')}>
+              Explorer le marché
+            </PrimaryButton>
+          )}
       </div>
     )
   }

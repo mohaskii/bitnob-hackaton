@@ -5,7 +5,11 @@ import { sgiOrDefault } from './sgi.ts'
 import { sgiGateway } from '../sgi/client.ts'
 import { companyFor } from './companies.ts'
 
-export const STARTING_LIVE_CASH_FCFA = 500_000
+/**
+ * A real SGI account opens empty: its cash only comes from fundings the SGI
+ * confirmed (Bitnob → FCFA at the SGI, see creditLiveAccount).
+ */
+export const STARTING_LIVE_CASH_FCFA = 0
 
 export type LiveFill = {
   orderId: number
@@ -44,6 +48,26 @@ export const ensureLiveAccount = (userId: number, sgiId = 'atlantique') => {
   }
 }
 
+/**
+ * The SGI confirmed a funding: the FCFA become investable cash on the
+ * client's SGI account. Counted as capital contributed, so a deposit never
+ * shows up as a gain.
+ */
+export const creditLiveAccount = (
+  userId: number,
+  sgiId: string,
+  amountFcfa: number,
+) => {
+  ensureLiveAccount(userId, sgiId)
+  sql`
+    UPDATE liveTradingAccount
+    SET cashFcfa = cashFcfa + ${amountFcfa},
+      startingCashFcfa = startingCashFcfa + ${amountFcfa},
+      updatedAt = ${Date.now()}
+    WHERE userId = ${userId}
+  `.run()
+}
+
 export const readLiveAccount = (userId: number) => {
   ensureLiveAccount(userId)
   return sqlQuery<{
@@ -63,7 +87,14 @@ export const readLiveAccount = (userId: number) => {
 }
 
 export const readLivePosition = (userId: number, symbol: string) =>
-  sqlQuery<{ positionId: number; quantity: number; averageCostFcfa: number; totalCostFcfa: number }>`
+  sqlQuery<
+    {
+      positionId: number
+      quantity: number
+      averageCostFcfa: number
+      totalCostFcfa: number
+    }
+  >`
     SELECT positionId, quantity, averageCostFcfa, totalCostFcfa
     FROM livePosition WHERE userId = ${userId} AND symbol = ${symbol}
   `.get()
@@ -200,7 +231,10 @@ export const listLiveOrders = (userId: number): LiveFill[] => {
       sgiId: sgi.id,
       sgiName: sgi.name,
       isFractional: r.isFractional === 1,
-      settlementDate: new Date(r.createdAt + 2 * 24 * 3600 * 1000).toISOString().split('T')[0],
+      settlementDate:
+        new Date(r.createdAt + 2 * 24 * 3600 * 1000).toISOString().split(
+          'T',
+        )[0],
       status: 'FILLED',
       createdAt: r.createdAt,
     }
@@ -228,7 +262,8 @@ export const executeLiveOrder = (input: ExecuteLiveInput): LiveFill => {
 
   if (!user || user.isGuest === 1) {
     throw new respond.ForbiddenError({
-      message: 'Le trading direct avec routage SGI et actions fractionnées est réservé aux investisseurs enregistrés.',
+      message:
+        'Le trading direct avec routage SGI et actions fractionnées est réservé aux investisseurs enregistrés.',
     })
   }
 
@@ -243,7 +278,9 @@ export const executeLiveOrder = (input: ExecuteLiveInput): LiveFill => {
   const isFractional = !Number.isInteger(cleanQuantity)
 
   if (!(priceFcfa > 0)) {
-    throw new respond.BadRequestError({ message: 'Cours indisponible pour le routage SGI.' })
+    throw new respond.BadRequestError({
+      message: 'Cours indisponible pour le routage SGI.',
+    })
   }
 
   const sgi = sgiOrDefault(input.sgiId)
@@ -260,7 +297,9 @@ export const executeLiveOrder = (input: ExecuteLiveInput): LiveFill => {
         throw new respond.BadRequestError({
           message: `Solde espèces insuffisant sur le compte SGI : disponible ${
             account.cashFcfa.toLocaleString('fr-FR')
-          } FCFA, requis ${estimate.netFcfa.toLocaleString('fr-FR')} FCFA frais inclus.`,
+          } FCFA, requis ${
+            estimate.netFcfa.toLocaleString('fr-FR')
+          } FCFA frais inclus.`,
         })
       }
 
@@ -281,12 +320,20 @@ export const executeLiveOrder = (input: ExecuteLiveInput): LiveFill => {
       `.run()
 
       // Update SGI omnibus inventory buffer
-      const buffer = sqlQuery<{ bufferId: number; wholeSharesHeld: number; fractionalAllocated: number }>`
+      const buffer = sqlQuery<
+        {
+          bufferId: number
+          wholeSharesHeld: number
+          fractionalAllocated: number
+        }
+      >`
         SELECT bufferId, wholeSharesHeld, fractionalAllocated
         FROM sgiInventoryBuffer WHERE sgiId = ${sgi.id} AND symbol = ${symbol}
       `.get()
 
-      const newAllocated = Number(((buffer?.fractionalAllocated ?? 0) + cleanQuantity).toFixed(4))
+      const newAllocated = Number(
+        ((buffer?.fractionalAllocated ?? 0) + cleanQuantity).toFixed(4),
+      )
       const neededWhole = Math.ceil(newAllocated)
       const newWhole = Math.max(buffer?.wholeSharesHeld ?? 0, neededWhole)
 
@@ -305,7 +352,8 @@ export const executeLiveOrder = (input: ExecuteLiveInput): LiveFill => {
       const heldQty = position?.quantity ?? 0
       if (heldQty < cleanQuantity) {
         throw new respond.BadRequestError({
-          message: `Position insuffisante : vous détenez ${heldQty} part(s) de ${symbol}, impossible d'en vendre ${cleanQuantity}.`,
+          message:
+            `Position insuffisante : vous détenez ${heldQty} part(s) de ${symbol}, impossible d'en vendre ${cleanQuantity}.`,
         })
       }
 
@@ -315,7 +363,8 @@ export const executeLiveOrder = (input: ExecuteLiveInput): LiveFill => {
       const remainingQty = Number((heldQty - cleanQuantity).toFixed(4))
 
       if (remainingQty <= 0.0001) {
-        sql`DELETE FROM livePosition WHERE positionId = ${position!.positionId}`.run()
+        sql`DELETE FROM livePosition WHERE positionId = ${position!.positionId}`
+          .run()
       } else {
         const remainingCost = Math.round(remainingQty * avgCost)
         sql`
@@ -350,8 +399,12 @@ export const executeLiveOrder = (input: ExecuteLiveInput): LiveFill => {
         (userId, sgiId, sgiOrderReference, symbol, side, quantity, priceFcfa,
          grossFcfa, feesJson, totalFeesFcfa, netFcfa, isFractional, status, executionReportJson, createdAt)
       VALUES (${userId}, ${sgi.id}, ${sgiReport.sgiOrderReference}, ${symbol}, ${side},
-              ${cleanQuantity}, ${priceFcfa}, ${estimate.grossFcfa}, ${JSON.stringify(estimate.fees)},
-              ${estimate.fees.totalFcfa}, ${estimate.netFcfa}, ${isFractional ? 1 : 0}, 'FILLED',
+              ${cleanQuantity}, ${priceFcfa}, ${estimate.grossFcfa}, ${
+      JSON.stringify(estimate.fees)
+    },
+              ${estimate.fees.totalFcfa}, ${estimate.netFcfa}, ${
+      isFractional ? 1 : 0
+    }, 'FILLED',
               ${JSON.stringify(sgiReport)}, ${now})
       RETURNING orderId
     `.get() as { orderId: number }
