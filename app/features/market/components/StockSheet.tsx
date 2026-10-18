@@ -13,6 +13,7 @@ import { closeStock, marketFreshness, selectedStock } from '../market-state.ts'
 import { StockCardIdentity } from './StockCardIdentity.tsx'
 import { StockSparkline } from './StockSparkline.tsx'
 import { openTicket, ownedQuantity } from '../../trade/trade-state.ts'
+import { TekkiStockCard } from '../../tekki/components/TekkiEntryPoints.tsx'
 
 const PriceBlock = () => {
   const stock = selectedStock.value!
@@ -158,6 +159,7 @@ export const StockSheet = () => {
           <Provenance />
           <CompanyBlock />
           <SessionFigures />
+          <TekkiStockCard stock={stock} />
           <SheetActions />
         </>
       )}

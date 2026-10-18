@@ -1,6 +1,13 @@
-import { History, LogOut } from 'lucide-preact'
+import { History, LogOut, UserPlus } from 'lucide-preact'
 import { closeSidebar, handleLogoutFromSidebar } from '../../home-state.ts'
 import { navigateToHistory } from '../../../transfers/transfer-state.ts'
+import { isGuest } from '../../../session/session-state.ts'
+import { navigateUrl } from '../../../../router.tsx'
+
+const handleRegisterFromSidebar = () => {
+  closeSidebar()
+  navigateUrl('/register')
+}
 
 const handleOpenHistoryFromSidebar = () => {
   closeSidebar()
@@ -14,6 +21,16 @@ const handleOpenHistoryFromSidebar = () => {
  */
 export const SidebarActions = () => (
   <div class='flex flex-col gap-2 mt-4'>
+    {isGuest.value && (
+      <button
+        type='button'
+        onClick={handleRegisterFromSidebar}
+        class='w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-primary text-primary-content font-bold text-sm active:scale-[0.98] transition-all cursor-pointer'
+      >
+        <UserPlus size={18} class='flex-shrink-0' />
+        <span>Créer mon compte pour investir</span>
+      </button>
+    )}
     <button
       type='button'
       onClick={handleOpenHistoryFromSidebar}

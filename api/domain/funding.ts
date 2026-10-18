@@ -1,5 +1,6 @@
 import { respond } from '@01edu/api/response'
 import { sql, sqlQuery, withTransaction } from '../schema.ts'
+import { creditLiveAccount } from './live_trading.ts'
 import {
   bitnob,
   BitnobError,
@@ -160,6 +161,7 @@ const formatFunding = (row: {
   expiresAt: string | null
   createdAt: number
   updatedAt: number
+  payoutId?: string | null
 }) => ({
   fundingId: row.fundingId,
   reference: row.reference,
@@ -182,6 +184,8 @@ const formatFunding = (row: {
   updatedAt: row.updatedAt,
   sgiId: row.sgiId,
   sgiName: findSgi(row.sgiId)?.name ?? row.sgiId,
+  /** Bitnob payout id: the proof to look up in the Bitnob dashboard. */
+  payoutId: row.payoutId ?? null,
 })
 
 const readFunding = (
@@ -341,6 +345,7 @@ export const confirmDeposit = async (
         'DELIVERED_TO_SGI',
         sgi.bitnobCollection.channel,
       )
+      creditOnDelivery(claimed.fundingId)
     }
   } catch (error) {
     log.error('[Funding] payout failed', {
@@ -359,9 +364,33 @@ export const confirmDeposit = async (
 }
 
 export const simulateDeposit = async (userId: number, fundingId: number) => {
+  // Sandbox: the Bitnob test balance stands in for the deposit (real payout).
+  if (bitnob.mode === 'sandbox') return useSandboxBalance(userId, fundingId)
   if (bitnob.mode !== 'simulation') {
     throw new respond.BadRequestError({
       message: 'La simulation de dépôt n’existe qu’en mode simulation.',
+    })
+  }
+  const row = readFunding({ fundingId })
+  if (!row || row.userId !== userId) {
+    throw new respond.NotFoundError({
+      message: 'Approvisionnement introuvable.',
+    })
+  }
+  await confirmDeposit({ fundingId })
+  return formatFunding(readFunding({ fundingId })!)
+}
+
+/**
+ * Sandbox only: the incoming crypto deposit is taken from the test balance
+ * already on the Bitnob sandbox wallet (Bitnob has no deposit simulator).
+ * Everything after it is real on the sandbox: re-quote, payout in FCFA to
+ * the SGI's Mobile Money collection account, Bitnob payout id and status.
+ */
+export const useSandboxBalance = async (userId: number, fundingId: number) => {
+  if (bitnob.mode !== 'sandbox') {
+    throw new respond.BadRequestError({
+      message: 'Réservé au mode sandbox de Bitnob.',
     })
   }
   const row = readFunding({ fundingId })
@@ -422,6 +451,7 @@ export const markPayoutResult = (payoutId: string, success: boolean) => {
       ? findSgi(row.sgiId)?.bitnobCollection.channel
       : 'Versement non abouti',
   )
+  if (success) creditOnDelivery(row.fundingId)
   return true
 }
 
@@ -439,6 +469,23 @@ export const listSgiFundings = (sgiId: string) =>
   }))
 
 /** The SGI confirms it credited the investor's cash account. */
+/**
+ * Demo assumption: the SGI is connected by API and credits the client as
+ * soon as Bitnob reports the FCFA delivered (no manual confirmation).
+ */
+const creditOnDelivery = (fundingId: number) => {
+  const row = readFunding({ fundingId })
+  if (!row) return
+  try {
+    confirmCredited(row.sgiId, fundingId)
+  } catch (error) {
+    log.error('[Funding] automatic credit failed', {
+      fundingId,
+      error: String(error),
+    })
+  }
+}
+
 export const confirmCredited = (sgiId: string, fundingId: number) => {
   const row = readFunding({ fundingId })
   if (!row || row.sgiId !== sgiId) {
@@ -452,6 +499,7 @@ export const confirmCredited = (sgiId: string, fundingId: number) => {
     })
   }
   setStatus(fundingId, 'CREDITED', 'Confirmé par la SGI')
+  creditLiveAccount(row.userId, row.sgiId, row.amountFcfa)
   const journey = getJourney(row.userId)
   if (journey.status !== 'FUNDED') {
     applyPartnerStatus(

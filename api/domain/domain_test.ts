@@ -15,7 +15,6 @@ import {
   submitApplication,
 } from './journey.ts'
 import {
-  confirmCredited,
   confirmDeposit,
   createFunding,
   listFundings,
@@ -23,7 +22,7 @@ import {
 import { createSessionToken, verifySessionToken } from '../lib/auth.ts'
 import { sql } from '../schema.ts'
 
-const schedule = SGI_PARTNERS[0].schedule // 1 %, min 1 000, tax 18 %
+const schedule = SGI_PARTNERS[0].schedule // 1 %, no minimum, tax 18 %
 
 const newUser = (() => {
   let n = 0
@@ -44,8 +43,11 @@ Deno.test('fees: BRVM 0.20 % + DC/BR 0.10 % + brokerage with minimum + tax', () 
   const byId = Object.fromEntries(fees.lines.map((l) => [l.id, l.amountFcfa]))
   assertEquals(byId, { brokerage: 1000, tax: 180, brvm: 200, dcbr: 100 })
   assertEquals(fees.totalFcfa, 1480)
-  // Small order: brokerage minimum applies.
-  assertEquals(computeFees(10_000, schedule).lines[0].amountFcfa, 1000)
+  // Demo SGIs follow the published grids: no minimum per order.
+  assertEquals(computeFees(10_000, schedule).lines[0].amountFcfa, 100)
+  // The minimum mechanism still applies to a schedule that has one.
+  const withMinimum = { ...schedule, brokerageMinFcfa: 1000 }
+  assertEquals(computeFees(10_000, withMinimum).lines[0].amountFcfa, 1000)
 })
 
 Deno.test('fees: budget buys whole shares only, fees included', () => {
@@ -144,7 +146,7 @@ Deno.test('funding: refused before the SGI opens the account', async () => {
 
 Deno.test('funding: deposit → XOF delivered to SGI → credited → journey FUNDED', async () => {
   const userId = newUser()
-  const sgi = openAccount(userId)
+  openAccount(userId)
   const funding = await createFunding(userId, 'USDT', 50_000, SENDER)
   assertEquals(funding.status, 'AWAITING_DEPOSIT')
   assert(Number(funding.cryptoAmount) > 0)
@@ -153,9 +155,7 @@ Deno.test('funding: deposit → XOF delivered to SGI → credited → journey FU
   assert(await confirmDeposit({ fundingId: funding.fundingId }))
   // A replayed deposit event changes nothing.
   assert(!(await confirmDeposit({ fundingId: funding.fundingId })))
-  assertEquals(listFundings(userId)[0].status, 'DELIVERED_TO_SGI')
-
-  confirmCredited(sgi.id, funding.fundingId)
+  // The SGI is connected by API: delivered FCFA are credited at once.
   assertEquals(listFundings(userId)[0].status, 'CREDITED')
   assertEquals(getJourney(userId).status, 'FUNDED')
 })

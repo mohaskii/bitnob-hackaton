@@ -5,7 +5,11 @@ import { sgiOrDefault } from './sgi.ts'
 import { sgiGateway } from '../sgi/client.ts'
 import { companyFor } from './companies.ts'
 
-export const STARTING_LIVE_CASH_FCFA = 500_000
+/**
+ * A real SGI account opens empty: its cash only comes from fundings the SGI
+ * confirmed (Bitnob → FCFA at the SGI, see creditLiveAccount).
+ */
+export const STARTING_LIVE_CASH_FCFA = 0
 
 export type LiveFill = {
   orderId: number
@@ -42,6 +46,26 @@ export const ensureLiveAccount = (userId: number, sgiId = 'atlantique') => {
       VALUES (${userId}, ${sgiId}, ${sgiAccNum}, ${STARTING_LIVE_CASH_FCFA}, ${STARTING_LIVE_CASH_FCFA}, 0, 0, 'ACTIVE', ${Date.now()})
     `.run()
   }
+}
+
+/**
+ * The SGI confirmed a funding: the FCFA become investable cash on the
+ * client's SGI account. Counted as capital contributed, so a deposit never
+ * shows up as a gain.
+ */
+export const creditLiveAccount = (
+  userId: number,
+  sgiId: string,
+  amountFcfa: number,
+) => {
+  ensureLiveAccount(userId, sgiId)
+  sql`
+    UPDATE liveTradingAccount
+    SET cashFcfa = cashFcfa + ${amountFcfa},
+      startingCashFcfa = startingCashFcfa + ${amountFcfa},
+      updatedAt = ${Date.now()}
+    WHERE userId = ${userId}
+  `.run()
 }
 
 export const readLiveAccount = (userId: number) => {

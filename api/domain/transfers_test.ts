@@ -1,7 +1,7 @@
 import { assertEquals, assertRejects } from '@std/assert'
 import { sql } from '../schema.ts'
 import { executeTransfer, listUserTransfers, lookupRecipient } from './transfers.ts'
-import { ensureLiveAccount, readLiveAccount } from './live_trading.ts'
+import { creditLiveAccount, ensureLiveAccount, readLiveAccount } from './live_trading.ts'
 
 Deno.test('transfers: registered user can send funds to another TekkiTrade user', () => {
   // Create sender and recipient
@@ -19,6 +19,7 @@ Deno.test('transfers: registered user can send funds to another TekkiTrade user'
 
   ensureLiveAccount(sender.userId)
   ensureLiveAccount(recipient.userId)
+  creditLiveAccount(sender.userId, 'atlantique', 50_000) // funding confirmed by the SGI
 
   const senderInitialCash = readLiveAccount(sender.userId).cashFcfa
   const recipientInitialCash = readLiveAccount(recipient.userId).cashFcfa

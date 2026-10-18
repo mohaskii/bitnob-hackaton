@@ -1,5 +1,6 @@
 import { TrendingDown, TrendingUp } from 'lucide-preact'
 import { SocialPost } from '../../../state.ts'
+import { UnderstandPostButton } from '../../tekki/components/TekkiEntryPoints.tsx'
 
 type PostTradeSnippetProps = {
   post: SocialPost
@@ -33,6 +34,8 @@ export const PostTradeSnippet = ({ post }: PostTradeSnippetProps) => {
         </span>
       </div>
 
+      <div class='flex items-center gap-2 flex-shrink-0'>
+      <UnderstandPostButton handle={post.authorHandle} symbol={trade.symbol} />
       <div
         class={`flex items-center gap-1 text-xs font-bold ${
           isUp ? 'text-success' : 'text-error'
@@ -43,6 +46,7 @@ export const PostTradeSnippet = ({ post }: PostTradeSnippetProps) => {
           {isUp ? '+' : ''}
           {trade.changePercent}%
         </span>
+      </div>
       </div>
     </div>
   )

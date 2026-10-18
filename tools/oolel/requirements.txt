@@ -1,0 +1,14 @@
+# Oolel-Voices (Soynade Research) Wolof TTS sidecar.
+# Install torch first from the CUDA index (see README), then these.
+transformers==4.46.3
+diffusers==0.29.0
+omegaconf==2.3.0
+conformer==0.3.2
+s3tokenizer
+librosa>=0.10.2
+resampy==0.4.3
+silero-vad==5.1.2
+num2words
+numpy>=2.0.0  # via librosa/soundfile
+soundfile
+huggingface_hub
