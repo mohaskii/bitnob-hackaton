@@ -1,9 +1,10 @@
 import { assertEquals } from '@std/assert'
 import { sql, sqlQuery } from '../schema.ts'
-import { confirmCredited } from './funding.ts'
+import { confirmCredited, markPayoutResult } from './funding.ts'
 import {
   applyPartnerStatus,
   getJourney,
+  openPrevalidatedAccount,
   selectSgi,
   setChecklistItem,
   submitApplication,
@@ -53,3 +54,30 @@ Deno.test('funding: an SGI-confirmed Bitnob payment becomes investable cash', ()
   assertEquals(first.cashFcfa, 5_000)
   assertEquals(second.cashFcfa, 12_500)
 })
+
+Deno.test('funding: Bitnob delivery credits a pre-validated account automatically', () => {
+  const userId = 9002
+  openPrevalidatedAccount(userId)
+  assertEquals(getJourney(userId).status, 'ACCOUNT_OPENED')
+
+  const payoutId = `payout-test-${userId}`
+  sql`
+    INSERT INTO fundingRequest (userId, sgiId, reference, mode, asset, senderName,
+      senderCountry, amountFcfa, cryptoAmount, rate, bitnobFeesFcfa, payoutId,
+      status, statusLogJson, createdAt, updatedAt)
+    VALUES (${userId}, 'atlantique', 'TKT-AUTO-9002', 'sandbox', 'USDC', 'Awa Test',
+      'FR', 5000, '8.4', 595, 0, ${payoutId}, 'PAYOUT_PROCESSING', '[]',
+      ${Date.now()}, ${Date.now()})
+  `.run()
+
+  // Bitnob reports the payout delivered: no manual step by the SGI.
+  markPayoutResult(payoutId, true)
+
+  const status = sqlQuery<{ status: string }>`
+    SELECT status FROM fundingRequest WHERE payoutId = ${payoutId}
+  `.get()!.status
+  assertEquals(status, 'CREDITED')
+  assertEquals(liveAccount(userId)!.cashFcfa, 5_000)
+  assertEquals(getJourney(userId).status, 'FUNDED')
+})
+

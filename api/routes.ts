@@ -44,6 +44,7 @@ import {
   resetPaperAccount,
 } from './domain/paper.ts'
 import {
+  ensureLiveAccount,
   executeLiveOrder,
   getLivePortfolio,
   listLiveOrders,
@@ -58,6 +59,7 @@ import {
   EVENT_TYPES,
   getJourney,
   getPartnerOverview,
+  openPrevalidatedAccount,
   selectSgi,
   setChecklistItem,
   submitApplication,
@@ -122,6 +124,11 @@ const createAccount = async (input: {
     RETURNING userId
   `.get() as { userId: number }
   ensurePaperAccount(user.userId)
+  if (!input.isGuest) {
+    // Demo: account already validated by the SGI (see openPrevalidatedAccount)
+    openPrevalidatedAccount(user.userId)
+    ensureLiveAccount(user.userId, DEFAULT_SGI_ID)
+  }
   return user.userId
 }
 

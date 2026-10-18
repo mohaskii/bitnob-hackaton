@@ -50,73 +50,52 @@ Ce qui est simulé, et qu'on le dit :
 
 ### 1. Le problème (30 s) — Landing
 
-- Ouvrir `http://localhost:5173` (non connecté) : la landing explique le
-  constat.
-- « Commencer » → **Commencer sans compte**.
+- Ouvrir le lien (non connecté) : la landing explique le constat.
+- **Commencer sans compte**, puis **S'inscrire** : créer le compte « Awa ».
 
 ### 2. Comprendre (1 min 30) — Marché + Tekki
 
 - **Market** : 48 actions, cours réels publiés par la BRVM.
-- Ouvrir **SNTS (Sonatel)** : cours, volume, entreprise.
-- Dans la carte noire « Une question sur SNTS ? », **maintenir le micro** et
-  demander en wolof : « Lan mooy Sonatel, te lu tax njëgu aksiyoŋ bi wàcc tey ?
-  »
-- Tekki transcrit, répond en wolof, **lit la réponse à voix haute** (note vocale
-  réécoutable).
-- Montrer « Données et sources » : chaque chiffre vient des données, Tekki ne
-  conseille jamais.
+- Ouvrir **SNTS (Sonatel)** : cours, volume, entreprise. Toucher un **?**.
+- Carte « Une question sur SNTS ? » : passer en **WO**, **maintenir le micro**
+  et demander : « Lan mooy Sonatel, te lu tax njëgu aksiyoŋ bi wàcc tey ? » (si
+  le micro échoue : taper la question).
+- Tekki répond en wolof et **lit la réponse** (enchaîner pendant la lecture).
+- Montrer « Données et sources » : chiffres issus des données, jamais de
+  conseil.
 
-### 3. S'entraîner (45 s) — Ticket d'ordre
+### 3. Approvisionner via Bitnob (1 min 30) — la vraie transaction
 
-- « Estimer un achat et s'entraîner » : budget 50 000 FCFA → nombre de titres
-  entiers, frais détaillés (courtage, taxe, BRVM, DC/BR).
-- **Passer l'ordre fictif** → avis d'opéré.
-- **Portfolio** → « Comprendre mon portefeuille » : Tekki explique la
-  concentration (100 % SNTS).
+- À dire : « TekkiTrade transmet les demandes aux SGI par API ; la SGI valide
+  l'ouverture dans ses outils. Pour la démo, le compte est déjà validé. »
+- **Portfolio** → **Portefeuille Réel SGI** : **0 FCFA** → **Approvisionner mon
+  compte via Bitnob**.
+- **5 000 FCFA**, **USDC** (pas USDT ni BTC) → cotation Bitnob en direct.
+- Expéditrice « Awa Diop », France → **Obtenir mon instruction de paiement** :
+  vraie adresse de dépôt et référence `TKT-…`.
+- À dire : « Bitnob n'a pas de simulateur de dépôt en sandbox ; on utilise le
+  solde de test, tout ce qui suit est exécuté par Bitnob. »
+- **Utiliser le solde de test Bitnob** → ~15 s → « Crédité sur votre compte
+  espèces », avec « Transaction Bitnob 01a1… ».
+- **Preuve** : onglet Bitnob → Transactions : ligne `TKT-…-P`, ~−8,5 USDC,
+  **Successful**.
 
-### 4. Ouvrir son compte chez une SGI (1 min) — Parcours
+### 4. Investir (1 min)
 
-- Depuis la fiche : « Pour acheter pour de vrai : choisir une SGI » (ou
-  `/journey`).
-- Comparer les 3 SGI (frais calculés), **Choisir Atlantique Capital**.
-- Cocher les pièces, donner son accord, **Transmettre mon dossier**.
-- Basculer sur **l'espace SGI** (`/partner`) : entonnoir, dossier pseudonymisé →
-  **Compte-titres ouvert**.
+- **Portfolio** → Réel : **5 000 FCFA**.
+- **Market** → **ETIT** (~65 FCFA) → **Acheter ETIT** → **5 000** → frais ~1,5 %
+  détaillés → **Acheter** → avis d'opéré (référence SGI).
+- **Portfolio** → Réel → **Comprendre mon portefeuille** : Tekki explique la
+  concentration et les frais payés.
 
-### 5. La vraie transaction Bitnob (1 min 30) — Approvisionner
-
-- Aller sur `/fund` (pastille **BITNOB · SANDBOX**).
-- Montant **5 000 FCFA**, actif **USDC** → cotation Bitnob en direct (taux,
-  frais, montant reçu par la SGI).
-- Nom de l'expéditrice : « Awa … », pays : France → **Obtenir mon instruction de
-  paiement**. Bitnob génère une **vraie adresse de dépôt** et la référence
-  `TKT-…`.
-- **Utiliser le solde de test Bitnob** → la carte passe à « Versement en cours
-  », puis « Versé à la SGI ».
-- **Preuve** : onglet Bitnob → Transactions : le versement apparaît (montant en
-  FCFA, Orange Money Côte d'Ivoire, référence `TKT-…-P`, statut SUCCESS).
-- Retour sur `/partner` : « Fonds reçus via Bitnob » → la SGI **confirme le
-  crédit**.
-
-### 5 bis. Investir l'argent arrivé via Bitnob (Portefeuille Réel SGI)
-
-- Le crédit confirmé par la SGI s'ajoute au solde du **Portefeuille Réel SGI**
-  (onglet « Réel » du portefeuille).
-- Les ordres réels exigent un **compte inscrit** (pas le mode invité) : pour
-  cette partie, faire la démo avec un compte « Awa » créé au début.
-- Approvisionner **5 000 FCFA** en **USDC** (≈ 8,5 USDC de test par versement ;
-  le portefeuille USDC sandbox en a ~102). Ne pas choisir USDT ni BTC : ces
-  portefeuilles de test sont vides.
-- Acheter un titre peu cher (ex. ETIT, ~65 FCFA) : Sonatel (43 500 FCFA) dépasse
-  le solde. Frais ~1,5 % (courtage 1 % + TVA, BRVM 0,2 %, DC/BR 0,1 %), sans
-  minimum par ordre, comme les grilles publiées des SGI.
-- « Comprendre mon portefeuille » sur l'onglet Réel : Tekki lit le compte SGI.
-
-### 6. Conclusion (30 s)
+### 5. Conclusion (30 s)
 
 - TekkiTrade ne détient jamais les fonds : Bitnob reçoit, convertit, verse ; la
   SGI exécute les ordres.
 - Tekki rend la bourse compréhensible, en wolof et en français.
+- À dire si on demande : les SGI et l'exécution sont des partenaires de
+  démonstration ; les fractions d'action dépendent de l'accord de la SGI et du
+  régulateur (la BRVM cote des titres entiers).
 
 ---
 

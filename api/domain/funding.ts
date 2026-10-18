@@ -345,6 +345,7 @@ export const confirmDeposit = async (
         'DELIVERED_TO_SGI',
         sgi.bitnobCollection.channel,
       )
+      creditOnDelivery(claimed.fundingId)
     }
   } catch (error) {
     log.error('[Funding] payout failed', {
@@ -450,6 +451,7 @@ export const markPayoutResult = (payoutId: string, success: boolean) => {
       ? findSgi(row.sgiId)?.bitnobCollection.channel
       : 'Versement non abouti',
   )
+  if (success) creditOnDelivery(row.fundingId)
   return true
 }
 
@@ -467,6 +469,23 @@ export const listSgiFundings = (sgiId: string) =>
   }))
 
 /** The SGI confirms it credited the investor's cash account. */
+/**
+ * Demo assumption: the SGI is connected by API and credits the client as
+ * soon as Bitnob reports the FCFA delivered (no manual confirmation).
+ */
+const creditOnDelivery = (fundingId: number) => {
+  const row = readFunding({ fundingId })
+  if (!row) return
+  try {
+    confirmCredited(row.sgiId, fundingId)
+  } catch (error) {
+    log.error('[Funding] automatic credit failed', {
+      fundingId,
+      error: String(error),
+    })
+  }
+}
+
 export const confirmCredited = (sgiId: string, fundingId: number) => {
   const row = readFunding({ fundingId })
   if (!row || row.sgiId !== sgiId) {

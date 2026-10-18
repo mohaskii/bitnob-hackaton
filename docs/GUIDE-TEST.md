@@ -28,29 +28,22 @@ démonstration) et l'exécution des ordres par la SGI.
 
 ✔ Attendu : réponses chiffrées, jamais de conseil (« achète / vends »).
 
-## 3. Ouvrir un compte chez une SGI
+## 3. Le compte SGI est déjà ouvert
 
-1. Onglet **Portfolio** → **Portefeuille Réel SGI** : **0 FCFA**.
-2. **Approvisionner mon compte via Bitnob** → « Choisissez d'abord une SGI » →
-   **Comparer les SGI**.
-3. Comparer les frais → **Choisir Atlantique Capital**.
-4. Cocher les 4 pièces (calmement), cocher l'accord → **Transmettre mon
-   dossier**.
+Hypothèse de la démo : TekkiTrade transmet les demandes aux SGI par API, et la
+SGI valide l'ouverture dans ses propres outils. Un compte inscrit démarre donc
+avec un compte-titres **déjà validé** chez Atlantique Capital, vide (0 FCFA).
 
-✔ Attendu : « Dossier transmis », suivi du dossier affiché.
+> Le parcours complet existe quand même : `/journey` (dossier d'ouverture) et
+> `/partner` (vue SGI), si on veut le montrer.
 
-## 4. Jouer le rôle de la SGI
-
-1. Ouvrir `/partner` (ex. `https://tekkitrade-….gobrev.dev/partner`).
-2. Sur le dossier le plus récent : **En vérification par la SGI**, puis
-   **Compte-titres ouvert**.
-
-## 5. Approvisionner via Bitnob (vraie transaction sandbox)
+## 4. Approvisionner via Bitnob (vraie transaction sandbox)
 
 1. Onglet **Portfolio** → **Portefeuille Réel SGI** → **Approvisionner mon
    compte via Bitnob**.
 2. Montant **5 000**, actif **USDC** (pas USDT ni BTC : portefeuilles de test
-   vides). Lire la cotation Bitnob (taux, frais, montant reçu par la SGI).
+   vides). Pas d'étape SGI : le compte est déjà ouvert. Lire la cotation Bitnob
+   (taux, frais, montant reçu par la SGI).
 3. Nom de l'expéditeur, pays → **Obtenir mon instruction de paiement** : adresse
    de dépôt et référence `TKT-…`.
 4. **Utiliser le solde de test Bitnob**. Attendre ~15 s.
@@ -58,13 +51,12 @@ démonstration) et l'exécution des ordres par la SGI.
 ✔ Attendu : « 5 000 FCFA versés à Atlantique Capital » et « Transaction Bitnob
 01a1… ».
 
-## 6. La SGI crédite le compte
+## 5. Le compte est crédité automatiquement
 
-1. Retour sur `/partner` → **Fonds reçus via Bitnob** → **Confirmer le crédit
-   sur le compte client**.
-2. **Portfolio** → **Portefeuille Réel SGI** : **5 000 FCFA**, gain 0 %.
+Dès que Bitnob confirme le versement, la SGI (connectée par API) crédite le
+compte : **Portfolio** → **Portefeuille Réel SGI** : **5 000 FCFA**, gain 0 %.
 
-## 7. Investir cet argent
+## 6. Investir cet argent
 
 1. **Market** → `ETIT` (Ecobank, ~65 FCFA) → **Acheter ETIT**.
 2. Montant **5 000** → vérifier le détail des frais (~1,5 %) → **Acheter**.
@@ -72,7 +64,7 @@ démonstration) et l'exécution des ordres par la SGI.
 4. **Portfolio** → Réel : position ETIT → **Comprendre mon portefeuille** :
    Tekki décrit ce compte (concentration, frais payés).
 
-## 8. Le reste de l'app
+## 7. Le reste de l'app
 
 - **Social** : sur un post qui cite un titre, **Comprendre avec Tekki** ;
   commenter, aimer.
@@ -80,7 +72,7 @@ démonstration) et l'exécution des ordres par la SGI.
   compte réel doit avoir du solde).
 - **Portfolio** → **Entraînement** : portefeuille fictif de 1 000 000 FCFA.
 
-## 9. Vérifier la preuve chez Bitnob
+## 8. Vérifier la preuve chez Bitnob
 
 Tableau de bord Bitnob (sandbox) → **Transactions** : nouvelle ligne `TKT-…-P`,
 Payout, ~−8,5 USDC, **Successful**.

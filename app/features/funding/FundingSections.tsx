@@ -374,7 +374,7 @@ const ActiveControls = () => {
           {f.status === 'DELIVERED_TO_SGI'
             ? `${
               fcfa(f.amountFcfa)
-            } versés à ${f.sgiName}. Elle confirme le crédit sur votre compte espèces.`
+            } versés à ${f.sgiName}, qui crédite votre compte espèces.`
             : f.statusLabel}
         </p>
         {f.payoutId && <BitnobPayoutId id={f.payoutId} />}

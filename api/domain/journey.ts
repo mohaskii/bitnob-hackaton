@@ -1,6 +1,7 @@
 import { respond } from '@01edu/api/response'
 import { sql, sqlQuery, withTransaction } from '../schema.ts'
 import {
+  DEFAULT_SGI_ID,
   findSgi,
   JOURNEY_STATUS_LABELS,
   JOURNEY_STATUSES,
@@ -177,6 +178,30 @@ export const getJourney = (userId: number) => {
     timeline,
     ...computeSteps(userId, journey),
   }
+}
+
+/**
+ * Demo assumption: the SGI validates accounts in its own tools and answers
+ * through its API. A new registered user starts with an account already
+ * opened at the partner SGI, so the demo goes straight to funding.
+ */
+export const openPrevalidatedAccount = (
+  userId: number,
+  sgiId: string = DEFAULT_SGI_ID,
+) => {
+  const sgi = findSgi(sgiId)
+  if (!sgi) throw new respond.NotFoundError({ message: 'SGI inconnue.' })
+  const journey = readJourney(userId)
+  if (statusRank(journey.status) >= statusRank('ACCOUNT_OPENED')) return
+  withTransaction(() => {
+    sql`
+      UPDATE journey SET sgiId = ${sgiId}, status = 'ACCOUNT_OPENED',
+        updatedAt = ${Date.now()}
+      WHERE journeyId = ${journey.journeyId}
+    `.run()
+    logStatus(journey.journeyId, 'SGI_SELECTED', sgi.name)
+    logStatus(journey.journeyId, 'ACCOUNT_OPENED', 'Compte validé par la SGI')
+  })
 }
 
 export const selectSgi = (userId: number, sgiId: string) => {

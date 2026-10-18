@@ -15,7 +15,6 @@ import {
   submitApplication,
 } from './journey.ts'
 import {
-  confirmCredited,
   confirmDeposit,
   createFunding,
   listFundings,
@@ -147,7 +146,7 @@ Deno.test('funding: refused before the SGI opens the account', async () => {
 
 Deno.test('funding: deposit → XOF delivered to SGI → credited → journey FUNDED', async () => {
   const userId = newUser()
-  const sgi = openAccount(userId)
+  openAccount(userId)
   const funding = await createFunding(userId, 'USDT', 50_000, SENDER)
   assertEquals(funding.status, 'AWAITING_DEPOSIT')
   assert(Number(funding.cryptoAmount) > 0)
@@ -156,9 +155,7 @@ Deno.test('funding: deposit → XOF delivered to SGI → credited → journey FU
   assert(await confirmDeposit({ fundingId: funding.fundingId }))
   // A replayed deposit event changes nothing.
   assert(!(await confirmDeposit({ fundingId: funding.fundingId })))
-  assertEquals(listFundings(userId)[0].status, 'DELIVERED_TO_SGI')
-
-  confirmCredited(sgi.id, funding.fundingId)
+  // The SGI is connected by API: delivered FCFA are credited at once.
   assertEquals(listFundings(userId)[0].status, 'CREDITED')
   assertEquals(getJourney(userId).status, 'FUNDED')
 })
