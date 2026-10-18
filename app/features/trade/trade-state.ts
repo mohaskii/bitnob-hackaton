@@ -1,5 +1,6 @@
 import { computed, effect, signal } from '@preact/signals'
-import { api, errorMessage } from '../../lib/api.ts'
+import { api, ApiError, errorMessage } from '../../lib/api.ts'
+import { navigateUrl } from '../../router.tsx'
 import { isBottomNavHidden, showToast } from '../../state.ts'
 import { selectedStock } from '../market/market-state.ts'
 import {
@@ -193,7 +194,22 @@ export const submitOrder = async () => {
     void loadPortfolio()
     void loadHome()
   } catch (error) {
-    showToast(errorMessage(error), 'error')
+    // Lead to the next step instead of a dead end.
+    const status = error instanceof ApiError ? error.status : 0
+    if (status === 403) {
+      closeTicket()
+      showToast('Créez un compte pour investir pour de vrai.', 'info')
+      navigateUrl('/register')
+    } else if (errorMessage(error).startsWith('Solde espèces insuffisant')) {
+      closeTicket()
+      showToast(
+        'Solde insuffisant : approvisionnez votre compte SGI via Bitnob.',
+        'info',
+      )
+      navigateUrl('/fund')
+    } else {
+      showToast(errorMessage(error), 'error')
+    }
   } finally {
     submitting.value = false
   }

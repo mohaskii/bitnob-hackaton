@@ -94,8 +94,11 @@ Ce qui est simulé, et qu'on le dit :
   SGI exécute les ordres.
 - Tekki rend la bourse compréhensible, en wolof et en français.
 - À dire si on demande : les SGI et l'exécution sont des partenaires de
-  démonstration ; les fractions d'action dépendent de l'accord de la SGI et du
-  régulateur (la BRVM cote des titres entiers).
+  démonstration.
+- Montant en FCFA plutôt qu'en nombre d'actions : « on investit un montant, pas
+  un nombre d'actions ; les fractions passent par le compte collectif de la SGI,
+  sous réserve de son accord et du régulateur » (la BRVM cote des titres
+  entiers).
 
 ---
 
