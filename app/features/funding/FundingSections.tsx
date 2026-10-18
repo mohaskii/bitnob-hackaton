@@ -18,7 +18,7 @@ import {
 import {
   actionPending,
   activeFunding,
-  AMOUNT_PRESETS,
+  amountPresets,
   amountFcfa,
   asset,
   copied,
@@ -42,6 +42,7 @@ import {
   setSenderCountry,
   setSenderName,
   simulateDeposit,
+  useSandboxBalance,
 } from './funding-state.ts'
 
 const ASSETS: { id: FundingAsset; label: string; sub: string }[] = [
@@ -170,7 +171,7 @@ const AmountInput = () => (
       </div>
     </div>
     <div class='flex gap-2 overflow-x-auto no-scrollbar'>
-      {AMOUNT_PRESETS.map((value) => (
+      {amountPresets.value.map((value) => (
         <button
           key={value}
           type='button'
@@ -381,10 +382,21 @@ const ActiveControls = () => {
       </PrimaryButton>
     )
     : (
-      <p class='text-[12px] text-base-content/55 text-center flex items-center justify-center gap-2'>
-        <Spinner size={13} />{' '}
-        Vérification automatique auprès de Bitnob toutes les 10 s
-      </p>
+      <div class='flex flex-col gap-2'>
+        {f.mode === 'sandbox' && (
+          <PrimaryButton
+            tone='dark'
+            onClick={() => void useSandboxBalance(f.fundingId)}
+            pending={actionPending.value}
+          >
+            Utiliser le solde de test Bitnob
+          </PrimaryButton>
+        )}
+        <p class='text-[12px] text-base-content/55 text-center flex items-center justify-center gap-2'>
+          <Spinner size={13} />{' '}
+          Vérification automatique auprès de Bitnob toutes les 10 s
+        </p>
+      </div>
     )
 }
 

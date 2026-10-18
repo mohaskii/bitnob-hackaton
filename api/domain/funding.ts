@@ -359,9 +359,33 @@ export const confirmDeposit = async (
 }
 
 export const simulateDeposit = async (userId: number, fundingId: number) => {
+  // Sandbox: the Bitnob test balance stands in for the deposit (real payout).
+  if (bitnob.mode === 'sandbox') return useSandboxBalance(userId, fundingId)
   if (bitnob.mode !== 'simulation') {
     throw new respond.BadRequestError({
       message: 'La simulation de dépôt n’existe qu’en mode simulation.',
+    })
+  }
+  const row = readFunding({ fundingId })
+  if (!row || row.userId !== userId) {
+    throw new respond.NotFoundError({
+      message: 'Approvisionnement introuvable.',
+    })
+  }
+  await confirmDeposit({ fundingId })
+  return formatFunding(readFunding({ fundingId })!)
+}
+
+/**
+ * Sandbox only: the incoming crypto deposit is taken from the test balance
+ * already on the Bitnob sandbox wallet (Bitnob has no deposit simulator).
+ * Everything after it is real on the sandbox: re-quote, payout in FCFA to
+ * the SGI's Mobile Money collection account, Bitnob payout id and status.
+ */
+export const useSandboxBalance = async (userId: number, fundingId: number) => {
+  if (bitnob.mode !== 'sandbox') {
+    throw new respond.BadRequestError({
+      message: 'Réservé au mode sandbox de Bitnob.',
     })
   }
   const row = readFunding({ fundingId })

@@ -9,6 +9,9 @@ import { SocialScreen } from './screens/SocialScreen.tsx'
 import { ComposeScreen } from './screens/ComposeScreen.tsx'
 import { PortfolioScreen } from './screens/PortfolioScreen.tsx'
 import { RegisterScreen } from './screens/RegisterScreen.tsx'
+import { JourneyScreen } from './screens/JourneyScreen.tsx'
+import { FundScreen } from './screens/FundScreen.tsx'
+import { PartnerScreen } from './screens/PartnerScreen.tsx'
 import { WelcomeScreen } from './features/session/WelcomeScreen.tsx'
 import { isAuthenticated } from './features/session/session-state.ts'
 import { ToastStack } from './components/ui.tsx'
@@ -23,6 +26,8 @@ export const App = () => {
   const isDarkTop =
     isHome ||
     currentPath === '/portfolio' ||
+    currentPath === '/fund' ||
+    currentPath === '/partner' ||
     currentPath === '/register' ||
     currentPath === '/login' ||
     currentPath === '/welcome'
@@ -83,6 +88,12 @@ export const App = () => {
           ? <ComposeScreen onClose={() => history.back()} />
           : currentPath === '/portfolio'
           ? <PortfolioScreen />
+          : currentPath === '/journey'
+          ? <JourneyScreen />
+          : currentPath === '/fund'
+          ? <FundScreen />
+          : currentPath === '/partner'
+          ? <PartnerScreen />
           : currentPath === '/register' || currentPath === '/login'
           ? <RegisterScreen />
           : currentPath === '/welcome'
@@ -106,12 +117,14 @@ export const App = () => {
       <BottomNav
         activeTab={currentPath}
         hidden={isBottomNavHidden.value || currentPath === '/compose' ||
+          currentPath === '/partner' ||
           isAuthFlow}
         onTabChange={(tab) => navigateUrl(tab.path)}
       />
 
       {/* Tekki AI: global entry point and conversation */}
-      {currentPath !== '/compose' && !isAuthFlow && <AskTekkiButton />}
+      {currentPath !== '/compose' && currentPath !== '/partner' &&
+        !isAuthFlow && <AskTekkiButton />}
       <TekkiSheet />
 
       {/* Toast notifications */}

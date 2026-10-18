@@ -62,6 +62,7 @@ import {
   refreshFunding,
   SENDER_COUNTRIES,
   simulateDeposit,
+  useSandboxBalance,
 } from './domain/funding.ts'
 
 /* -------------------------------------------------------------------------- */
@@ -554,6 +555,15 @@ const defs = {
       respond.OK(await refreshFunding(ctx.session.userId, fundingId)),
     input: OBJ({ fundingId: NUM() }),
     description: 'Poll Bitnob for deposit and payout status (sandbox/live)',
+  }),
+
+  'POST/api/funding/sandbox-balance': route({
+    authorize: withUserSession,
+    fn: async (ctx, { fundingId }) =>
+      respond.OK(await useSandboxBalance(ctx.session.userId, fundingId)),
+    input: OBJ({ fundingId: NUM() }),
+    description:
+      'Sandbox only: fund from the Bitnob test balance, then the real payout runs',
   }),
 
   'POST/api/funding/simulate-deposit': route({
