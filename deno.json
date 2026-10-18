@@ -8,7 +8,8 @@
     "db:reset": "deno run -A --env-file --unstable-ffi api/task-reset.ts",
     "test": "DATABASE_PATH=:memory: APP_ENV=test deno test -A --unstable-ffi api/",
     "bitnob:check": "deno run -A --env-file --unstable-ffi api/task-bitnob-check.ts",
-    "live": "deno run -A scripts/live.ts"
+    "live": "deno run -A scripts/live.ts",
+    "deploy:brev": "deno run -A scripts/deploy-brev.ts"
   },
   "fmt": {
     "useTabs": false,
