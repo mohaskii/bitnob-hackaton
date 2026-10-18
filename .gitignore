@@ -25,3 +25,4 @@ pnpm-lock.yaml
 tekkitrade.db
 tekkitrade.db-*
 .claude/
+.playwright-cli/

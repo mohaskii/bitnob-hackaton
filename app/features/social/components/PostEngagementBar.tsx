@@ -1,6 +1,6 @@
-import { Copy, Heart, MessageCircle, Share2 } from 'lucide-preact'
+import { Heart, MessageCircle, Share2 } from 'lucide-preact'
 import { SocialPost } from '../../../state.ts'
-import { toggleLikePost } from '../social-state.ts'
+import { openCommentsModal, toggleLikePost } from '../social-state.ts'
 
 type PostEngagementBarProps = {
   post: SocialPost
@@ -8,8 +8,7 @@ type PostEngagementBarProps = {
 
 export const PostEngagementBar = ({ post }: PostEngagementBarProps) => {
   return (
-    <div class='flex items-center justify-between pt-1 text-base-content/60 text-xs'>
-
+    <div class='flex items-center justify-between pt-2 text-base-content/60 text-xs'>
       <button
         type='button'
         onClick={() => toggleLikePost(post.id)}
@@ -26,16 +25,12 @@ export const PostEngagementBar = ({ post }: PostEngagementBarProps) => {
 
       <button
         type='button'
-        class='flex items-center gap-1.5 hover:text-base-content cursor-pointer transition-colors'
+        onClick={() => openCommentsModal(post)}
+        class='flex items-center gap-1.5 hover:text-base-content cursor-pointer active:scale-105 transition-all'
       >
         <MessageCircle size={15} />
         <span>{post.commentsCount}</span>
       </button>
-
-      <div class='flex items-center gap-1 text-[11px] text-base-content/40'>
-        <Copy size={12} />
-        <span>{post.copiersCount} ont copié</span>
-      </div>
 
       <button
         type='button'

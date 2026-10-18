@@ -1,7 +1,7 @@
 import { useEffect } from 'preact/hooks'
-import { RotateCcw } from 'lucide-preact'
+import { Building2, RotateCcw, Zap } from 'lucide-preact'
 import { navigateUrl } from '../router.tsx'
-import { PrimaryButton, SectionTitle, SimulatedTag } from '../components/ui.tsx'
+import { PrimaryButton, SectionTitle } from '../components/ui.tsx'
 import { dateTime, fcfa, pct, share, signedFcfa } from '../lib/format.ts'
 import {
   allocation,
@@ -10,7 +10,9 @@ import {
   confirmingReset,
   loadPortfolio,
   portfolio,
+  portfolioMode,
   resetPortfolio,
+  setPortfolioMode,
 } from '../features/portfolio/portfolio-state.ts'
 import { loadMarket, openStock } from '../features/market/market-state.ts'
 import { TekkiPortfolioCard } from '../features/tekki/components/TekkiEntryPoints.tsx'
@@ -45,46 +47,76 @@ const startPortfolio = () => {
   void loadMarket()
 }
 
+const PortfolioModeToggle = () => (
+  <div class='grid grid-cols-2 gap-1 bg-base-100/10 rounded-2xl p-1'>
+    <button
+      type='button'
+      onClick={() => setPortfolioMode('live')}
+      class={`h-8 rounded-xl text-[11px] font-bold cursor-pointer transition-colors flex items-center justify-center gap-1.5 ${
+        portfolioMode.value === 'live'
+          ? 'bg-base-100 text-neutral'
+          : 'text-neutral-content/75 hover:bg-base-100/10'
+      }`}
+    >
+      <Zap size={12} />
+      <span>Portefeuille Réel SGI</span>
+    </button>
+    <button
+      type='button'
+      onClick={() => setPortfolioMode('paper')}
+      class={`h-8 rounded-xl text-[11px] font-bold cursor-pointer transition-colors flex items-center justify-center gap-1.5 ${
+        portfolioMode.value === 'paper'
+          ? 'bg-base-100 text-neutral'
+          : 'text-neutral-content/75 hover:bg-base-100/10'
+      }`}
+    >
+      <Building2 size={12} />
+      <span>Entraînement</span>
+    </button>
+  </div>
+)
+
 const PortfolioHero = () => {
   const p = portfolio.value
+  const isLive = portfolioMode.value === 'live'
   const up = (p?.totalPnlFcfa ?? 0) >= 0
+
   return (
-    <section class='tk-hero rounded-b-[2.25rem] lg:rounded-[var(--radius-box,1.5rem)] px-5 pt-[calc(env(safe-area-inset-top,0px)+1.25rem)] pb-6 lg:px-8 lg:pt-7 lg:pb-8 flex flex-col gap-4'>
+    <section class='bg-neutral text-neutral-content rounded-b-[2.25rem] lg:rounded-[var(--radius-box,1.5rem)] px-5 pt-[calc(env(safe-area-inset-top,0px)+1.25rem)] pb-6 lg:px-8 lg:pt-7 lg:pb-8 flex flex-col gap-4'>
+      <PortfolioModeToggle />
       <div class='flex items-center justify-between'>
-        <h1 class='text-[15px] font-extrabold'>Portefeuille d’entraînement</h1>
-        <SimulatedTag dark />
+        <h1 class='text-[15px] font-extrabold'>
+          {isLive ? 'Portefeuille Réel Direct SGI' : 'Portefeuille d’entraînement'}
+        </h1>
+        <span class='text-[10px] font-bold px-2 py-0.5 rounded-full bg-base-100/20 text-neutral-content'>
+          {isLive ? (p?.accountNumber ?? 'Compte SGI') : 'Fictif'}
+        </span>
       </div>
       <div>
-        <p class='text-[12px] font-semibold text-white/55'>Valeur totale</p>
+        <p class='text-[12px] font-semibold text-neutral-content/65'>Valeur totale</p>
         <p class='text-[34px] font-black tk-mono leading-tight'>
           {p ? fcfa(p.totalValueFcfa) : '…'}
         </p>
-        <p
-          class={`text-[13px] font-bold ${up ? 'text-success' : 'text-error'}`}
-        >
-          {p
-            ? `${signedFcfa(p.totalPnlFcfa)} (${
-              pct(p.totalPnlPercent)
-            }) depuis le départ`
-            : ''}
+        <p class={`text-[13px] font-bold ${up ? 'text-success' : 'text-error'}`}>
+          {p ? `${signedFcfa(p.totalPnlFcfa)} (${pct(p.totalPnlPercent)}) depuis le départ` : ''}
         </p>
       </div>
       <AllocationBar />
       <div class='grid grid-cols-3 gap-2 text-[11px]'>
         <div>
-          <p class='text-white/50 font-semibold'>Espèces</p>
+          <p class='text-neutral-content/60 font-semibold'>Espèces</p>
           <p class='font-black tk-mono text-[13px]'>
             {p ? fcfa(p.cashFcfa) : '…'}
           </p>
         </div>
         <div>
-          <p class='text-white/50 font-semibold'>Réalisé</p>
+          <p class='text-neutral-content/60 font-semibold'>P&L Réalisé</p>
           <p class='font-black tk-mono text-[13px]'>
             {p ? signedFcfa(p.realizedPnlFcfa) : '…'}
           </p>
         </div>
         <div>
-          <p class='text-white/50 font-semibold'>Frais payés</p>
+          <p class='text-neutral-content/60 font-semibold'>Frais payés</p>
           <p class='font-black tk-mono text-[13px]'>
             {p ? fcfa(p.feesPaidFcfa) : '…'}
           </p>
@@ -96,13 +128,16 @@ const PortfolioHero = () => {
 
 const Positions = () => {
   const positions = portfolio.value?.positions ?? []
+  const isLive = portfolioMode.value === 'live'
+
   if (positions.length === 0) {
     return (
       <div class='bg-base-100 rounded-3xl p-5 flex flex-col gap-3 items-start'>
         <p class='text-[14px] font-bold'>Aucune position pour l’instant</p>
         <p class='text-[13px] text-base-content/60'>
-          Choisissez une action, estimez les frais et passez un premier ordre
-          fictif.
+          {isLive
+            ? 'Achetez des fractions d’actions BRVM directement routées vers votre SGI partenaire.'
+            : 'Choisissez une action, estimez les frais et passez un premier ordre d’entraînement.'}
         </p>
         <PrimaryButton onClick={() => navigateUrl('/market')}>
           Explorer le marché
@@ -110,6 +145,7 @@ const Positions = () => {
       </div>
     )
   }
+
   return (
     <div class='flex flex-col gap-2.5'>
       {positions.map((position) => (
@@ -117,34 +153,33 @@ const Positions = () => {
           key={position.symbol}
           type='button'
           onClick={() => openStock(position.symbol)}
-          class='bg-base-100 rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3 text-left cursor-pointer'
+          class='bg-base-100 rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3 text-left cursor-pointer hover:bg-base-200/60 transition-colors'
         >
           <div class='min-w-0'>
-            <p class='text-[15px] font-extrabold'>{position.symbol}</p>
+            <div class='flex items-center gap-1.5'>
+              <p class='text-[15px] font-extrabold'>{position.symbol}</p>
+              {position.isFractional && (
+                <span class='text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-base-200 text-base-content/70'>
+                  Fractionné
+                </span>
+              )}
+            </div>
             <p class='text-[12px] text-base-content/50 truncate'>
-              {position.quantity} titre{position.quantity > 1 ? 's' : ''} · PRU
-              {' '}
-              {fcfa(position.averageCostFcfa)}
+              {position.quantity} {position.isFractional ? 'part d’action' : (position.quantity > 1 ? 'titres' : 'titre')} · PRU {fcfa(position.averageCostFcfa)}
             </p>
           </div>
           <div class='text-right'>
             <p class='text-[14px] font-black tk-mono'>
               {fcfa(position.marketValueFcfa)}
             </p>
-            <p
-              class={`text-[12px] font-bold ${
-                position.unrealizedPnlFcfa >= 0 ? 'text-success' : 'text-error'
-              }`}
-            >
-              {signedFcfa(position.unrealizedPnlFcfa)} ·{' '}
-              {pct(position.unrealizedPnlPercent)}
+            <p class={`text-[12px] font-bold ${position.unrealizedPnlFcfa >= 0 ? 'text-success' : 'text-error'}`}>
+              {signedFcfa(position.unrealizedPnlFcfa)} · {pct(position.unrealizedPnlPercent)}
             </p>
           </div>
         </button>
       ))}
       <p class='text-[11px] text-base-content/45 px-1'>
-        PRU : prix de revient unitaire, frais d’achat inclus. Valorisation au
-        dernier cours publié par la BRVM.
+        PRU : prix de revient unitaire, frais d’achat inclus. Valorisation au dernier cours publié par la BRVM.
       </p>
     </div>
   )
@@ -153,26 +188,32 @@ const Positions = () => {
 const OrderHistory = () => {
   const orders = portfolio.value?.orders ?? []
   if (orders.length === 0) return null
+
   return (
     <section class='flex flex-col gap-3'>
       <SectionTitle title='Historique des ordres' />
-      <div class='bg-base-100 rounded-3xl p-2'>
+      <div class='bg-base-100 rounded-3xl p-2 flex flex-col gap-1'>
         {orders.map((order) => (
           <div
             key={order.orderId}
-            class='flex items-center justify-between gap-3 px-2.5 py-2.5'
+            class='flex items-center justify-between gap-3 px-2.5 py-2.5 rounded-xl hover:bg-base-200/50 transition-colors'
           >
             <div class='min-w-0'>
-              <p class='text-[13.5px] font-bold'>
-                <span
-                  class={order.side === 'BUY' ? 'text-success' : 'text-error'}
-                >
-                  {order.side === 'BUY' ? 'Achat' : 'Vente'}
-                </span>{' '}
-                {order.quantity} {order.symbol}
-              </p>
+              <div class='flex items-center gap-1.5'>
+                <p class='text-[13.5px] font-bold'>
+                  <span class={order.side === 'BUY' ? 'text-success' : 'text-error'}>
+                    {order.side === 'BUY' ? 'Achat' : 'Vente'}
+                  </span>{' '}
+                  {order.quantity} {order.symbol}
+                </p>
+                {order.isFractional && (
+                  <span class='text-[9.5px] font-bold px-1 rounded bg-base-200 text-base-content/60'>
+                    Fractionné
+                  </span>
+                )}
+              </div>
               <p class='text-[11.5px] text-base-content/50'>
-                {dateTime(order.createdAt)} · frais {fcfa(order.totalFeesFcfa)}
+                {dateTime(order.createdAt)} · {order.sgiOrderReference ? `${order.sgiOrderReference} · ` : ''}frais {fcfa(order.fees.totalFcfa || order.totalFeesFcfa || 0)}
               </p>
             </div>
             <p class='text-[13px] font-black tk-mono whitespace-nowrap'>
@@ -186,13 +227,14 @@ const OrderHistory = () => {
   )
 }
 
-const ResetControl = () =>
-  confirmingReset.value
+const ResetControl = () => {
+  if (portfolioMode.value === 'live') return null
+
+  return confirmingReset.value
     ? (
       <div class='bg-base-100 rounded-2xl p-4 flex flex-col gap-3'>
         <p class='text-[13px] font-semibold'>
-          Remettre le portefeuille à 1 000 000 FCFA fictifs et effacer
-          l’historique ?
+          Remettre le portefeuille à 1 000 000 FCFA fictifs et effacer l’historique ?
         </p>
         <div class='grid grid-cols-2 gap-2'>
           <PrimaryButton tone='ghost' onClick={cancelReset}>
@@ -208,13 +250,14 @@ const ResetControl = () =>
       <button
         type='button'
         onClick={askReset}
-        class='flex items-center justify-center gap-1.5 text-[12.5px] font-bold text-base-content/50 py-2 cursor-pointer'
+        class='flex items-center justify-center gap-1.5 text-[12.5px] font-bold text-base-content/50 py-2 cursor-pointer hover:text-base-content'
       >
         <RotateCcw size={14} /> Recommencer l’entraînement
       </button>
     )
+}
 
-/** PortfolioScreen: practice positions, P&L and order history. */
+/** PortfolioScreen: live SGI and practice positions, P&L and order history. */
 export const PortfolioScreen = () => {
   useEffect(startPortfolio, [])
   return (

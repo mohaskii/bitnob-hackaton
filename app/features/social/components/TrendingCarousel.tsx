@@ -1,10 +1,11 @@
 import { useRef } from 'preact/hooks'
 import { ChevronLeft, ChevronRight } from 'lucide-preact'
-import { scrollHorizontal, TRENDING_ASSETS } from '../social-state.ts'
+import { scrollHorizontal, trendingAssets } from '../social-state.ts'
 import { TrendingAssetCard } from './TrendingAssetCard.tsx'
 
 export const TrendingCarousel = () => {
   const containerRef = useRef<HTMLDivElement>(null)
+  const assets = trendingAssets.value
 
   return (
     <section class='flex flex-col gap-3'>
@@ -35,7 +36,6 @@ export const TrendingCarousel = () => {
             class='w-8 h-8 rounded-full bg-base-200 flex items-center justify-center text-base-content/70 hover:text-base-content hover:bg-base-300 active:scale-95 transition-all cursor-pointer'
             aria-label='Next trending assets'
           >
-
             <ChevronRight size={16} />
           </button>
         </div>
@@ -46,10 +46,11 @@ export const TrendingCarousel = () => {
         ref={containerRef}
         class='flex gap-3 overflow-x-auto no-scrollbar scroll-smooth px-4 py-1'
       >
-        {TRENDING_ASSETS.map((asset) => (
+        {assets.map((asset) => (
           <TrendingAssetCard key={asset.id} asset={asset} />
         ))}
       </div>
     </section>
   )
 }
+

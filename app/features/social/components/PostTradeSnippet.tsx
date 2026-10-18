@@ -1,6 +1,5 @@
-import { Copy } from 'lucide-preact'
+import { TrendingDown, TrendingUp } from 'lucide-preact'
 import { SocialPost } from '../../../state.ts'
-import { handleCopyPostTrade } from '../social-state.ts'
 import { UnderstandPostButton } from '../../tekki/components/TekkiEntryPoints.tsx'
 
 type PostTradeSnippetProps = {
@@ -12,6 +11,7 @@ export const PostTradeSnippet = ({ post }: PostTradeSnippetProps) => {
   if (!trade) return null
 
   const isBuy = trade.action === 'ACHAT'
+  const isUp = (trade.changePercent ?? 0) >= 0
   const formattedPrice = new Intl.NumberFormat('fr-FR').format(trade.priceFcfa)
 
   return (
@@ -34,16 +34,19 @@ export const PostTradeSnippet = ({ post }: PostTradeSnippetProps) => {
         </span>
       </div>
 
-      <div class='flex items-center gap-1.5 flex-shrink-0'>
-        <UnderstandPostButton handle={post.authorHandle} symbol={trade.symbol} />
-        <button
-          type='button'
-          onClick={() => handleCopyPostTrade(post)}
-          class='h-7 px-3 rounded-full bg-primary text-primary-content text-xs font-bold flex items-center gap-1 cursor-pointer active:scale-95 transition-transform flex-shrink-0'
-        >
-          <Copy size={11} strokeWidth={2.5} />
-          <span>Copier</span>
-        </button>
+      <div class='flex items-center gap-2 flex-shrink-0'>
+      <UnderstandPostButton handle={post.authorHandle} symbol={trade.symbol} />
+      <div
+        class={`flex items-center gap-1 text-xs font-bold ${
+          isUp ? 'text-success' : 'text-error'
+        }`}
+      >
+        {isUp ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
+        <span>
+          {isUp ? '+' : ''}
+          {trade.changePercent}%
+        </span>
+      </div>
       </div>
     </div>
   )

@@ -1,8 +1,10 @@
+import { user } from '../features/session/session-state.ts'
 import { ComposeHeader } from '../features/compose/components/ComposeHeader.tsx'
 import { ComposeAuthorRow } from '../features/compose/components/ComposeAuthorRow.tsx'
 import { ComposeTextarea } from '../features/compose/components/ComposeTextarea.tsx'
 import { ComposeAssetPicker } from '../features/compose/components/ComposeAssetPicker.tsx'
 import { ComposeToolbar } from '../features/compose/components/ComposeToolbar.tsx'
+import { ComposeGuestGate } from '../features/compose/components/ComposeGuestGate.tsx'
 
 type ComposeScreenProps = {
   onClose?: () => void
@@ -15,6 +17,13 @@ type ComposeScreenProps = {
  * - Full screen on mobile, centered dialog over a dimmed canvas on desktop (lg+)
  */
 export const ComposeScreen = ({ onClose }: ComposeScreenProps) => {
+  const currentUser = user.value
+  const isGuest = !currentUser || currentUser.isGuest !== 0
+
+  if (isGuest) {
+    return <ComposeGuestGate onClose={onClose} />
+  }
+
   return (
     <div class='fixed inset-0 z-50 bg-base-100 lg:bg-black/45 lg:backdrop-blur-[2px] lg:flex lg:items-center lg:justify-center lg:p-6 text-base-content select-none animate-in fade-in duration-150'>
       <div class='h-full w-full lg:h-auto lg:max-h-[85dvh] lg:max-w-xl bg-base-100 lg:rounded-[2rem] lg:overflow-hidden flex flex-col justify-between'>

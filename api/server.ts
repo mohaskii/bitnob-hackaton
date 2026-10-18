@@ -4,6 +4,7 @@ import { server } from '@01edu/api/server'
 import { serveDir, serveFile } from '@std/http/file-server'
 import { fromFileUrl } from '@std/path'
 import { PORT } from './lib/env.ts'
+import './task-seed.ts'
 
 const apiHandler = server({ log, routeHandler })
 

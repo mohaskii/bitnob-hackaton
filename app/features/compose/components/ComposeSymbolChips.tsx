@@ -1,15 +1,16 @@
 import {
+  availableComposeAssets,
   composeSelectedSymbol,
-  POPULAR_ASSETS,
   selectComposeSymbol,
 } from '../compose-state.ts'
 
 /**
  * ComposeSymbolChips:
- * Horizontal scrollable chips for selecting a BRVM / Crypto ticker.
+ * Horizontal scrollable chips for selecting a BRVM / Crypto ticker with real market data.
  */
 export const ComposeSymbolChips = () => {
   const selectedSymbol = composeSelectedSymbol.value
+  const assets = availableComposeAssets.value
 
   return (
     <div class='flex flex-col gap-1.5'>
@@ -17,7 +18,7 @@ export const ComposeSymbolChips = () => {
         Associer un actif BRVM / Crypto
       </span>
       <div class='flex gap-1.5 overflow-x-auto no-scrollbar py-0.5'>
-        {POPULAR_ASSETS.map((asset) => {
+        {assets.map((asset) => {
           const isSelected = selectedSymbol === asset.symbol
           return (
             <button

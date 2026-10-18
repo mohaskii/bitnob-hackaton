@@ -74,16 +74,25 @@ const applySession = (session: SessionResponse) => {
   authError.value = null
 }
 
-export const logout = () => {
-  if (token.value === null) return
-  token.value = null
-  user.value = null
-  storeToken(null)
-  authMode.value = 'welcome'
-  navigateUrl('/')
+let loggingOut = false
+export const logout = async () => {
+  if (loggingOut) return
+  loggingOut = true
+  try {
+    if (token.value !== null) {
+      await api.post('/auth/logout').catch(() => {})
+    }
+  } finally {
+    token.value = null
+    user.value = null
+    storeToken(null)
+    authMode.value = 'welcome'
+    navigateUrl('/')
+    loggingOut = false
+  }
 }
 
-configureApi({ getToken: () => token.value, onUnauthorized: logout })
+configureApi({ getToken: () => token.value, onUnauthorized: () => void logout() })
 
 export const loadConfig = async () => {
   config.value = await api.get<AppConfig>('/config').catch(() => null)
@@ -191,7 +200,7 @@ export const ensureSession = async () => {
       const me = await api.get<{ user: SessionUser }>('/me')
       user.value = me.user
     } catch {
-      logout()
+      await logout()
     }
   }
 }
